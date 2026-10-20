@@ -94,6 +94,20 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, 20px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
 .baby-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 13px; }
 .baby-name { color: var(--accent-text); }
+.onb { background: var(--surface); border: 2px solid var(--accent); border-radius: 28px; padding: 24px 22px; display: grid; gap: 18px; box-shadow: 0 18px 40px -28px var(--accent); animation: pop .4s cubic-bezier(.2,1.3,.4,1); }
+.onb-top { display: grid; gap: 8px; }
+.onb-top h2 { font-size: clamp(22px, 4vw, 28px); }
+.onb-step { justify-self: start; display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.onb-form { display: grid; gap: 16px; }
+.onb-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: var(--bg); border-radius: 20px; padding: 14px; }
+.onb-gt { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 600; font-size: 16px; color: var(--accent-text); }
+.onb-q { display: grid; gap: 5px; align-content: start; }
+.onb-label { font-weight: 700; font-size: 14px; }
+.onb-label small { font-weight: 400; color: var(--muted); }
+.onb-q input { font-size: 16px; padding: 11px 12px; border-radius: 12px; background: var(--surface); }
+.onb-help { font-size: 12px; color: var(--muted); }
+.onb-btn { justify-self: center; display: inline-flex; align-items: center; gap: 8px; font-size: 16px; padding: 13px 26px; }
+.onb-after { display: flex; align-items: center; gap: 8px; justify-content: center; text-align: center; font-size: 13px; color: var(--muted); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 table.budget { min-width: 640px; }
 .cell-name { font-weight: 700; border-color: transparent !important; background: transparent !important; padding: 4px 6px !important; margin-left: -6px; }
@@ -433,7 +447,6 @@ a.btn { text-decoration: none; display: inline-block; }
     { id: "f8", name: "Después", when: "Hasta 2 semanas después" }
   ];
   const TASKS = [
-    ["t2","f1",-70,"Elegir la fecha","Lo ideal es entre la semana 28 y 34 de embarazo: la panza se luce y ella todavía está cómoda. Alejate de la fecha probable de parto. Sábado o domingo a la tarde es lo que mejor funciona."],
     ["t3","f1",-66,"Definir el presupuesto total y quién aporta","Antes de enamorarte de cualquier idea, poné un número. Si aportan varias personas, acuerden montos ahora y anotalos acá. Separá un 5% para imprevistos."],
     ["t4","f1",-63,"Hacer la lista preliminar de invitados","La cantidad de invitados define el lugar, la comida y el presupuesto. Hacé dos listas: imprescindibles y 'si hay lugar'. Contá con que entre 10% y 20% no va a poder ir."],
     ["t5","f1",-60,"Decidir el formato","Brunch (11 a 14 h), merienda (16 a 19 h) o after (19 a 22 h). ¿Solo mujeres o mixto? Entre 3 y 4 horas es la duración ideal: la embarazada se cansa."],
@@ -577,6 +590,10 @@ a.btn { text-decoration: none; display: inline-block; }
     if (!e || p.length !== 3 || !p[0]) return fallback;
     return Math.round((new Date(p[0], p[1] - 1, p[2]) - e) / 86400000);
   }
+  function setupComplete() {
+    const s = state.setup;
+    return !!(s.fecha && s.hora && Number(s.invitados) > 0 && Number(s.presupuesto) > 0);
+  }
   const babyName = () => String(state.setup.bebeNombre || "").trim();
   const parents = () => [state.setup.nombre, state.setup.papa].map(x => String(x || "").trim()).filter(Boolean).join(" y ");
   const partyName = () => babyName() || String(state.setup.nombre || "").trim();
@@ -693,7 +710,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function freshState() {
     return {
-      setup: { nombre: "", papa: "", bebe: "", bebeNombre: "", fecha: isoPlus(63), hora: "16:00", invitados: 30, presupuesto: 400000, lugar: "" },
+      setup: { nombre: "", papa: "", bebe: "", bebeNombre: "", fecha: "", hora: "", invitados: "", presupuesto: "", lugar: "" },
       inv: { direccion: "", fin: "19:00", regalos: "", contacto: "", vestimenta: "" },
       done: {}, notes: {}, gastos: {}, guests: [], fields: {}, itin: null, itinMeta: { titulo: "", pie: "" }
     };
@@ -801,8 +818,10 @@ a.btn { text-decoration: none; display: inline-block; }
     const e = eventDate();
     const left = e ? daysTo(e) : null;
     const tasks = allTasks();
-    const doneN = tasks.filter(t => state.done[t.id]).length;
-    const pct = tasks.length ? Math.round(doneN / tasks.length * 100) : 0;
+    const ready = setupComplete();
+    const doneN = tasks.filter(t => state.done[t.id]).length + (ready ? 1 : 0);
+    const totalSteps = tasks.length + 1;
+    const pct = Math.round(doneN / totalSteps * 100);
     const spent = spentTotal();
     const budgetPct = s.presupuesto ? Math.round(spent / s.presupuesto * 100) : 0;
     const confirmed = state.guests.filter(g => g.rsvp === "si").reduce((a, g) => a + 1 + (Number(g.plus) || 0), 0);
@@ -815,12 +834,14 @@ a.btn { text-decoration: none; display: inline-block; }
         ${s.bebe ? `<button class="baby-chip" data-act="changebaby" title="Cambiar colores">${ic(BABY[s.bebe].icon)} ${BABY[s.bebe].label} · cambiar</button>` : `<button class="baby-chip" data-act="changebaby">${ic("palette")} Elegir colores</button>`}</div>
         <h1>${babyName() ? "Baby shower de <span class=\"baby-name\">" + esc(babyName()) + "</span>" : s.nombre ? "El baby shower de " + esc(s.nombre) : "Tu baby shower"}</h1>
         ${parents() ? `<p class="muted">Celebramos con ${esc(parents())} la dulce espera</p>` : ""}
-        <p class="muted">${e ? e.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }) + " · " + esc(s.hora) + " h" : "Cargá la fecha para calcular la ruta."}</p>
+        ${e ? `<p class="muted">${e.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}${s.hora ? " · " + esc(s.hora) + " h" : ""}</p>` : ""}
       </div>
+      ${ready ? "" : onboardingView(totalSteps)}
+      ${ready ? `
 
       <div class="stats">
         <div class="stat"><span class="eyebrow">${ic("calendar-heart")} Faltan</span><span class="big">${leftLabel}</span><span class="muted">${typeof leftLabel === "number" ? (left === 1 ? "día" : "días") : ""}</span></div>
-        <div class="stat"><span class="eyebrow">${ic("footprints")} Avance</span><span class="big">${pct}%</span><div class="bar"><i style="width:${pct}%"></i></div><span class="muted">${doneN} de ${tasks.length} tareas</span></div>
+        <div class="stat"><span class="eyebrow">${ic("footprints")} Avance</span><span class="big">${pct}%</span><div class="bar"><i style="width:${pct}%"></i></div><span class="muted">${doneN} de ${totalSteps} pasos</span></div>
         <div class="stat"><span class="eyebrow">${ic("piggy-bank")} Gastado</span><span class="big">${money(spent)}</span><div class="bar ${budgetPct > 100 ? "over" : ""}"><i style="width:${Math.min(budgetPct, 100)}%"></i></div><span class="muted">${budgetPct}% de ${money(s.presupuesto)}</span></div>
         <div class="stat"><span class="eyebrow">${ic("users")} Confirmados</span><span class="big">${confirmed}</span><span class="muted">de ${s.invitados || 0} previstos</span></div>
       </div>
@@ -845,7 +866,48 @@ a.btn { text-decoration: none; display: inline-block; }
         ${[["ruta","Ruta","footprints"],["ficha","Ficha","clipboard-list"],["presupuesto","Presupuesto","piggy-bank"],["invitados","Invitados","users"],["invitaciones","Invitaciones","mail"],["itinerario","Itinerario","scroll-text"],["dia","Cronograma","clock"],["ideas","Ideas","lightbulb"]].map(([id, l, i]) =>
           `<button class="tab" role="tab" aria-selected="${tab === id}" data-act="tab" data-id="${id}">${ic(i)} ${l}</button>`).join("")}
       </div>
-      <div id="panel">${panel()}</div>`;
+      <div id="panel">${panel()}</div>` : ""}`;
+  }
+
+  // Paso 1 guiado: los datos básicos del evento
+  function onboardingView(totalSteps) {
+    const s = state.setup;
+    const who = babyName() ? "de " + esc(babyName()) : "";
+    const q = (id, key, type, label, help, ph, extra, req) => `
+      <label class="onb-q" for="${id}">
+        <span class="onb-label">${label}${req ? "" : ' <small>(opcional)</small>'}</span>
+        <input type="${type}" id="${id}" data-onb="${key}" value="${esc(s[key] || "")}" placeholder="${ph || ""}" ${extra || ""} ${req ? "required" : ""}>
+        ${help ? `<span class="onb-help">${help}</span>` : ""}
+      </label>`;
+    return `
+      <section class="onb">
+        <div class="onb-top">
+          <span class="onb-step">${ic("footprints")} Paso 1 de ${totalSteps}</span>
+          <h2>¡Genial! Ahora hagamos el primer paso</h2>
+          <p class="muted">Contanos lo básico del baby shower ${who}. Con esto calculamos cuántos días faltan, cuánto podés gastar por invitado y el horario del día.</p>
+        </div>
+        <form id="onb-form" class="onb-form" novalidate>
+          <div class="onb-group">
+            <p class="onb-gt">${ic("calendar-heart")} ¿Cuándo?</p>
+            ${q("o-fecha", "fecha", "date", "¿Qué día es?", "Lo ideal es entre la semana 28 y 34 de embarazo, un sábado o domingo.", "", "", true)}
+            ${q("o-hora", "hora", "time", "¿A qué hora empieza?", "Brunch 11 h, merienda 16 h, after 19 h.", "", "", true)}
+          </div>
+          <div class="onb-group">
+            <p class="onb-gt">${ic("users")} ¿Cuántos y cuánto?</p>
+            ${q("o-inv", "invitados", "number", "¿Cuántos invitados calculás?", "Un número aproximado alcanza; después lo ajustás con la lista.", "Ej: 30", 'min="1" inputmode="numeric"', true)}
+            ${q("o-pres", "presupuesto", "number", "¿Cuánto querés gastar en total? ($)", "Aunque sea estimado. Te lo repartimos por rubro.", "Ej: 400000", 'min="1" step="1000" inputmode="numeric"', true)}
+          </div>
+          <div class="onb-group">
+            <p class="onb-gt">${ic("heart")} ¿Quiénes y dónde?</p>
+            ${q("o-mama", "nombre", "text", "Nombre de la mamá", "", "Ej: Caro", "", false)}
+            ${q("o-papa", "papa", "text", "Nombre del papá", "", "Ej: Juan", "", false)}
+            ${q("o-lugar", "lugar", "text", "Lugar", "Si todavía no lo tenés, lo cargás después.", "Ej: casa de la abuela", "", false)}
+          </div>
+          <p class="pick-err" id="onb-err" role="alert" hidden>Completá la fecha, la hora, los invitados y el presupuesto para seguir.</p>
+          <button class="btn onb-btn" type="submit">${ic("sparkles")} Guardar y empezar mi ruta</button>
+        </form>
+        <p class="onb-after">${ic("map")} Después te mostramos tu ruta: ${totalSteps - 1} tareas en ${PHASES.length} fases, presupuesto, invitados, invitaciones e itinerario.</p>
+      </section>`;
   }
 
   function panel() {
@@ -1329,7 +1391,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     openSet.forEach(id => { const d = document.getElementById(id); if (d) d.open = true; });
   }
   // Mantiene abiertos los desplegables y el foco del campo al volver a dibujar
-  const openSet = new Set(state.setup.nombre ? [] : ["setup"]);
+  const openSet = new Set();
   app.addEventListener("toggle", e => { const d = e.target; if (d.tagName === "DETAILS" && d.id) { if (d.open) openSet.add(d.id); else openSet.delete(d.id); } }, true);
   function rerenderKeepScroll() {
     setTimeout(() => {
@@ -1505,6 +1567,27 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       state.custom = (state.custom || []).concat([{ id: "c" + Date.now().toString(36), phase: ph, off, title }]);
       persist(); rerenderKeepScroll(); toast("Tarea agregada", "plus");
       setTimeout(() => { const inp = document.getElementById("add-" + ph); if (inp) inp.focus(); }, 30);
+      return;
+    }
+    if (ev.target.id === "onb-form") {
+      ev.preventDefault();
+      const vals = {};
+      ev.target.querySelectorAll("[data-onb]").forEach(inp => { vals[inp.dataset.onb] = inp.value.trim(); });
+      const missing = [...ev.target.querySelectorAll("[data-onb][required]")].filter(inp => !inp.value.trim() || (inp.type === "number" && !(Number(inp.value) > 0)));
+      ev.target.querySelectorAll(".shake").forEach(x => x.classList.remove("shake"));
+      if (missing.length) {
+        missing.forEach(inp => { void inp.offsetWidth; inp.classList.add("shake"); });
+        missing[0].focus();
+        const err = document.getElementById("onb-err"); if (err) err.hidden = false;
+        return;
+      }
+      ["fecha", "hora", "nombre", "papa", "lugar"].forEach(k => { state.setup[k] = vals[k] || ""; });
+      state.setup.invitados = Number(vals.invitados) || 0;
+      state.setup.presupuesto = Number(vals.presupuesto) || 0;
+      persist(); render(); window.scrollTo(0, 0);
+      const bar = document.querySelector(".stat .bar");
+      if (bar) { const r = bar.getBoundingClientRect(); burst(r.left + 20, r.top); }
+      toast("¡Primer paso hecho! Ya tenés tu ruta", "party-popper");
       return;
     }
     if (ev.target.id === "budget-form") {
