@@ -18,7 +18,7 @@ Tu event planner de bolsillo: una guía paso a paso para organizar un evento sin
 - **Ruta**: 34 tareas en 8 fases (podés quitar las que no necesites y agregar las tuyas), desde 10 semanas antes hasta los agradecimientos, con fecha límite, consejo de planner, campos para cargar datos (dirección, contactos, costos) y notas.
 - **Ficha**: resumen en renglones de todo lo cargado en cada paso, con acceso directo para editar cada tarea.
 - **Presupuesto**: arranca con el reparto sugerido; los rubros se pueden renombrar, cambiar de monto, agregar y eliminar, con control de lo gastado.
-- **Invitados**: lista con estado de confirmación.
+- **Invitados**: botones de Viene y No viene, de parte de quién (mamá, papá o los dos), categorías propias, filtros y buscador.
 - **Invitaciones**: fechas de envío, canales para hacerlas llegar, mensajes listos para copiar o abrir en WhatsApp y seguimiento de envíos.
 - **Itinerario**: el programa del evento para los invitados, editable y descargable para imprimir en A4.
 - **Cronograma interno**: horario del día para vos y tus ayudantes.

@@ -251,6 +251,60 @@ td input[type=number] { max-width: 130px; text-align: right; margin-left: auto; 
 .guest-add { display: grid; grid-template-columns: 1fr 160px auto; gap: 8px; margin-bottom: 14px; }
 .counts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .empty { border: 1px dashed var(--line); border-radius: var(--r); padding: 28px 16px; text-align: center; color: var(--muted); }
+.guest-add2 { display: grid; grid-template-columns: 1fr auto 150px auto; gap: 8px; margin-bottom: 10px; align-items: center; }
+.guest-add2 .btn { display: inline-flex; align-items: center; gap: 6px; }
+.seg { display: inline-flex; background: var(--accent-soft); border-radius: 999px; padding: 3px; gap: 2px; }
+.seg-opt { position: relative; }
+.seg-opt input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.seg-opt span { display: block; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.seg-opt input:checked + span { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.seg-opt input:focus-visible + span { outline: 2px solid var(--accent-text); }
+.cat-edit { margin-bottom: 14px; font-size: 13px; }
+.cat-edit summary { cursor: pointer; color: var(--muted); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.cat-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.cat-pill { display: inline-flex; align-items: center; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 2px 4px 2px 12px; }
+.cat-pill .x { font-size: 13px; padding: 2px 4px; }
+.cat-add { display: flex; gap: 8px; max-width: 420px; align-items: center; }
+.cat-add .btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; padding: 8px 14px; }
+.filters { display: grid; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; margin-bottom: 14px; }
+.frow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.flabel { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; min-width: 96px; }
+.fchip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 4px 11px; font-size: 13px; font-weight: 600; }
+.fchip b { font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fchip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.fchip.on b { color: inherit; opacity: .75; }
+.gsearch { max-width: 320px; border-radius: 999px !important; }
+.gl-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); border-left: 4px solid transparent; transition: background .2s; }
+.gl-row:last-child { border-bottom: 0; }
+.gl-row.si { border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 6%, var(--surface)); }
+.gl-row.no { border-left-color: var(--warn); }
+.gl-row.no .gl-name { color: var(--muted); text-decoration: line-through; }
+.gl-main { display: grid; gap: 4px; min-width: 0; }
+.gl-name { font-weight: 700; word-break: break-word; }
+.gl-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; background: var(--accent-soft); color: var(--accent-text); }
+.tag.side-mama { background: #FDE7EF; color: #B04872; }
+.tag.side-papa { background: #DCF1FC; color: #2B7AB0; }
+.tag.side-ambos { background: #FFF2C4; color: #7A5A00; }
+.tag.side-none { background: var(--line); color: var(--muted); }
+.tag-select { width: auto !important; appearance: none; -webkit-appearance: none; border: 0 !important; padding: 2px 10px !important; background: var(--line) !important; color: var(--ink); cursor: pointer; }
+.rsvp { display: flex; gap: 6px; }
+.rbtn { display: inline-flex; align-items: center; gap: 5px; border: 1.5px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; transition: all .2s; }
+.rbtn svg { width: 16px; height: 16px; }
+.rbtn.yes:hover, .rbtn.yes.on { border-color: var(--ok); color: var(--ok); }
+.rbtn.no:hover, .rbtn.no.on { border-color: var(--warn); color: var(--warn); }
+.rbtn.yes.on { background: var(--ok); color: #fff; }
+.rbtn.no.on { background: var(--warn); color: #fff; }
+@media (max-width: 640px) {
+  .guest-add2 { grid-template-columns: 1fr 1fr; }
+  .guest-add2 #guest-name, .guest-add2 .seg { grid-column: 1 / -1; }
+  .seg { justify-content: space-between; }
+  .gl-row { grid-template-columns: 1fr auto; }
+  .gl-row .rsvp { grid-column: 1 / 2; }
+  .rbtn span { display: none; }
+  .rbtn { padding: 8px 12px; }
+  .flabel { min-width: 100%; }
+}
 .guest { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
 .guest:last-child { border-bottom: 0; }
 .guest select { width: auto; padding: 5px 8px; font-size: 13px; }
@@ -831,34 +885,78 @@ a.btn { text-decoration: none; display: inline-block; }
   }
 
 
+  // Filtros de la lista de invitados (solo para esta visita)
+  const gFilter = { rsvp: "all", side: "all", group: "all", q: "" };
+  const DEFAULT_GROUPS = ["Familia", "Amigas", "Amigos", "Trabajo", "Otros"];
+  const groupList = () => state.groups || DEFAULT_GROUPS;
+  function sideLabel(k) {
+    const s = state.setup;
+    if (k === "mama") return "De " + (String(s.nombre || "").trim() || "la mamá");
+    if (k === "papa") return "De " + (String(s.papa || "").trim() || "el papá");
+    if (k === "ambos") return "De los dos";
+    return "Sin lado";
+  }
+  const SIDE_ICON = { mama: "heart", papa: "heart", ambos: "heart-handshake", "": "circle-help" };
+
   function guestsView() {
     const g = state.guests;
-    const c = k => g.filter(x => x.rsvp === k).length;
+    const groups = groupList();
+    const by = (k, v) => g.filter(x => (k === "side" ? (x.side || "") : k === "rsvp" ? (x.rsvp || "pend") : x.group) === v).length;
+    const shown = g.filter(x =>
+      (gFilter.rsvp === "all" || (x.rsvp || "pend") === gFilter.rsvp) &&
+      (gFilter.side === "all" || (x.side || "") === gFilter.side) &&
+      (gFilter.group === "all" || x.group === gFilter.group) &&
+      (!gFilter.q || x.name.toLowerCase().includes(gFilter.q.toLowerCase())));
+    const fchip = (k, v, label, n, icon) => `<button class="fchip${gFilter[k] === v ? " on" : ""}" data-act="gfilter" data-k="${k}" data-v="${esc(v)}">${icon ? ic(icon) : ""}${label}${n != null ? ` <b>${n}</b>` : ""}</button>`;
     return `
-      <form class="guest-add" id="guest-form">
+      <form class="guest-add2" id="guest-form">
         <input type="text" id="guest-name" placeholder="Nombre del invitado" aria-label="Nombre del invitado" required>
-        <select id="guest-group" aria-label="Grupo"><option>Familia</option><option>Amigas</option><option>Trabajo</option><option>Otros</option></select>
-        <button class="btn" type="submit">Agregar</button>
+        <div class="seg" role="radiogroup" aria-label="De parte de">
+          ${["mama", "papa", "ambos"].map(k => `<label class="seg-opt"><input type="radio" name="guest-side" value="${k}" ${(state.lastSide || "ambos") === k ? "checked" : ""}><span>${esc(sideLabel(k))}</span></label>`).join("")}
+        </div>
+        <select id="guest-group" aria-label="Categoría">${groups.map(x => `<option ${state.lastGroup === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>
+        <button class="btn" type="submit">${ic("user-plus")} Agregar</button>
       </form>
-      <div class="counts">
-        <span class="chip">${g.length} en la lista</span>
-        <span class="chip ok">${c("si")} confirmados</span>
-        <span class="chip soon">${c("pend")} sin responder</span>
-        <span class="chip">${c("no")} no vienen</span>
+      <details class="cat-edit" id="cat-edit">
+        <summary>${ic("tags")} Categorías: ${groups.map(esc).join(", ")}</summary>
+        <div class="cat-list">${groups.map(x => `<span class="cat-pill">${esc(x)}<button type="button" class="x" data-act="delgroup" data-v="${esc(x)}" aria-label="Quitar categoría ${esc(x)}">${ic("x")}</button></span>`).join("")}</div>
+        <form id="group-form" class="cat-add"><input type="text" id="new-group" placeholder="Nueva categoría, ej: Vecinos" aria-label="Nueva categoría"><button class="btn ghost" type="submit">${ic("plus")} Crear</button></form>
+      </details>
+
+      <div class="filters">
+        <div class="frow"><span class="flabel">Respuesta</span>
+          ${fchip("rsvp", "all", "Todos", g.length)}${fchip("rsvp", "si", "Vienen", by("rsvp", "si"), "circle-check")}${fchip("rsvp", "pend", "Sin responder", by("rsvp", "pend"), "hourglass")}${fchip("rsvp", "no", "No vienen", by("rsvp", "no"), "circle-x")}
+        </div>
+        <div class="frow"><span class="flabel">De parte de</span>
+          ${fchip("side", "all", "Todos")}${["mama", "papa", "ambos"].map(k => fchip("side", k, esc(sideLabel(k)), by("side", k))).join("")}${by("side", "") ? fchip("side", "", "Sin lado", by("side", "")) : ""}
+        </div>
+        <div class="frow"><span class="flabel">Categoría</span>
+          ${fchip("group", "all", "Todas")}${groups.map(x => fchip("group", x, esc(x), by("group", x))).join("")}
+        </div>
+        <div class="frow"><input type="text" id="guest-q" class="gsearch" value="${esc(gFilter.q)}" placeholder="Buscar por nombre…" aria-label="Buscar invitado"></div>
       </div>
-      ${g.length ? `<div class="table-wrap">${g.map(x => `
-        <div class="guest">
-          <span>${esc(x.name)}</span>
-          <span class="chip g-group">${esc(x.group)}</span>
-          <select data-rsvp="${x.id}" id="r-${x.id}" aria-label="Respuesta de ${esc(x.name)}">
-            <option value="pend" ${x.rsvp === "pend" ? "selected" : ""}>Sin responder</option>
-            <option value="si" ${x.rsvp === "si" ? "selected" : ""}>Viene</option>
-            <option value="no" ${x.rsvp === "no" ? "selected" : ""}>No viene</option>
-          </select>
-          <button class="x" data-act="delguest" data-id="${x.id}" aria-label="Quitar a ${esc(x.name)}">×</button>
-        </div>`).join("")}</div>`
+
+      ${g.length ? (shown.length ? `<div class="table-wrap glist">${shown.map(x => {
+        const r = x.rsvp || "pend";
+        return `
+        <div class="gl-row ${r}">
+          <div class="gl-main">
+            <span class="gl-name">${esc(x.name)}</span>
+            <span class="gl-tags">
+              <button class="tag side-${x.side || "none"}" data-act="cycleside" data-id="${x.id}" title="Cambiar de parte de quién">${ic(SIDE_ICON[x.side || ""])}${esc(sideLabel(x.side || ""))}</button>
+              <select class="tag tag-select" id="gg-${x.id}" data-ggroup="${x.id}" aria-label="Categoría de ${esc(x.name)}">${(groups.includes(x.group) ? groups : groups.concat([x.group])).map(o => `<option ${o === x.group ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>
+            </span>
+          </div>
+          <div class="rsvp" role="group" aria-label="Respuesta de ${esc(x.name)}">
+            <button class="rbtn yes${r === "si" ? " on" : ""}" data-act="rsvp" data-id="${x.id}" data-v="si" aria-pressed="${r === "si"}" title="Viene">${ic("check")}<span>Viene</span></button>
+            <button class="rbtn no${r === "no" ? " on" : ""}" data-act="rsvp" data-id="${x.id}" data-v="no" aria-pressed="${r === "no"}" title="No viene">${ic("x")}<span>No viene</span></button>
+          </div>
+          <button class="x" data-act="delguest" data-id="${x.id}" aria-label="Quitar a ${esc(x.name)}" title="Quitar de la lista">${ic("trash-2")}</button>
+        </div>`;
+      }).join("")}</div>` : `<div class="empty">No hay invitados con esos filtros. <button class="link-btn" data-act="gclear">Ver todos</button></div>`)
       : `<div class="empty">Tu lista está vacía. Empezá por las imprescindibles: la familia directa y las amigas más cercanas de la mamá.</div>`}`;
   }
+
 
   function dayView() {
     return `
@@ -1228,6 +1326,25 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
                 e => say(e && e.code === "declined" ? "" : "No se pudo descargar. Probá de nuevo en un momento."));
       });
     }
+    else if (act === "rsvp") {
+      const g = state.guests.find(x => x.id === id); if (!g) return;
+      const v = el.dataset.v; g.rsvp = g.rsvp === v ? "pend" : v;
+      if (g.rsvp === "si") { const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2); }
+      persist(); rerenderKeepScroll();
+    }
+    else if (act === "cycleside") {
+      const g = state.guests.find(x => x.id === id); if (!g) return;
+      const order = ["mama", "papa", "ambos"]; g.side = order[(order.indexOf(g.side) + 1) % 3];
+      persist(); rerenderKeepScroll();
+    }
+    else if (act === "gfilter") { gFilter[el.dataset.k] = el.dataset.v; rerenderKeepScroll(); }
+    else if (act === "gclear") { gFilter.rsvp = gFilter.side = gFilter.group = "all"; gFilter.q = ""; rerenderKeepScroll(); }
+    else if (act === "delgroup") {
+      const v = el.dataset.v; const left = groupList().filter(x => x !== v);
+      if (!left.length) { toast("Dejá al menos una categoría", "info"); return; }
+      state.groups = left; if (gFilter.group === v) gFilter.group = "all";
+      persist(); rerenderKeepScroll(); toast("Categoría quitada: " + v + ". Los invitados la conservan.", "tags");
+    }
     else if (act === "delguest") { state.guests = state.guests.filter(g => g.id !== id); persist(); rerenderKeepScroll(); }
   });
   app.addEventListener("change", ev => {
@@ -1245,7 +1362,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (el.dataset.bname) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bname); if (c && el.value.trim()) c.name = el.value.trim(); }); return; }
     else if (el.dataset.bplan) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bplan); if (c) c.plan = el.value === "" ? null : Number(el.value) || 0; }); return; }
     else if (el.dataset.gasto) { state.gastos[el.dataset.gasto] = Number(el.value) || 0; }
-    else if (el.dataset.rsvp) { const g = state.guests.find(x => x.id === el.dataset.rsvp); if (g) g.rsvp = el.value; }
+    else if (el.dataset.ggroup) { const g = state.guests.find(x => x.id === el.dataset.ggroup); if (g) g.group = el.value; }
     else if (el.dataset.sent) { const g = state.guests.find(x => x.id === el.dataset.sent); if (g) g.sent = el.checked; }
     else if (el.dataset.canal) { const g = state.guests.find(x => x.id === el.dataset.canal); if (g) g.canal = el.value; }
     else if (el.dataset.inv) { state.inv = Object.assign({}, state.inv, { [el.dataset.inv]: el.value }); }
@@ -1260,6 +1377,12 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (el.dataset.note) { state.notes[el.dataset.note] = el.value; persist(); return; }
     else return;
     persist(); rerenderKeepScroll();
+  });
+  let qTimer = null;
+  app.addEventListener("input", ev => {
+    if (ev.target.id !== "guest-q") return;
+    gFilter.q = ev.target.value; clearTimeout(qTimer);
+    qTimer = setTimeout(() => { const pos = ev.target.selectionStart; rerenderKeepScroll(); setTimeout(() => { const q = document.getElementById("guest-q"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }, 20); }, 250);
   });
   app.addEventListener("submit", ev => {
     if (ev.target.classList.contains("add-task") && ev.target.dataset.phase) {
@@ -1282,11 +1405,23 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       toast("Rubro agregado: " + name, "plus");
       return;
     }
+    if (ev.target.id === "group-form") {
+      ev.preventDefault();
+      const v = document.getElementById("new-group").value.trim();
+      if (!v) return;
+      if (!groupList().some(x => x.toLowerCase() === v.toLowerCase())) state.groups = groupList().concat([v]);
+      state.lastGroup = v; openSet.add("cat-edit");
+      persist(); rerenderKeepScroll(); toast("Categoría creada: " + v, "tags");
+      return;
+    }
     if (ev.target.id !== "guest-form") return;
     ev.preventDefault();
     const name = document.getElementById("guest-name").value.trim();
     if (!name) return;
-    state.guests.push({ id: "g" + Date.now().toString(36), name, group: document.getElementById("guest-group").value, rsvp: "pend" });
+    const sideEl = document.querySelector('input[name="guest-side"]:checked');
+    const side = sideEl ? sideEl.value : "ambos", group = document.getElementById("guest-group").value;
+    state.lastSide = side; state.lastGroup = group;
+    state.guests.push({ id: "g" + Date.now().toString(36), name, group, side, rsvp: "pend" });
     persist(); rerenderKeepScroll();
     const inp = document.getElementById("guest-name"); if (inp) inp.focus();
   });
