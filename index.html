@@ -94,6 +94,33 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, 20px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
 .baby-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 13px; }
 .baby-name { color: var(--accent-text); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+table.budget { min-width: 640px; }
+.cell-name { font-weight: 700; border-color: transparent !important; background: transparent !important; padding: 4px 6px !important; margin-left: -6px; }
+.cell-name:hover, .cell-name:focus { border-color: var(--line) !important; background: var(--surface) !important; }
+td.num .cat-tip { text-align: right; margin-left: auto; }
+.budget-note { display: flex; align-items: center; gap: 8px; background: var(--accent-soft); color: var(--accent-text); border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; font-size: 14px; font-weight: 600; }
+.budget-note.over { background: var(--blush); color: var(--warn); }
+.budget-add { margin: 14px 0 6px; }
+.total-row td { background: var(--accent-soft); }
+.sheet-summary { display: grid; gap: 10px; margin-bottom: 18px; }
+.sheet-progress { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.sheet-progress .bar { flex: 1; max-width: 320px; }
+.sheet { display: grid; gap: 22px; }
+.sheet-sec { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 18px 6px; box-shadow: 0 1px 0 var(--line), 0 6px 18px -12px color-mix(in srgb, var(--accent) 45%, transparent); }
+.sheet-title { font-size: 18px; font-weight: 600; padding: 12px 0 6px; color: var(--accent-text); }
+.sheet-group { padding-bottom: 6px; }
+.sheet-group + .sheet-group { border-top: 1px solid var(--line); margin-top: 4px; }
+.group-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 0 4px; }
+.group-name { font-family: var(--font-display); font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; }
+.group-name .done-ic, .group-name svg.done-ic { color: var(--ok); }
+.group-meta { display: inline-flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.row { display: grid; grid-template-columns: minmax(140px, 240px) 1fr; gap: 16px; padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+.row:last-child { border-bottom: 0; }
+.row .k { color: var(--muted); }
+.row .v { font-weight: 600; word-break: break-word; min-width: 0; }
+.row .v.empty { font-weight: 400; color: var(--muted); opacity: .7; font-style: italic; }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; gap: 2px; } }
 .add-task { display: grid; grid-template-columns: 1fr 160px auto; gap: 8px; margin-top: 10px; }
 .add-task input[type=text] { border-style: dashed; background: transparent; }
 .add-task .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; }
@@ -654,7 +681,7 @@ a.btn { text-decoration: none; display: inline-block; }
     const tasks = allTasks();
     const doneN = tasks.filter(t => state.done[t.id]).length;
     const pct = tasks.length ? Math.round(doneN / tasks.length * 100) : 0;
-    const spent = BUDGET.reduce((a, c) => a + (Number(state.gastos[c.id]) || 0), 0);
+    const spent = spentTotal();
     const budgetPct = s.presupuesto ? Math.round(spent / s.presupuesto * 100) : 0;
     const confirmed = state.guests.filter(g => g.rsvp === "si").length;
     const next = tasks.filter(t => !state.done[t.id]).sort((a, b) => a.off - b.off)[0];
@@ -755,31 +782,54 @@ a.btn { text-decoration: none; display: inline-block; }
       </div>`;
   }
 
+  // Rubros del presupuesto: arrancan con el reparto sugerido y se pueden editar, agregar y eliminar
+  function budgetList() {
+    return state.budget || BUDGET.map(c => ({ id: c.id, name: c.name, tip: c.tip, pct: c.pct }));
+  }
+  function planOf(c) {
+    const total = Number(state.setup.presupuesto) || 0;
+    return c.plan != null && c.plan !== "" ? Number(c.plan) || 0 : Math.round(total * (c.pct || 0) / 100);
+  }
+  const spentTotal = () => budgetList().reduce((a, c) => a + (Number(state.gastos[c.id]) || 0), 0);
+  function editBudget(fn) { state.budget = budgetList().map(c => Object.assign({}, c)); fn(state.budget); persist(); rerenderKeepScroll(); }
+
   function budgetView() {
     const total = Number(state.setup.presupuesto) || 0;
     const inv = Number(state.setup.invitados) || 0;
-    const spent = BUDGET.reduce((a, c) => a + (Number(state.gastos[c.id]) || 0), 0);
+    const list = budgetList();
+    const spent = spentTotal();
+    const planned = list.reduce((a, c) => a + planOf(c), 0);
     const rest = total - spent;
+    const gap = total - planned;
     return `
-      <p class="section-intro muted">Así reparte una planner el presupuesto de un baby shower. Cargá lo que vas gastando y mirá cuánto te queda en cada rubro.${inv ? ` Con ${inv} invitados, tu presupuesto da ${money(total / inv)} por persona.` : ""}</p>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Rubro</th><th class="num">Sugerido</th><th class="num">Gastado</th><th class="num">Queda</th></tr></thead>
+      <p class="section-intro muted">Arrancás con el reparto que usaría una planner. Cambiá los nombres y montos, sumá los rubros que te falten y borrá los que no uses. Cargá lo gastado y mirá cuánto te queda.${inv ? ` Con ${inv} invitados, tu presupuesto da ${money(total / inv)} por persona.` : ""}</p>
+      ${gap !== 0 && total ? `<div class="budget-note ${gap < 0 ? "over" : ""}">${ic(gap < 0 ? "triangle-alert" : "info")} ${gap < 0 ? `Asignaste ${money(-gap)} más que tu presupuesto total.` : `Te quedan ${money(gap)} sin asignar a ningún rubro.`}</div>` : ""}
+      <div class="table-wrap"><table class="budget">
+        <thead><tr><th>Rubro</th><th class="num">Asignado</th><th class="num">Gastado</th><th class="num">Queda</th><th><span class="sr">Eliminar</span></th></tr></thead>
         <tbody>
-          ${BUDGET.map(c => {
-            const sug = total * c.pct / 100;
+          ${list.map(c => {
+            const plan = planOf(c);
             const g = Number(state.gastos[c.id]) || 0;
-            const diff = sug - g;
+            const diff = plan - g;
             return `<tr>
-              <td><b>${c.name}</b> <span class="muted">${c.pct}%</span><div class="cat-tip">${c.tip}</div></td>
-              <td class="num">${money(sug)}</td>
-              <td class="num"><input type="number" min="0" step="500" id="g-${c.id}" data-gasto="${c.id}" value="${g || ""}" placeholder="0" aria-label="Gastado en ${c.name}"></td>
+              <td><input type="text" class="cell-name" id="bn-${c.id}" data-bname="${c.id}" value="${esc(c.name)}" aria-label="Nombre del rubro">${c.tip ? `<div class="cat-tip">${esc(c.tip)}</div>` : ""}</td>
+              <td class="num"><input type="number" min="0" step="1000" id="bp-${c.id}" data-bplan="${c.id}" value="${plan || ""}" placeholder="0" aria-label="Asignado a ${esc(c.name)}">${total ? `<div class="cat-tip">${Math.round(plan / total * 100)}% del total</div>` : ""}</td>
+              <td class="num"><input type="number" min="0" step="500" id="g-${c.id}" data-gasto="${c.id}" value="${g || ""}" placeholder="0" aria-label="Gastado en ${esc(c.name)}"></td>
               <td class="num ${diff < 0 ? "neg" : g ? "pos" : ""}">${money(diff)}</td>
+              <td><button class="x" data-act="delbudget" data-id="${c.id}" aria-label="Eliminar ${esc(c.name)}" title="Eliminar rubro">${ic("trash-2")}</button></td>
             </tr>`;
           }).join("")}
-          <tr><td><b>Total</b></td><td class="num"><b>${money(total)}</b></td><td class="num"><b>${money(spent)}</b></td><td class="num ${rest < 0 ? "neg" : "pos"}"><b>${money(rest)}</b></td></tr>
+          <tr class="total-row"><td><b>Total</b></td><td class="num"><b>${money(planned)}</b></td><td class="num"><b>${money(spent)}</b></td><td class="num ${rest < 0 ? "neg" : "pos"}"><b>${money(rest)}</b></td><td></td></tr>
         </tbody>
-      </table></div>`;
+      </table></div>
+      <form class="add-task budget-add" id="budget-form">
+        <input type="text" id="nb-name" placeholder="Nuevo rubro, ej: Fotógrafo" aria-label="Nombre del nuevo rubro">
+        <input type="number" id="nb-plan" min="0" step="1000" placeholder="Monto asignado" aria-label="Monto asignado">
+        <button class="btn ghost" type="submit">${ic("plus")} Agregar rubro</button>
+      </form>
+      ${state.budget ? `<button class="link-btn" data-act="resetbudget">${ic("rotate-ccw")} Volver al reparto sugerido</button>` : ""}`;
   }
+
 
   function guestsView() {
     const g = state.guests;
@@ -950,27 +1000,46 @@ a.btn { text-decoration: none; display: inline-block; }
 
   function fichaView() {
     const s = state.setup, i = state.inv || {};
-    const row = (l, v) => `<div class="kv"><span class="muted">${l}</span><span class="${String(v).trim() ? "" : "muted"}">${String(v).trim() ? esc(v) : "Sin completar"}</span></div>`;
-    const blocks = PHASES.map(p => {
-      const ts = TASKS.filter(t => t.phase === p.id && FIELDS[t.id]);
+    const hid = state.hidden || {};
+    const row = (l, v) => {
+      const has = String(v == null ? "" : v).trim() !== "";
+      return `<div class="row"><span class="k">${l}</span><span class="v${has ? "" : " empty"}">${has ? esc(v) : "Sin completar"}</span></div>`;
+    };
+    const sections = PHASES.map(p => {
+      const ts = TASKS.filter(t => t.phase === p.id && FIELDS[t.id] && !hid[t.id]);
       if (!ts.length) return "";
-      return `<div class="idea"><span class="eyebrow">${p.name}</span>${ts.map(t => `
-        <div class="ficha-task"><h3><b>${esc(t.title)}</b> ${state.done[t.id] ? '<span class="chip ok">Hecho</span>' : ""}</h3>
-        ${FIELDS[t.id].map(f => row(f.l, f.t === "number" && f.bind && fget(t.id, f) ? money(fget(t.id, f)) : fget(t.id, f))).join("")}</div>`).join("")}</div>`;
+      return `<section class="sheet-sec"><h3 class="sheet-title">${p.name}</h3>${ts.map(t => `
+        <div class="sheet-group">
+          <div class="group-head">
+            <span class="group-name">${state.done[t.id] ? ic("circle-check", "done-ic") : ic("circle")} ${esc(t.title)}</span>
+            <span class="group-meta">${filledCount(t.id)} de ${FIELDS[t.id].length}
+              <button class="link-btn" data-act="gotask" data-id="${t.id}">${ic("pencil")} Editar</button></span>
+          </div>
+          ${FIELDS[t.id].map(f => row(f.l, f.t === "number" && f.bind && fget(t.id, f) ? money(fget(t.id, f)) : fget(t.id, f))).join("")}
+        </div>`).join("")}</section>`;
     }).join("");
-    const filled = Object.keys(FIELDS).reduce((a, k) => a + filledCount(k), 0);
-    const total = Object.keys(FIELDS).reduce((a, k) => a + FIELDS[k].length, 0);
+    const keys = Object.keys(FIELDS).filter(k => !hid[k]);
+    const filled = keys.reduce((a, k) => a + filledCount(k), 0);
+    const total = keys.reduce((a, k) => a + FIELDS[k].length, 0);
+    const pct = total ? Math.round(filled / total * 100) : 0;
     return `
-      <p class="section-intro muted">Todo lo que fuiste cargando en cada paso, en un solo lugar. Tenés ${filled} de ${total} datos completos. Para cargar o cambiar algo, abrí la tarea en la Ruta.</p>
-      <div class="ideas">
-        <div class="idea"><span class="eyebrow">El evento</span>
-          ${row("Bebé", babyName() + (s.bebe ? (babyName() ? " · " : "") + BABY[s.bebe].label : ""))}${row("Mamá", s.nombre)}${row("Papá", s.papa || "")}${row("Fecha", eventDate() ? longDate(eventDate()) : "")}${row("Horario", s.hora + (i.fin ? " a " + i.fin : "") + " h")}
-          ${row("Lugar", s.lugar)}${row("Dirección", i.direccion)}${row("Invitados previstos", s.invitados)}${row("Presupuesto", money(s.presupuesto))}
-          ${row("Lista de regalos", i.regalos)}${row("Confirmar a", i.contacto)}
-        </div>
-        ${blocks}
+      <div class="sheet-summary">
+        <p class="muted">Todo lo que fuiste cargando en cada paso, en un solo lugar. Para completar algo tocá <b>Editar</b>.</p>
+        <div class="sheet-progress"><div class="bar"><i style="width:${pct}%"></i></div><span>${filled} de ${total} datos</span></div>
+      </div>
+      <div class="sheet">
+        <section class="sheet-sec"><h3 class="sheet-title">El evento</h3>
+          <div class="sheet-group">
+            ${row("Bebé", babyName() + (s.bebe ? (babyName() ? " · " : "") + BABY[s.bebe].label : ""))}${row("Mamá", s.nombre)}${row("Papá", s.papa || "")}
+            ${row("Fecha", eventDate() ? longDate(eventDate()) : "")}${row("Horario", s.hora + (i.fin ? " a " + i.fin : "") + " h")}
+            ${row("Lugar", s.lugar)}${row("Dirección", i.direccion)}${row("Invitados previstos", s.invitados)}${row("Presupuesto", money(s.presupuesto))}
+            ${row("Lista de regalos", i.regalos)}${row("Confirmar a", i.contacto)}
+          </div>
+        </section>
+        ${sections}
       </div>`;
   }
+
 
   // ---------- Itinerario para invitados ----------
   const toMin = hhmm => { const [h, m] = (hhmm || "0:0").split(":").map(Number); return (h || 0) * 60 + (m || 0); };
@@ -1091,6 +1160,17 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       if (!state.setup.bebe) { picker = true; render(); return; }
       view = "plan"; rememberView(); render(); window.scrollTo(0, 0);
     }
+    else if (act === "gotask") {
+      tab = "ruta"; openSet.add("d-" + id); rememberView(); render();
+      const d = document.getElementById("d-" + id);
+      if (d) { d.scrollIntoView({ block: "center" }); const f = d.querySelector("input"); if (f) f.focus({ preventScroll: true }); }
+    }
+    else if (act === "delbudget") {
+      const c = budgetList().find(x => x.id === id);
+      editBudget(l => { const n = l.findIndex(x => x.id === id); if (n >= 0) l.splice(n, 1); });
+      toast("Rubro eliminado" + (c ? ": " + c.name : ""), "trash-2");
+    }
+    else if (act === "resetbudget") { state.budget = null; persist(); rerenderKeepScroll(); toast("Volviste al reparto sugerido", "rotate-ccw"); }
     else if (act === "hidetask") {
       state.hidden = Object.assign({}, state.hidden, { [id]: true }); delete state.done[id];
       persist(); rerenderKeepScroll(); toast("Tarea quitada. La podés recuperar al final de la fase.", "eye-off");
@@ -1162,6 +1242,8 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       }
     }
     else if (el.dataset.setup) { const k = el.dataset.setup; state.setup[k] = el.type === "number" ? Number(el.value) || 0 : el.value; }
+    else if (el.dataset.bname) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bname); if (c && el.value.trim()) c.name = el.value.trim(); }); return; }
+    else if (el.dataset.bplan) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bplan); if (c) c.plan = el.value === "" ? null : Number(el.value) || 0; }); return; }
     else if (el.dataset.gasto) { state.gastos[el.dataset.gasto] = Number(el.value) || 0; }
     else if (el.dataset.rsvp) { const g = state.guests.find(x => x.id === el.dataset.rsvp); if (g) g.rsvp = el.value; }
     else if (el.dataset.sent) { const g = state.guests.find(x => x.id === el.dataset.sent); if (g) g.sent = el.checked; }
@@ -1180,7 +1262,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     persist(); rerenderKeepScroll();
   });
   app.addEventListener("submit", ev => {
-    if (ev.target.classList.contains("add-task")) {
+    if (ev.target.classList.contains("add-task") && ev.target.dataset.phase) {
       ev.preventDefault();
       const ph = ev.target.dataset.phase;
       const title = document.getElementById("add-" + ph).value.trim();
@@ -1189,6 +1271,15 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       state.custom = (state.custom || []).concat([{ id: "c" + Date.now().toString(36), phase: ph, off, title }]);
       persist(); rerenderKeepScroll(); toast("Tarea agregada", "plus");
       setTimeout(() => { const inp = document.getElementById("add-" + ph); if (inp) inp.focus(); }, 30);
+      return;
+    }
+    if (ev.target.id === "budget-form") {
+      ev.preventDefault();
+      const name = document.getElementById("nb-name").value.trim();
+      if (!name) return;
+      const v = document.getElementById("nb-plan").value;
+      editBudget(l => l.push({ id: "b" + Date.now().toString(36), name, tip: "", pct: 0, plan: v === "" ? 0 : Number(v) || 0 }));
+      toast("Rubro agregado: " + name, "plus");
       return;
     }
     if (ev.target.id !== "guest-form") return;

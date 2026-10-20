@@ -16,8 +16,8 @@ Tu event planner de bolsillo: una guía paso a paso para organizar un evento sin
 - **Personalizado para el bebé**: al entrar elegís nene (celeste pastel), nena (rosa pastel) o sorpresa (menta y amarillo) y cargás su nombre y el de la mamá y el papá. Toda la app cambia de paleta y se titula con su nombre (por ejemplo, "Baby shower de Noah"), igual que las invitaciones y el itinerario.
 
 - **Ruta**: 34 tareas en 8 fases (podés quitar las que no necesites y agregar las tuyas), desde 10 semanas antes hasta los agradecimientos, con fecha límite, consejo de planner, campos para cargar datos (dirección, contactos, costos) y notas.
-- **Ficha**: resumen de todo lo cargado en cada paso.
-- **Presupuesto**: reparto sugerido por rubro y control de lo gastado.
+- **Ficha**: resumen en renglones de todo lo cargado en cada paso, con acceso directo para editar cada tarea.
+- **Presupuesto**: arranca con el reparto sugerido; los rubros se pueden renombrar, cambiar de monto, agregar y eliminar, con control de lo gastado.
 - **Invitados**: lista con estado de confirmación.
 - **Invitaciones**: fechas de envío, canales para hacerlas llegar, mensajes listos para copiar o abrir en WhatsApp y seguimiento de envíos.
 - **Itinerario**: el programa del evento para los invitados, editable y descargable para imprimir en A4.
