@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap">
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
 /* Layout: una columna de app; resumen arriba, pestañas, contenido. Ruta = fases en orden cronológico.
    La paleta cambia según data-baby en <html>: nene (celeste), nena (rosa), sorpresa (menta y amarillo).
@@ -94,6 +95,27 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, 20px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
 .baby-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 13px; }
 .baby-name { color: var(--accent-text); }
+.top-right { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.acct-btn { display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--accent); background: var(--surface); color: var(--accent-text); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 13px; }
+.acct-btn:hover { background: var(--accent-soft); }
+.acct { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 13px; font-weight: 600; max-width: 100%; }
+.acct-mail { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auth-card { max-width: 440px; }
+.google-btn { justify-self: center; width: 100%; max-width: 320px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: #FFFFFF; color: #2A2F3A; border: 1.5px solid #E3E5EA; box-shadow: 0 2px 6px rgba(0,0,0,.06); padding: 11px 18px; }
+.google-btn:hover { border-color: #C9CDD6; }
+.or { display: flex; align-items: center; gap: 10px; color: #8A909C; font-size: 12px; }
+.or::before, .or::after { content: ""; flex: 1; height: 1px; background: #EEE7F2; }
+.auth-form { display: grid; gap: 8px; justify-items: center; }
+.auth-form input { max-width: 320px; font-size: 16px; text-align: center; border-radius: 999px; padding: 11px 14px; background: #fff; color: #2A2F3A; border: 1px solid #E6DDEC; }
+.auth-form .btn { display: inline-flex; align-items: center; gap: 6px; }
+.auth-sent { display: flex; gap: 12px; text-align: left; background: #EAF7EF; color: #1F5A39; border-radius: 16px; padding: 14px; font-size: 14px; }
+.auth-sent svg { flex: none; width: 28px; height: 28px; }
+.have-acct { font-size: 13px; color: #6B7180; }
+.cf-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cf-opt { display: grid; gap: 4px; justify-items: center; text-align: center; border: 1.5px solid #E6DDEC; background: #fff; color: #2A2F3A; border-radius: 18px; padding: 16px 12px; }
+.cf-opt:hover { border-color: #86CCF2; }
+.cf-opt span { font-size: 12px; color: #6B7180; }
+@media (max-width: 520px) { .cf-options { grid-template-columns: 1fr; } .acct-mail { max-width: 120px; } }
 .save-row { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
 .save-btn { display: inline-flex; align-items: center; gap: 6px; }
 .dirty-msg { display: none; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #8A6500; background: #FFF2C4; border-radius: 999px; padding: 4px 12px; }
@@ -709,6 +731,7 @@ a.btn { text-decoration: none; display: inline-block; }
             </button>`).join("")}</div>
         </div>
         ${cur ? '<button class="btn ghost" data-act="closepicker" style="justify-self:center">Dejar como está</button>' : ""}
+        ${!cur && authReady() && !session ? `<p class="have-acct">¿Ya tenés tu planner guardado? <button class="link-btn" data-act="openauth">Ingresá a tu cuenta</button></p>` : ""}
       </div></div>`;
   }
 
@@ -739,6 +762,7 @@ a.btn { text-decoration: none; display: inline-block; }
   let saveTimer = null;
   function persist() {
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+    if (session) { queuePush(); return; }
     if (!docRef) { setSave(saveMode === "local" ? "Guardado en este navegador" : ""); return; }
     clearTimeout(saveTimer);
     setSave("Guardando…");
@@ -749,6 +773,108 @@ a.btn { text-decoration: none; display: inline-block; }
         () => { docRef = null; saveMode = "local"; setSave("Guardado en este navegador"); }
       );
     }, 700);
+  }
+  // ---------- Cuentas (Supabase: Google o link por email) ----------
+  // Clave pública (publishable): es segura en el navegador; cada usuaria solo accede a su fila por las reglas RLS.
+  const SUPABASE_URL = "";
+  const SUPABASE_KEY = "";
+  let sb = null, session = null, authOpen = false, authSent = "", authErr = "", conflict = null, pushTimer = null, pushing = Promise.resolve();
+  const authReady = () => !!sb;
+  function initAuth() {
+    if (!SUPABASE_URL || !SUPABASE_KEY || !window.supabase) return;
+    try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, detectSessionInUrl: true } }); } catch (e) { sb = null; return; }
+    sb.auth.onAuthStateChange((event, s) => {
+      const prev = session && session.user.id;
+      session = s || null;
+      if (session && session.user.id !== prev) { authOpen = false; pullRemote(); }
+      else if (!session && prev) { render(); }
+    });
+  }
+  function hasLocalData() { return !!(state.setup && state.setup.bebe); }
+  async function pullRemote() {
+    setSave("Buscando tus datos…");
+    const { data, error } = await sb.from("plans").select("data, updated_at").eq("user_id", session.user.id).maybeSingle();
+    if (error) { setSave("No pudimos leer tu cuenta"); toast("No pudimos conectar con tu cuenta. Probá de nuevo en un rato.", "cloud-off"); return; }
+    if (!data) {
+      await pushNow();
+      if (hasLocalData()) toast("Listo: tu planner quedó guardado en tu cuenta", "cloud");
+      render(); return;
+    }
+    const remote = Object.assign(freshState(), data.data || {});
+    if (!hasLocalData() || JSON.stringify(remote) === JSON.stringify(state)) { useRemote(remote); toast("¡Hola de nuevo! Cargamos tu planner", "cloud"); return; }
+    conflict = { remote, updated: data.updated_at }; render();
+  }
+  function useRemote(remote) {
+    state = remote;
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+    picker = !state.setup.bebe; view = state.setup.bebe ? "plan" : view;
+    setSave("Guardado en tu cuenta"); render();
+  }
+  function queuePush() {
+    clearTimeout(pushTimer); setSave("Guardando en tu cuenta…");
+    pushTimer = setTimeout(pushNow, 800);
+  }
+  function pushNow() {
+    if (!session) return Promise.resolve();
+    const snapshot = JSON.parse(JSON.stringify(state));
+    pushing = pushing.then(() => sb.from("plans").upsert({ user_id: session.user.id, data: snapshot, updated_at: new Date().toISOString() }))
+      .then(r => setSave(r && r.error ? "No se pudo guardar en tu cuenta" : "Guardado en tu cuenta"), () => setSave("No se pudo guardar en tu cuenta"));
+    return pushing;
+  }
+  async function sendMagicLink(email) {
+    authErr = ""; authSent = "";
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+    if (error) authErr = /rate|seconds/i.test(error.message) ? "Pediste muchos links seguidos. Esperá un minuto y probá de nuevo." : "No pudimos enviar el mail. Revisá la dirección y probá de nuevo.";
+    else authSent = email;
+    render();
+  }
+  async function googleLogin() {
+    const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + location.pathname } });
+    if (error) { authErr = "No pudimos abrir Google. Probá con el link por email."; render(); }
+  }
+  async function logout() {
+    await pushing; await sb.auth.signOut();
+    state = freshState(); try { localStorage.removeItem(LS_KEY); } catch (e) {}
+    session = null; picker = true; view = "plan"; render(); toast("Saliste de tu cuenta. Tus datos quedan guardados en ella.", "log-out");
+  }
+  function accountChip() {
+    if (!authReady()) return "";
+    if (session) {
+      const mail = session.user.email || "Tu cuenta";
+      return `<span class="acct">${ic("cloud")}<span class="acct-mail">${esc(mail)}</span><button class="link-btn" data-act="logout">Salir</button></span>`;
+    }
+    return `<button class="acct-btn" data-act="openauth">${ic("cloud-upload")} Guardar en mi cuenta</button>`;
+  }
+  function authHTML() {
+    return `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+      <div class="modal-card auth-card">
+        <div class="modal-hero" aria-hidden="true"><span>${ic("heart")}</span><span>${ic("cloud")}</span><span>${ic("star")}</span></div>
+        <div><h2 id="auth-title">Guardá tu planner en tu cuenta</h2>
+        <p class="muted">Así no perdés nada y lo ves desde el celu o la compu. ${hasLocalData() ? "Lo que ya cargaste pasa a tu cuenta." : ""}</p></div>
+        ${authSent ? `<div class="auth-sent">${ic("mail-check")}<div><b>¡Listo! Revisá tu mail</b><p>Te mandamos un link a <b>${esc(authSent)}</b>. Abrilo desde este mismo dispositivo para entrar. Si no aparece, mirá en spam o promociones.</p></div></div>` : `
+        <button class="btn google-btn" data-act="google"><svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-2.9-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.2-8.5 2.2-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg> Continuar con Google</button>
+        <div class="or"><span>o con tu email</span></div>
+        <form id="auth-form" class="auth-form">
+          <input type="email" id="auth-email" placeholder="tu@email.com" autocomplete="email" required aria-label="Tu email">
+          <button class="btn" type="submit">${ic("send")} Enviarme el link</button>
+        </form>
+        <p class="onb-help">Te llega un mail con un link para entrar. Sin contraseñas.</p>`}
+        ${authErr ? `<p class="pick-err">${esc(authErr)}</p>` : ""}
+        <button class="btn ghost" data-act="closeauth" style="justify-self:center">${authSent ? "Cerrar" : "Ahora no"}</button>
+      </div></div>`;
+  }
+  function conflictHTML() {
+    const when = conflict.updated ? new Date(conflict.updated).toLocaleDateString("es-AR", { day: "numeric", month: "long" }) : "";
+    const rn = conflict.remote.setup || {};
+    return `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="cf-title">
+      <div class="modal-card">
+        <div><h2 id="cf-title">Encontramos dos planners</h2>
+        <p class="muted">Tu cuenta ya tenía un planner guardado y este navegador tiene otro. ¿Con cuál seguimos?</p></div>
+        <div class="cf-options">
+          <button class="cf-opt" data-act="cfremote">${ic("cloud")}<b>El de mi cuenta</b><span>${rn.bebeNombre ? "Baby shower de " + esc(rn.bebeNombre) : "Baby shower"}${when ? " · guardado el " + when : ""}</span></button>
+          <button class="cf-opt" data-act="cflocal">${ic("monitor-smartphone")}<b>El de este navegador</b><span>${state.setup.bebeNombre ? "Baby shower de " + esc(state.setup.bebeNombre) : "Baby shower"} · reemplaza al de la cuenta</span></button>
+        </div>
+      </div></div>`;
   }
   function setSave(msg) { saveMsg = msg; const el = document.getElementById("save"); if (el) el.textContent = msg; }
   function rememberView() { try { localStorage.setItem("yo-organizo-view", JSON.stringify({ view, tab })); } catch (e) {} }
@@ -1405,10 +1531,10 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     app.innerHTML = `
       <div class="topbar">
         <button class="brand" data-act="home"><span class="icon-bubble brand-ico">${ic("heart-handshake")}</span>Yo Organizo</button>
-        ${view === "plan" ? `<span class="save" id="save">${esc(saveMsg)}</span>` : ""}
+        <span class="top-right">${view === "plan" ? `<span class="save" id="save">${esc(saveMsg)}</span>` : ""}${accountChip()}</span>
       </div>
       ${view === "plan" ? planView() : homeView()}
-      ${picker ? pickerHTML() : ""}`;
+      ${conflict ? conflictHTML() : authOpen ? authHTML() : picker ? pickerHTML() : ""}`;
     applyBaby();
     document.title = view === "plan" && partyName() ? "Baby shower de " + partyName() + " · Yo Organizo" : "Yo Organizo";
     drawIcons();
@@ -1479,6 +1605,12 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       balloons(b.sw);
       toast(welcome(), b.icon);
     }
+    else if (act === "openauth") { authOpen = true; authSent = ""; authErr = ""; render(); setTimeout(() => { const e = document.getElementById("auth-email"); if (e) e.focus(); }, 200); }
+    else if (act === "closeauth") { authOpen = false; authSent = ""; authErr = ""; render(); }
+    else if (act === "google") { googleLogin(); }
+    else if (act === "logout") { logout(); }
+    else if (act === "cfremote") { const r = conflict.remote; conflict = null; useRemote(r); toast("Cargamos el planner de tu cuenta", "cloud"); }
+    else if (act === "cflocal") { conflict = null; pushNow(); render(); toast("Guardamos este planner en tu cuenta", "cloud"); }
     else if (act === "askreset") { confirmReset = true; rerenderKeepScroll(); }
     else if (act === "cancelreset") { confirmReset = false; rerenderKeepScroll(); }
     else if (act === "doreset") {
@@ -1602,6 +1734,14 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       setTimeout(() => { const inp = document.getElementById("add-" + ph); if (inp) inp.focus(); }, 30);
       return;
     }
+    if (ev.target.id === "auth-form") {
+      ev.preventDefault();
+      const em = document.getElementById("auth-email").value.trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { authErr = "Escribí un email válido."; render(); return; }
+      const btn = ev.target.querySelector("button"); if (btn) { btn.disabled = true; btn.textContent = "Enviando…"; }
+      sendMagicLink(em);
+      return;
+    }
     if (ev.target.id === "setup-form") {
       ev.preventDefault();
       const f = ev.target, vals = {};
@@ -1669,7 +1809,12 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
 
   if (saveMode === "local") saveMsg = "";
   document.getElementById("sky-slot").innerHTML = skyHTML();
-  window.addEventListener("keydown", e => { if (e.key === "Escape" && picker && state.setup.bebe) { picker = false; rerenderKeepScroll(); } });
+  window.addEventListener("keydown", e => {
+    if (e.key !== "Escape") return;
+    if (authOpen) { authOpen = false; render(); return; }
+    if (picker && state.setup.bebe) { picker = false; rerenderKeepScroll(); }
+  });
+  initAuth();
   // Primera visita: pedir nombre y nene/nena/sorpresa antes de empezar
   if (!state.setup.bebe) picker = true;
   render();
