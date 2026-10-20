@@ -776,8 +776,8 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   // ---------- Cuentas (Supabase: Google o link por email) ----------
   // Clave pública (publishable): es segura en el navegador; cada usuaria solo accede a su fila por las reglas RLS.
-  const SUPABASE_URL = "";
-  const SUPABASE_KEY = "";
+  const SUPABASE_URL = "https://kxcjvqskrsjefmqfbhpa.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4Y2p2cXNrcnNqZWZtcWZiaHBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MjI2MDEsImV4cCI6MjEwODA5ODYwMX0.4JJpwNF2pwqecmMsM2QgF9qsHJlruwYyy-JRhpzpmyI";
   let sb = null, session = null, authOpen = false, authSent = "", authErr = "", conflict = null, pushTimer = null, pushing = Promise.resolve();
   const authReady = () => !!sb;
   function initAuth() {
