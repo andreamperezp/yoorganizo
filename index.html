@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Yo Organizo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: una columna de app; resumen arriba, pestañas, contenido. Ruta = fases en orden cronológico. */
+:root {
+  --bg: #F5F7F3;
+  --surface: #FFFFFF;
+  --ink: #1D2925;
+  --muted: #62716B;
+  --line: #DCE3DC;
+  --accent: #2E6A5B;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E3EEE9;
+  --blush: #F3D9D0;
+  --blush-ink: #8A3F2C;
+  --warn: #B4531F;
+  --ok: #2E7D4F;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141A18; --surface: #1C2421; --ink: #E7EEEA; --muted: #9AABA4; --line: #2E3A36;
+    --accent: #7CC4AE; --accent-ink: #0F1A16; --accent-soft: #23362F;
+    --blush: #3F2A24; --blush-ink: #F0B9A6; --warn: #F0A06C; --ok: #7FD39F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141A18; --surface: #1C2421; --ink: #E7EEEA; --muted: #9AABA4; --line: #2E3A36;
+  --accent: #7CC4AE; --accent-ink: #0F1A16; --accent-soft: #23362F;
+  --blush: #3F2A24; --blush-ink: #F0B9A6; --warn: #F0A06C; --ok: #7FD39F;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 920px; margin: 0 auto; padding-block: 20px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(28px, 5vw, 40px); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 22px; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 500; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 9px 18px; font-weight: 600; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+input[type=text], input[type=number], input[type=date], input[type=time], select, textarea {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0;
+}
+textarea { resize: vertical; min-height: 64px; }
+label.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 500; }
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; background: none; border: 0; padding: 0; }
+.brand .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 8px 0 0 var(--blush); margin-right: 8px; }
+.save { font-size: 12px; color: var(--muted); }
+
+/* Home */
+.hero { display: grid; gap: 10px; margin-bottom: 28px; max-width: 640px; }
+.hero p { font-size: 17px; color: var(--muted); }
+.templates { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.tpl { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 8px; align-content: start; min-height: 170px; }
+.tpl.open { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tpl.open:hover { background: var(--accent-soft); }
+.tpl.locked { opacity: .62; cursor: not-allowed; }
+.tpl .tag { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; justify-self: start; }
+.tpl.open .tag { background: var(--accent-soft); color: var(--accent); }
+.tpl.locked .tag { background: var(--line); color: var(--muted); }
+.tpl h3 { font-size: 20px; font-weight: 700; }
+.how { margin-top: 36px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+.how div { display: grid; gap: 4px; }
+.how b { font-family: var(--font-display); font-size: 16px; }
+
+/* Planner */
+.plan-head { display: grid; gap: 6px; margin-bottom: 18px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.stat .big { font-family: var(--font-display); font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+.bar.over > i { background: var(--warn); }
+.next { background: var(--blush); color: var(--blush-ink); border-radius: var(--r); padding: 14px 16px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px; }
+.next b { font-family: var(--font-display); font-size: 17px; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
+.tab { background: none; border: 0; padding: 10px 14px; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+.setup { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; margin-bottom: 20px; }
+.setup summary { cursor: pointer; font-weight: 600; }
+.setup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 14px; }
+
+.phase { display: grid; grid-template-columns: 28px 1fr; gap: 0 14px; }
+.rail { display: flex; flex-direction: column; align-items: center; }
+.rail .n { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--bg); }
+.rail .n.full { background: var(--accent); color: var(--accent-ink); }
+.rail .line { flex: 1; width: 2px; background: var(--line); margin: 4px 0; }
+.phase-body { padding-bottom: 26px; min-width: 0; }
+.phase-title { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; padding-top: 2px; }
+.tasks { display: grid; gap: 8px; }
+.task { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.task-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; }
+.task-row input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
+.task.done .t-title { text-decoration: line-through; color: var(--muted); }
+.t-title { font-weight: 500; min-width: 0; }
+.chip { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 99px; white-space: nowrap; background: var(--line); color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip.late { background: var(--warn); color: var(--surface); }
+.chip.soon { background: var(--blush); color: var(--blush-ink); }
+.chip.ok { background: var(--accent-soft); color: var(--ok); }
+.task details { border-top: 1px solid var(--line); padding: 0 12px; }
+.task details summary { cursor: pointer; font-size: 13px; color: var(--accent); font-weight: 600; padding: 8px 0; }
+.task details[open] { padding-bottom: 12px; }
+.tip { font-size: 14px; background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; max-width: 70ch; }
+.tip b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; color: var(--accent); }
+
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+td input[type=number] { max-width: 130px; text-align: right; margin-left: auto; display: block; }
+.cat-tip { font-size: 13px; color: var(--muted); margin-top: 2px; max-width: 46ch; }
+.neg { color: var(--warn); font-weight: 600; }
+.pos { color: var(--ok); }
+
+.guest-add { display: grid; grid-template-columns: 1fr 160px auto; gap: 8px; margin-bottom: 14px; }
+.counts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.empty { border: 1px dashed var(--line); border-radius: var(--r); padding: 28px 16px; text-align: center; color: var(--muted); }
+.guest { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.guest:last-child { border-bottom: 0; }
+.guest select { width: auto; padding: 5px 8px; font-size: 13px; }
+.x { background: none; border: 0; color: var(--muted); font-size: 18px; line-height: 1; padding: 4px 8px; border-radius: 6px; }
+.x:hover { color: var(--warn); }
+
+.sched { display: grid; gap: 0; }
+.slot { display: grid; grid-template-columns: 72px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.slot time { font-family: var(--font-display); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+.slot .who { font-size: 13px; color: var(--accent); font-weight: 600; }
+.slot.pre time { color: var(--muted); }
+
+.ideas { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.idea { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 10px; align-content: start; }
+.idea ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.idea li b { font-weight: 600; }
+.section-intro { margin-bottom: 16px; max-width: 70ch; }
+a.btn { text-decoration: none; display: inline-block; }
+.kv { display: grid; grid-template-columns: minmax(110px, 40%) 1fr; gap: 10px; font-size: 14px; padding: 3px 0; }
+.kv span:last-child { word-break: break-word; min-width: 0; }
+.ficha-task { display: grid; gap: 2px; padding-top: 8px; border-top: 1px solid var(--line); }
+.ficha-task h3 { font-size: 15px; margin-bottom: 4px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.itin-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.itin-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; padding: 10px; align-items: center; }
+.itin-row .itin-desc { grid-column: 1 / -1; }
+.itin-card { background: var(--surface); border: 1.5px solid var(--accent); border-radius: 16px; padding: 28px 22px; text-align: center; }
+.itin-eyebrow { letter-spacing: .2em; text-transform: uppercase; font-size: 12px; color: var(--accent); font-weight: 600; }
+.itin-title { font-size: 28px; margin: 6px 0; }
+.itin-sub { color: var(--muted); margin-bottom: 18px; }
+.itin-list { list-style: none; padding: 0; margin: 0 auto; text-align: left; max-width: 380px; }
+.itin-list li { display: grid; grid-template-columns: 64px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+.itin-list li:last-child { border-bottom: 0; }
+.itin-list time { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.itin-list p { color: var(--muted); font-size: 14px; }
+.itin-foot { margin-top: 18px; }
+@media (max-width: 760px) { .itin-layout { grid-template-columns: 1fr; } }
+.msgs { display: grid; gap: 12px; }
+.msg { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+.msg-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+.msg-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.msg-actions .btn { padding: 7px 14px; font-size: 14px; }
+.msg pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--font-body); font-size: 14px; background: var(--accent-soft); border-radius: 8px; padding: 12px; }
+
+@media (max-width: 560px) {
+  .guest-add { grid-template-columns: 1fr; }
+  .guest { grid-template-columns: 1fr auto auto; }
+  .guest .g-group { display: none; }
+  .task-row { grid-template-columns: auto 1fr; }
+  .task-row .chip { grid-column: 2; justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Contenido del planner ----------
+  const PHASES = [
+    { id: "f1", name: "Definir lo esencial", when: "10 a 8 semanas antes" },
+    { id: "f2", name: "Reservar lo importante", when: "8 a 6 semanas antes" },
+    { id: "f3", name: "Invitar", when: "6 a 4 semanas antes" },
+    { id: "f4", name: "Detalles y compras", when: "4 a 2 semanas antes" },
+    { id: "f5", name: "Confirmar todo", when: "2 a 1 semana antes" },
+    { id: "f6", name: "La previa", when: "1 a 3 días antes" },
+    { id: "f7", name: "El gran día", when: "Día del evento" },
+    { id: "f8", name: "Después", when: "Hasta 2 semanas después" }
+  ];
+  const TASKS = [
+    ["t1","f1",-70,"Confirmar si es sorpresa o no","Si es sorpresa, necesitás un cómplice cercano (pareja o mejor amiga) que maneje la agenda de la mamá. Si no lo es, involucrala en las decisiones grandes: invitados y regalos."],
+    ["t2","f1",-70,"Elegir la fecha","Lo ideal es entre la semana 28 y 34 de embarazo: la panza se luce y ella todavía está cómoda. Alejate de la fecha probable de parto. Sábado o domingo a la tarde es lo que mejor funciona."],
+    ["t3","f1",-66,"Definir el presupuesto total y quién aporta","Antes de enamorarte de cualquier idea, poné un número. Si aportan varias personas, acuerden montos ahora y anotalos acá. Separá un 5% para imprevistos."],
+    ["t4","f1",-63,"Hacer la lista preliminar de invitados","La cantidad de invitados define el lugar, la comida y el presupuesto. Hacé dos listas: imprescindibles y 'si hay lugar'. Contá con que entre 10% y 20% no va a poder ir."],
+    ["t5","f1",-60,"Decidir el formato","Brunch (11 a 14 h), merienda (16 a 19 h) o after (19 a 22 h). ¿Solo mujeres o mixto? Entre 3 y 4 horas es la duración ideal: la embarazada se cansa."],
+    ["t6","f1",-58,"Elegir temática y paleta de colores","Elegí 2 o 3 colores y una idea simple. Invitación, deco y torta se deciden en base a esto, y te ahorra decenas de decisiones."],
+    ["t7","f2",-54,"Reservar el lugar","Casa, jardín, salón, bar o quincho. Preguntá: capacidad, horario para entrar a armar, si incluye mesas y sillas, baños y estacionamiento. Si es al aire libre, definí un plan B por lluvia."],
+    ["t8","f2",-50,"Decidir la comida: casera, mixta o contratada","La mixta suele ser la mejor relación precio-esfuerzo: salado contratado y dulces hechos por la familia. Para una merienda calculá 10 a 12 bocados salados y 4 a 5 dulces por persona."],
+    ["t9","f2",-48,"Pedir presupuestos de torta y mesa dulce","Pedí al menos 3. Las buenas pasteleras se reservan con 4 a 6 semanas. Confirmá sabor, porciones, si incluye el adorno de arriba y cómo es la entrega."],
+    ["t10","f2",-45,"Armar la lista de regalos","Una lista online compartida evita regalos repetidos. Sumá opciones de todos los precios y pedí talles de 3 a 6 meses en adelante: los bebés crecen rápido. La 'lluvia de pañales' siempre sirve."],
+    ["t35","f2",-52,"Mandar 'reservá la fecha' a quienes viajan","Un mensaje corto con la fecha y la ciudad, sin más detalles, para quienes tienen que organizarse con tiempo. El texto está listo en la pestaña Invitaciones."],
+    ["t11","f2",-43,"Definir quién saca las fotos","Si no contratás fotógrafo, designá a alguien que no tenga otra tarea. Pasale las fotos imprescindibles: la mamá con cada grupo, la torta, la deco antes de que llegue la gente."],
+    ["t12","f3",-40,"Diseñar la invitación","Tiene que tener: nombre de la mamá o del bebé, fecha, horario de inicio y fin, dirección, link a la lista de regalos, fecha límite para confirmar y a quién confirmar. Canva tiene plantillas gratis. Completá los datos en la pestaña Invitaciones y te arma el texto."],
+    ["t13","f3",-35,"Enviar las invitaciones","Mandala por WhatsApp de a una persona: imagen + texto con los datos. A las personas mayores, llamalas y después mandales los datos por escrito. Marcá a quién ya se la mandaste en la pestaña Invitaciones."],
+    ["t14","f3",-32,"Elegir 2 o 3 juegos","Más de 3 juegos cansa. Uno para romper el hielo al principio y uno divertido en el medio. Mirá la pestaña Ideas."],
+    ["t15","f3",-30,"Cerrar el menú y las bebidas","Calculá 1 litro de bebida por persona entre aguas, gaseosas y jugos. Sumá opciones sin alcohol ricas (limonada, mocktails) pensando en la embarazada."],
+    ["t16","f4",-26,"Comprar o hacer la decoración","Priorizá 3 puntos: la mesa dulce, un fondo para fotos y la entrada. Con globos de tu paleta y una guirnalda ya transformás el espacio."],
+    ["t17","f4",-24,"Encargar o armar los recuerditos","Algo simple: galletitas decoradas, plantitas, velas o bombones con una etiqueta. Contá uno por familia, no por persona."],
+    ["t18","f4",-21,"Comprar materiales y premios de los juegos","Imprimí los juegos y conseguí lapiceras, cinta para medir la panza y 3 o 4 premios chicos."],
+    ["t19","f4",-18,"Armar la playlist","Música suave al llegar y más movida en los juegos. Con 3 horas alcanza. Descargala por si no hay buena señal."],
+    ["t20","f4",-15,"Asignar ayudantes y roles","Mínimo 4 roles: recepción, cocina y reposición, juegos y fotos, y alguien que anote quién regaló qué. Nadie puede hacer todo, tampoco vos."],
+    ["t21","f5",-10,"Perseguir las confirmaciones pendientes","Escribile uno por uno a quien no respondió. Con el número final, ajustá comida y sillas."],
+    ["t22","f5",-8,"Confirmar proveedores por escrito","Torta, catering, alquileres: hora y dirección de entrega, saldo a pagar y un teléfono de contacto. Anotalo en las notas de esta tarea."],
+    ["t23","f5",-7,"Pasarles el cronograma a los ayudantes","Compartí la pestaña 'Día del evento' con el horario de cada momento y quién se encarga de qué."],
+    ["t24","f5",-5,"Comprar descartables, hielo y bebidas","Platos, vasos, servilletas, bolsas de residuos y papel film. Hielo: 1 kg cada 3 personas si hace calor."],
+    ["t25","f5",-4,"Armar el kit de emergencia","Cinta, tijera, alargue, cargador, encendedor para las velas, curitas, toallitas, analgésicos, bolsas y fibras."],
+    ["t26","f6",-2,"Preparar la comida que se puede adelantar","Rellenos, salsas, budines y galletitas aguantan bien. Para el día dejá solo lo que se arma en el momento."],
+    ["t27","f6",-1,"Pre-armar la decoración y los juegos","Inflá globos (los de látex duran unas 12 horas, los metalizados varios días) y separá todo en cajas rotuladas por sector."],
+    ["t28","f6",-1,"Retirar o confirmar la entrega de la torta","Guardala en frío y lejos del sol. Fijate antes que entre en la heladera."],
+    ["t29","f7",0,"Armar el espacio con 3 horas de margen","Primero mesas y sillas, después la mesa dulce, al final los detalles. Las fotos de la deco se sacan antes de que llegue la gente."],
+    ["t30","f7",0,"Preparar la mesa de regalos y el cuaderno","Un lugar visible para los regalos y una persona que anote quién trajo qué. Esto te salva los agradecimientos."],
+    ["t31","f7",0,"Disfrutar","Delegá. Si algo sale distinto a lo planeado, nadie lo va a notar."],
+    ["t32","f8",2,"Pagar saldos y devolver lo alquilado","Revisá las notas de 'Confirmar proveedores' y cargá lo gastado real en la pestaña Presupuesto."],
+    ["t33","f8",5,"Compartir las fotos con los invitados","Un álbum compartido o una carpeta en la nube con el link en el grupo."],
+    ["t34","f8",14,"Enviar los agradecimientos","Un mensaje personal a cada persona nombrando su regalo. Mejor antes de que nazca el bebé: después no hay tiempo."]
+  ].map(([id, phase, off, title, tip]) => ({ id, phase, off, title, tip }));
+
+  // Datos que se cargan en cada tarea. `bind` comparte el valor con otra parte de la app.
+  const FIELDS = {
+    t3: [{ k: "aportes", l: "Quién aporta y cuánto" }],
+    t5: [{ k: "formato", l: "Formato", ph: "Merienda, brunch o after" }, { k: "publico", l: "Público", ph: "Solo mujeres o mixto" }],
+    t6: [{ k: "tematica", l: "Temática" }, { k: "colores", l: "Colores" }],
+    t7: [{ k: "lugar", l: "Nombre del lugar", bind: "setup.lugar" }, { k: "dir", l: "Dirección", bind: "inv.direccion" }, { k: "ingreso", l: "Hora para entrar a armar", t: "time" }, { k: "contacto", l: "Contacto del lugar" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.lugar" }],
+    t8: [{ k: "prov", l: "Quién hace la comida" }, { k: "contacto", l: "Contacto" }, { k: "entrega", l: "Hora de entrega", t: "time" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.comida" }],
+    t9: [{ k: "prov", l: "Pastelera" }, { k: "contacto", l: "Contacto" }, { k: "sabor", l: "Sabor y porciones" }, { k: "entrega", l: "Día y hora de entrega" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.torta" }],
+    t10: [{ k: "link", l: "Link de la lista", bind: "inv.regalos" }],
+    t11: [{ k: "quien", l: "Quién saca las fotos" }, { k: "contacto", l: "Contacto" }],
+    t12: [{ k: "link", l: "Link del diseño" }, { k: "confirma", l: "Confirmar a", bind: "inv.contacto" }],
+    t14: [{ k: "juegos", l: "Juegos elegidos", ph: "Ej: Medir la panza, Bingo de regalos" }],
+    t15: [{ k: "menu", l: "Menú final" }, { k: "bebidas", l: "Bebidas" }],
+    t16: [{ k: "compras", l: "Dónde comprás la deco" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.deco" }],
+    t17: [{ k: "que", l: "Qué recuerdito" }, { k: "cant", l: "Cantidad", t: "number" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.recuerdos" }],
+    t18: [{ k: "costo", l: "Costo ($)", t: "number", bind: "gastos.juegos" }],
+    t19: [{ k: "link", l: "Link de la playlist" }],
+    t20: [{ k: "recepcion", l: "Recepción" }, { k: "cocina", l: "Cocina y reposición" }, { k: "juegos", l: "Juegos y fotos" }, { k: "regalos", l: "Anota los regalos" }],
+    t29: [{ k: "montaje", l: "Hora de montaje", t: "time" }]
+  };
+
+  const ITIN_DEFAULT = [
+    [0, "Bienvenida", "Te recibimos con algo fresco para tomar."],
+    [30, "A comer", "Mesa salada para picar y charlar."],
+    [75, "Juegos", ""],
+    [120, "Apertura de regalos", ""],
+    [150, "Torta y brindis", "Unas palabras para la futura mamá y la foto de todos."],
+    [180, "Despedida", "Llevate tu recuerdito."]
+  ];
+
+  const BUDGET = [
+    ["comida","Comida y bebida",40,"El rubro más grande. La opción mixta (salado contratado, dulce casero) es la que más rinde."],
+    ["lugar","Lugar y alquileres",15,"Si es en una casa, este monto va a mesas, sillas y manteles alquilados."],
+    ["torta","Torta y mesa dulce",12,"Pedí 3 presupuestos y calculá porciones para el total de invitados."],
+    ["deco","Decoración",12,"Concentrala en la mesa dulce, el fondo para fotos y la entrada."],
+    ["recuerdos","Recuerditos",8,"Uno por familia, no por persona."],
+    ["juegos","Juegos y premios",5,"Impresiones, materiales y 3 o 4 premios chicos."],
+    ["papeleria","Invitación y cartelería",3,"Si la invitación es digital, casi todo va a carteles y etiquetas."],
+    ["extra","Imprevistos",5,"No lo toques hasta la última semana."]
+  ].map(([id, name, pct, tip]) => ({ id, name, pct, tip }));
+
+  const DAY = [
+    [-180,"Montaje","Mesas, mesa dulce, deco y fondo para fotos. Fotos de la deco vacía.","Vos + 2 ayudantes"],
+    [-30,"Últimos detalles","Hielo en las heladeras, música puesta, velas y encendedor a mano.","Cocina"],
+    [0,"Llegada y bienvenida","Bebida de bienvenida y tarjeta de predicciones en la entrada.","Recepción"],
+    [30,"Comida salada","Que circule la comida mientras la gente charla.","Cocina"],
+    [75,"Juegos","Dos juegos, 15 minutos cada uno. Entregá los premios en el momento.","Juegos y fotos"],
+    [120,"Apertura de regalos","La mamá abre, alguien anota quién regaló qué.","Cuaderno de regalos"],
+    [150,"Torta, brindis y palabras","Un mensaje corto para la mamá. Foto grupal.","Fotos"],
+    [180,"Recuerditos y despedida","Entregá los recuerditos en la salida.","Recepción"],
+    [210,"Desarmado","Separá los regalos para cargar en el auto de la mamá.","Todos"]
+  ];
+
+  const IDEAS = [
+    { title: "Temáticas que funcionan", items: [
+      ["Osito","tonos tierra y beige, peluches como deco"],
+      ["Nubes y cielo","celeste, blanco y dorado; globos como nubes"],
+      ["Botánico","verdes y flores secas; recuerditos con plantitas"],
+      ["Safari","animalitos, verde oliva y mostaza"],
+      ["Un dulce que viene en camino","mesa dulce como protagonista, tonos pastel"]
+    ]},
+    { title: "Juegos (elegí 2 o 3)", items: [
+      ["Medir la panza","cada invitado corta un hilo del largo que cree; gana el más cercano"],
+      ["Bingo de regalos","cartones con regalos posibles; se marcan mientras ella abre"],
+      ["¿Quién conoce más a la mamá?","10 preguntas sobre ella y el embarazo"],
+      ["Predicciones","fecha de nacimiento, peso, a quién se parece; se guardan para después"],
+      ["Consejos para los papás","tarjetas que quedan de recuerdo en un frasco o libro"]
+    ]},
+    { title: "Menú de merienda", items: [
+      ["Salado","sándwiches de miga, chipá, tartitas, bruschettas"],
+      ["Dulce","torta, cupcakes, alfajorcitos de maicena, frutas"],
+      ["Bebidas","limonada con menta, jugos, agua saborizada, café y té"],
+      ["Cálculo","10 a 12 bocados salados y 4 a 5 dulces por persona"]
+    ]},
+    { title: "Errores que evita una planner", items: [
+      ["Invitar sin fecha de confirmación","siempre poné hasta cuándo responder"],
+      ["Hacerlo todo vos","sin roles asignados, terminás sin ver el evento"],
+      ["Sobrecargar de juegos","más de 3 aburre a todos"],
+      ["No anotar los regalos","después no sabés a quién agradecerle qué"],
+      ["Olvidar que la mamá se cansa","sillón cómodo, agua cerca y no más de 4 horas"]
+    ]}
+  ];
+
+  const TEMPLATES = [
+    { id: "babyshower", name: "Baby shower", desc: "Ruta completa de 10 semanas: tareas, presupuesto, invitados y cronograma del día.", open: true },
+    { id: "cumple", name: "Cumpleaños", desc: "Infantil o adulto, en casa o en salón.", open: false },
+    { id: "despedida", name: "Despedida de solteros", desc: "Noche, viaje o actividad, con gastos divididos.", open: false },
+    { id: "boda", name: "Bodas", desc: "La ruta larga: 12 meses, proveedores y mesa de invitados.", open: false }
+  ];
+
+  // ---------- Estado ----------
+  function isoPlus(days) {
+    const d = new Date(); d.setDate(d.getDate() + days);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function freshState() {
+    return {
+      setup: { nombre: "", fecha: isoPlus(63), hora: "16:00", invitados: 30, presupuesto: 400000, lugar: "" },
+      inv: { direccion: "", fin: "19:00", regalos: "", contacto: "", vestimenta: "" },
+      done: {}, notes: {}, gastos: {}, guests: [], fields: {}, itin: null, itinMeta: { titulo: "", pie: "" }
+    };
+  }
+  let state = freshState();
+  let view = "home";
+  let tab = "ruta";
+  let saveMode = "local";
+  let saveMsg = "";
+  const LS_KEY = "yo-organizo-babyshower";
+  try { const v = localStorage.getItem("yo-organizo-view"); if (v) { const o = JSON.parse(v); view = o.view || view; tab = o.tab || tab; } } catch (e) {}
+  try { const s = localStorage.getItem(LS_KEY); if (s) state = Object.assign(freshState(), JSON.parse(s)); } catch (e) {}
+
+  let docRef = null;
+  let writing = Promise.resolve();
+  let saveTimer = null;
+  function persist() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+    if (!docRef) { setSave(saveMode === "local" ? "Guardado en este navegador" : ""); return; }
+    clearTimeout(saveTimer);
+    setSave("Guardando…");
+    saveTimer = setTimeout(() => {
+      const snapshot = JSON.parse(JSON.stringify(state));
+      writing = writing.then(() => docRef.set(snapshot)).then(
+        () => setSave("Guardado en tu cuenta"),
+        () => { docRef = null; saveMode = "local"; setSave("Guardado en este navegador"); }
+      );
+    }, 700);
+  }
+  function setSave(msg) { saveMsg = msg; const el = document.getElementById("save"); if (el) el.textContent = msg; }
+  function rememberView() { try { localStorage.setItem("yo-organizo-view", JSON.stringify({ view, tab })); } catch (e) {} }
+
+  async function connect() {
+    if (!window.claude || !window.claude.use) return;
+    try {
+      const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if (!db || !user) return;
+      const id = await user.id();
+      if (!id) return;
+      const ref = db.doc("data/users/" + id + "/babyshower");
+      const snap = await ref.get();
+      docRef = ref; saveMode = "cloud";
+      if (snap.exists) {
+        state = Object.assign(freshState(), snap.data());
+        try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+        setSave("Guardado en tu cuenta");
+        render();
+      } else {
+        persist();
+      }
+    } catch (e) { docRef = null; }
+  }
+
+  // ---------- Utilidades ----------
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const money = n => "$" + Math.round(n || 0).toLocaleString("es-AR");
+  function eventDate() {
+    const p = (state.setup.fecha || "").split("-").map(Number);
+    return p.length === 3 && p[0] ? new Date(p[0], p[1] - 1, p[2]) : null;
+  }
+  function today() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function due(task) { const e = eventDate(); if (!e) return null; const d = new Date(e); d.setDate(d.getDate() + task.off); return d; }
+  const fmtDate = d => d ? d.toLocaleDateString("es-AR", { day: "numeric", month: "short" }).replace(".", "") : "";
+  function daysTo(d) { return Math.round((d - today()) / 86400000); }
+  function status(task) {
+    if (state.done[task.id]) return { cls: "ok", label: "Hecho" };
+    const d = due(task); if (!d) return { cls: "", label: "" };
+    const n = daysTo(d);
+    if (n < 0) return { cls: "late", label: "Atrasada · " + fmtDate(d) };
+    if (n === 0) return { cls: "soon", label: "Hoy" };
+    if (n <= 7) return { cls: "soon", label: "En " + n + (n === 1 ? " día" : " días") };
+    return { cls: "", label: fmtDate(d) };
+  }
+  function timeAt(min) {
+    const [h, m] = (state.setup.hora || "16:00").split(":").map(Number);
+    const t = (h * 60 + m + min + 1440) % 1440;
+    return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
+  }
+
+  // ---------- Vistas ----------
+  function homeView() {
+    return `
+      <div class="hero">
+        <p class="eyebrow">Tu event planner de bolsillo</p>
+        <h1>Organizá tu evento paso a paso, sin contratar a nadie.</h1>
+        <p>Elegí qué vas a festejar. Te damos la ruta que seguiría una planner profesional, con fechas, presupuesto e invitados en un solo lugar.</p>
+      </div>
+      <div class="templates">
+        ${TEMPLATES.map(t => `
+          <button class="tpl ${t.open ? "open" : "locked"}" ${t.open ? `data-act="open" data-id="${t.id}"` : `disabled aria-disabled="true"`}>
+            <span class="tag">${t.open ? "Disponible" : "Próximamente"}</span>
+            <h3>${t.name}</h3>
+            <p class="muted">${t.desc}</p>
+          </button>`).join("")}
+      </div>
+      <div class="how">
+        <div><b>1. Cargá lo básico</b><p class="muted">Fecha, hora, invitados y presupuesto. Todo lo demás se calcula solo.</p></div>
+        <div><b>2. Seguí la ruta</b><p class="muted">Cada tarea tiene su fecha límite y el consejo de una planner.</p></div>
+        <div><b>3. Llegá tranquila al día</b><p class="muted">Cronograma hora por hora para vos y tus ayudantes.</p></div>
+      </div>`;
+  }
+
+  function planView() {
+    const s = state.setup;
+    const e = eventDate();
+    const left = e ? daysTo(e) : null;
+    const doneN = TASKS.filter(t => state.done[t.id]).length;
+    const pct = Math.round(doneN / TASKS.length * 100);
+    const spent = BUDGET.reduce((a, c) => a + (Number(state.gastos[c.id]) || 0), 0);
+    const budgetPct = s.presupuesto ? Math.round(spent / s.presupuesto * 100) : 0;
+    const confirmed = state.guests.filter(g => g.rsvp === "si").length;
+    const next = TASKS.filter(t => !state.done[t.id]).sort((a, b) => a.off - b.off)[0];
+    const leftLabel = left == null ? "Sin fecha" : left > 0 ? left : left === 0 ? "¡Hoy!" : "Ya pasó";
+
+    return `
+      <div class="plan-head">
+        <p class="eyebrow">Baby shower${s.lugar ? " · " + esc(s.lugar) : ""}</p>
+        <h1>${s.nombre ? "El baby shower de " + esc(s.nombre) : "Tu baby shower"}</h1>
+        <p class="muted">${e ? e.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }) + " · " + esc(s.hora) + " h" : "Cargá la fecha para calcular la ruta."}</p>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span class="eyebrow">Faltan</span><span class="big">${leftLabel}</span><span class="muted">${typeof leftLabel === "number" ? (left === 1 ? "día" : "días") : ""}</span></div>
+        <div class="stat"><span class="eyebrow">Avance</span><span class="big">${pct}%</span><div class="bar"><i style="width:${pct}%"></i></div><span class="muted">${doneN} de ${TASKS.length} tareas</span></div>
+        <div class="stat"><span class="eyebrow">Gastado</span><span class="big">${money(spent)}</span><div class="bar ${budgetPct > 100 ? "over" : ""}"><i style="width:${Math.min(budgetPct, 100)}%"></i></div><span class="muted">${budgetPct}% de ${money(s.presupuesto)}</span></div>
+        <div class="stat"><span class="eyebrow">Confirmados</span><span class="big">${confirmed}</span><span class="muted">de ${s.invitados || 0} previstos</span></div>
+      </div>
+
+      ${next ? `<div class="next"><div><span class="eyebrow" style="color:inherit">Tu próximo paso</span><br><b>${esc(next.title)}</b></div><span class="chip ${status(next).cls}">${status(next).label}</span></div>` : `<div class="next"><b>Hiciste todo. Ahora a disfrutar.</b></div>`}
+
+      <details class="setup" id="setup">
+        <summary>Datos del evento</summary>
+        <div class="setup-grid">
+          <label class="field">Nombre de la mamá<input type="text" id="s-nombre" data-setup="nombre" value="${esc(s.nombre)}" placeholder="Ej: Caro"></label>
+          <label class="field">Fecha<input type="date" id="s-fecha" data-setup="fecha" value="${esc(s.fecha)}"></label>
+          <label class="field">Hora de inicio<input type="time" id="s-hora" data-setup="hora" value="${esc(s.hora)}"></label>
+          <label class="field">Invitados previstos<input type="number" id="s-inv" data-setup="invitados" min="0" value="${esc(s.invitados)}"></label>
+          <label class="field">Presupuesto total ($)<input type="number" id="s-pres" data-setup="presupuesto" min="0" step="1000" value="${esc(s.presupuesto)}"></label>
+          <label class="field">Lugar<input type="text" id="s-lugar" data-setup="lugar" value="${esc(s.lugar)}" placeholder="Ej: casa de la abuela"></label>
+        </div>
+      </details>
+
+      <div class="tabs" role="tablist">
+        ${[["ruta","Ruta"],["ficha","Ficha"],["presupuesto","Presupuesto"],["invitados","Invitados"],["invitaciones","Invitaciones"],["itinerario","Itinerario"],["dia","Cronograma interno"],["ideas","Ideas"]].map(([id, l]) =>
+          `<button class="tab" role="tab" aria-selected="${tab === id}" data-act="tab" data-id="${id}">${l}</button>`).join("")}
+      </div>
+      <div id="panel">${panel()}</div>`;
+  }
+
+  function panel() {
+    if (tab === "presupuesto") return budgetView();
+    if (tab === "invitados") return guestsView();
+    if (tab === "dia") return dayView();
+    if (tab === "ideas") return ideasView();
+    if (tab === "invitaciones") return invitesView();
+    if (tab === "ficha") return fichaView();
+    if (tab === "itinerario") return itinView();
+    return routeView();
+  }
+
+  function routeView() {
+    return PHASES.map((p, i) => {
+      const ts = TASKS.filter(t => t.phase === p.id);
+      const d = ts.filter(t => state.done[t.id]).length;
+      return `
+        <section class="phase">
+          <div class="rail"><span class="n ${d === ts.length ? "full" : ""}">${d === ts.length ? "✓" : i + 1}</span>${i < PHASES.length - 1 ? '<span class="line"></span>' : ""}</div>
+          <div class="phase-body">
+            <div class="phase-title"><h2>${p.name}</h2><span class="muted">${p.when} · ${d}/${ts.length}</span></div>
+            <div class="tasks">${ts.map(taskView).join("")}</div>
+          </div>
+        </section>`;
+    }).join("");
+  }
+
+  function taskView(t) {
+    const st = status(t);
+    const note = state.notes[t.id] || "";
+    return `
+      <div class="task ${state.done[t.id] ? "done" : ""}">
+        <div class="task-row">
+          <input type="checkbox" id="c-${t.id}" data-act="check" data-id="${t.id}" ${state.done[t.id] ? "checked" : ""} aria-label="${esc(t.title)}">
+          <label for="c-${t.id}" class="t-title">${esc(t.title)}</label>
+          ${st.label ? `<span class="chip ${st.cls}">${st.label}</span>` : ""}
+        </div>
+        <details id="d-${t.id}">
+          <summary>${FIELDS[t.id] ? "Datos, consejo y notas" : "Consejo y notas"}${filledCount(t.id) ? " · " + filledCount(t.id) + " datos cargados" : note ? " · tiene notas" : ""}</summary>
+          <div class="tip"><b>Lo que haría una planner</b>${esc(t.tip)}</div>
+          ${FIELDS[t.id] ? `<div class="setup-grid" style="margin:0 0 10px">${FIELDS[t.id].map(f => `
+            <label class="field">${f.l}<input type="${f.t || "text"}" id="f-${t.id}-${f.k}" data-field="${t.id}|${f.k}" value="${esc(fget(t.id, f))}" placeholder="${esc(f.ph || "")}"${f.t === "number" ? ' min="0"' : ""}></label>`).join("")}</div>` : ""}
+          <textarea id="n-${t.id}" data-note="${t.id}" placeholder="Tus notas: teléfonos, precios, links…">${esc(note)}</textarea>
+        </details>
+      </div>`;
+  }
+
+  function budgetView() {
+    const total = Number(state.setup.presupuesto) || 0;
+    const inv = Number(state.setup.invitados) || 0;
+    const spent = BUDGET.reduce((a, c) => a + (Number(state.gastos[c.id]) || 0), 0);
+    const rest = total - spent;
+    return `
+      <p class="section-intro muted">Así reparte una planner el presupuesto de un baby shower. Cargá lo que vas gastando y mirá cuánto te queda en cada rubro.${inv ? ` Con ${inv} invitados, tu presupuesto da ${money(total / inv)} por persona.` : ""}</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Rubro</th><th class="num">Sugerido</th><th class="num">Gastado</th><th class="num">Queda</th></tr></thead>
+        <tbody>
+          ${BUDGET.map(c => {
+            const sug = total * c.pct / 100;
+            const g = Number(state.gastos[c.id]) || 0;
+            const diff = sug - g;
+            return `<tr>
+              <td><b>${c.name}</b> <span class="muted">${c.pct}%</span><div class="cat-tip">${c.tip}</div></td>
+              <td class="num">${money(sug)}</td>
+              <td class="num"><input type="number" min="0" step="500" id="g-${c.id}" data-gasto="${c.id}" value="${g || ""}" placeholder="0" aria-label="Gastado en ${c.name}"></td>
+              <td class="num ${diff < 0 ? "neg" : g ? "pos" : ""}">${money(diff)}</td>
+            </tr>`;
+          }).join("")}
+          <tr><td><b>Total</b></td><td class="num"><b>${money(total)}</b></td><td class="num"><b>${money(spent)}</b></td><td class="num ${rest < 0 ? "neg" : "pos"}"><b>${money(rest)}</b></td></tr>
+        </tbody>
+      </table></div>`;
+  }
+
+  function guestsView() {
+    const g = state.guests;
+    const c = k => g.filter(x => x.rsvp === k).length;
+    return `
+      <form class="guest-add" id="guest-form">
+        <input type="text" id="guest-name" placeholder="Nombre del invitado" aria-label="Nombre del invitado" required>
+        <select id="guest-group" aria-label="Grupo"><option>Familia</option><option>Amigas</option><option>Trabajo</option><option>Otros</option></select>
+        <button class="btn" type="submit">Agregar</button>
+      </form>
+      <div class="counts">
+        <span class="chip">${g.length} en la lista</span>
+        <span class="chip ok">${c("si")} confirmados</span>
+        <span class="chip soon">${c("pend")} sin responder</span>
+        <span class="chip">${c("no")} no vienen</span>
+      </div>
+      ${g.length ? `<div class="table-wrap">${g.map(x => `
+        <div class="guest">
+          <span>${esc(x.name)}</span>
+          <span class="chip g-group">${esc(x.group)}</span>
+          <select data-rsvp="${x.id}" id="r-${x.id}" aria-label="Respuesta de ${esc(x.name)}">
+            <option value="pend" ${x.rsvp === "pend" ? "selected" : ""}>Sin responder</option>
+            <option value="si" ${x.rsvp === "si" ? "selected" : ""}>Viene</option>
+            <option value="no" ${x.rsvp === "no" ? "selected" : ""}>No viene</option>
+          </select>
+          <button class="x" data-act="delguest" data-id="${x.id}" aria-label="Quitar a ${esc(x.name)}">×</button>
+        </div>`).join("")}</div>`
+      : `<div class="empty">Tu lista está vacía. Empezá por las imprescindibles: la familia directa y las amigas más cercanas de la mamá.</div>`}`;
+  }
+
+  function dayView() {
+    return `
+      <p class="section-intro muted">Cronograma para vos y tus ayudantes, armado a partir de tu hora de inicio (${esc(state.setup.hora)} h). Pasáselo una semana antes. El que ven los invitados está en la pestaña Itinerario.</p>
+      <div class="sched">${DAY.map(([m, t, d, who]) => `
+        <div class="slot ${m < 0 ? "pre" : ""}">
+          <time>${timeAt(m)}</time>
+          <div><h3>${t}</h3><p class="muted">${d}</p><p class="who">${who}</p></div>
+        </div>`).join("")}</div>`;
+  }
+
+  const CHANNELS = [
+    { name: "WhatsApp, de a una persona", tag: "Recomendado", who: "La mayoría de los invitados",
+      how: "Mandá la imagen de la invitación y abajo el texto con los datos, así se puede copiar la dirección. Escribí un saludo con su nombre antes: se siente personal y responden más.",
+      avoid: "Evitá un grupo con todos: se llena de mensajes y nadie confirma por privado." },
+    { name: "Lista de difusión de WhatsApp", tag: "Rápido", who: "Muchos invitados de una vez",
+      how: "Cada persona lo recibe como mensaje privado y te responde a vos. Solo le llega a quienes te tienen agendada.",
+      avoid: "Revisá después quién no la recibió y mandásela aparte." },
+    { name: "Llamada + mensaje", tag: "Mayores", who: "Abuelas, tías y personas mayores",
+      how: "Llamá para invitar, y después mandá los datos por escrito (o pedile a alguien de la familia que se los pase).",
+      avoid: "No confíes solo en la llamada: la dirección y la hora se olvidan." },
+    { name: "Impresa o en mano", tag: "Especial", who: "Abuelos, madrina, personas muy cercanas",
+      how: "Imprimí pocas (5 a 10) para entregar en persona. Es un recuerdo lindo para quienes lo valoran.",
+      avoid: "No hace falta imprimir para todos: es caro y lo digital alcanza." },
+    { name: "Mail", tag: "Trabajo", who: "Compañeros de trabajo",
+      how: "Mandá la imagen adjunta y el texto en el cuerpo del mail. Pedí que confirmen respondiendo.",
+      avoid: "Mandalo un martes o miércoles a la mañana, no un viernes a la tarde." },
+    { name: "Formulario para confirmar", tag: "Opcional", who: "Más de 40 invitados",
+      how: "Un formulario gratis (Google Forms) con nombre, si viene y con cuántos. Pegás el link en la invitación y las respuestas se ordenan solas.",
+      avoid: "Con pocos invitados, que te confirmen por WhatsApp es más simple." }
+  ];
+
+  function longDate(d) { return d ? d.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }) : "[fecha]"; }
+  function plusDays(n) { const e = eventDate(); if (!e) return null; const d = new Date(e); d.setDate(d.getDate() + n); return d; }
+
+  function messages() {
+    const s = state.setup, i = state.inv || {};
+    const nombre = s.nombre || "[nombre de la mamá]";
+    const fecha = longDate(eventDate());
+    const rsvp = longDate(plusDays(-10));
+    const dir = i.direccion || "[dirección]";
+    const lines = [
+      `¡Te invitamos al baby shower de ${nombre}! 🍼`,
+      ``,
+      `📅 ${fecha}`,
+      `🕓 De ${s.hora || "[hora]"} a ${i.fin || "[hora]"} h`,
+      `📍 ${dir}`
+    ];
+    if (i.regalos) lines.push(`🎁 Lista de regalos: ${i.regalos}`);
+    if (i.vestimenta) lines.push(`👗 ${i.vestimenta}`);
+    lines.push(``, `Confirmá si venís antes del ${rsvp}${i.contacto ? " a " + i.contacto : ""}.`, `¡Te esperamos!`);
+    return [
+      { id: "std", when: "8 semanas antes", title: "Reservá la fecha", to: "Quienes viajan o tienen agenda complicada",
+        text: `¡Hola! Te quería avisar con tiempo: el ${fecha} vamos a festejar el baby shower de ${nombre}${s.lugar ? " en " + s.lugar : ""}. Reservate la fecha 💛 En unas semanas te mando la invitación con todos los detalles.` },
+      { id: "inv", when: "5 semanas antes", title: "Invitación", to: "Todos los invitados",
+        text: lines.join("\n") },
+      { id: "pend", when: "10 días antes", title: "Recordatorio para confirmar", to: "Quienes no respondieron",
+        text: `¡Hola! Te escribo por el baby shower de ${nombre} el ${fecha}. ¿Me confirmás si venís? Así cerramos la comida. ¡Gracias!` },
+      { id: "prev", when: "2 días antes", title: "Recordatorio final", to: "Quienes confirmaron",
+        text: `¡Ya falta poco! Te esperamos el ${fecha} a las ${s.hora || "[hora]"} h en ${dir}. Cualquier cosa, escribime.` },
+      { id: "gracias", when: "Hasta 2 semanas después", title: "Agradecimiento", to: "Cada invitado, de a uno",
+        text: `¡Gracias por acompañarnos en el baby shower de ${nombre} y por [regalo]! Nos encantó compartir ese día con vos 💛` }
+    ];
+  }
+
+  function invitesView() {
+    const i = state.inv || {};
+    const g = state.guests;
+    const sent = g.filter(x => x.sent).length;
+    const steps = [
+      ["Reservá la fecha", plusDays(-56), "Solo a quienes viajan"],
+      ["Mandar invitación", plusDays(-35), "A todos"],
+      ["Fecha límite para confirmar", plusDays(-10), "Va escrita en la invitación"],
+      ["Recordatorio final", plusDays(-2), "A los que confirmaron"]
+    ];
+    return `
+      <p class="section-intro muted">Una planner manda la invitación entre 4 y 6 semanas antes y siempre pone una fecha límite para confirmar. Estas son tus fechas:</p>
+      <div class="stats">${steps.map(([t, d, n]) => `
+        <div class="stat"><span class="eyebrow">${t}</span><span class="big" style="font-size:22px">${d ? fmtDate(d) : "—"}</span><span class="muted">${n}</span></div>`).join("")}</div>
+
+      <h2 style="margin:28px 0 12px">Cómo hacerla llegar</h2>
+      <div class="ideas">${CHANNELS.map(c => `
+        <div class="idea">
+          <span class="chip ok" style="justify-self:start">${c.tag}</span>
+          <h3><b>${c.name}</b></h3>
+          <p class="muted"><b>Para:</b> ${c.who}</p>
+          <p>${c.how}</p>
+          <p class="muted">${c.avoid}</p>
+        </div>`).join("")}</div>
+
+      <h2 style="margin:28px 0 12px">Datos de la invitación</h2>
+      <div class="setup-grid" style="margin:0 0 20px">
+        <label class="field">Dirección<input type="text" id="i-dir" data-inv="direccion" value="${esc(i.direccion)}" placeholder="Calle, número, timbre"></label>
+        <label class="field">Hora de fin<input type="time" id="i-fin" data-inv="fin" value="${esc(i.fin)}"></label>
+        <label class="field">Link a la lista de regalos<input type="text" id="i-reg" data-inv="regalos" value="${esc(i.regalos)}" placeholder="https://…"></label>
+        <label class="field">Confirmar a<input type="text" id="i-con" data-inv="contacto" value="${esc(i.contacto)}" placeholder="Ej: Sofi al 11 2345 6789"></label>
+        <label class="field">Vestimenta (opcional)<input type="text" id="i-ves" data-inv="vestimenta" value="${esc(i.vestimenta)}" placeholder="Ej: algo en tonos verdes"></label>
+      </div>
+
+      <h2 style="margin:28px 0 4px">Mensajes listos para mandar</h2>
+      <p class="muted" style="margin-bottom:12px">Se completan con tus datos. Copialos y pegalos en WhatsApp o en un mail.</p>
+      <div class="msgs">${messages().map(m => `
+        <div class="msg">
+          <div class="msg-head"><div><span class="eyebrow">${m.when} · ${m.to}</span><h3><b>${m.title}</b></h3></div>
+            <div class="msg-actions">
+              <button class="btn ghost" data-act="copy" data-id="${m.id}">Copiar</button>
+              <a class="btn" href="https://wa.me/?text=${encodeURIComponent(m.text)}" target="_blank" rel="noopener">Abrir en WhatsApp</a>
+            </div></div>
+          <pre id="m-${m.id}">${esc(m.text)}</pre>
+        </div>`).join("")}</div>
+
+      <h2 style="margin:28px 0 4px">¿A quién ya se la mandaste?</h2>
+      <p class="muted" style="margin-bottom:12px">${g.length ? `${sent} de ${g.length} invitaciones enviadas.` : ""}</p>
+      ${g.length ? `<div class="table-wrap">${g.map(x => `
+        <div class="guest">
+          <label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="sent-${x.id}" data-sent="${x.id}" ${x.sent ? "checked" : ""} style="width:18px;height:18px;accent-color:var(--accent)"> ${esc(x.name)}</label>
+          <span class="chip ${x.sent ? "ok" : ""} g-group">${x.sent ? "Enviada" : "Falta"}</span>
+          <select data-canal="${x.id}" id="canal-${x.id}" aria-label="Canal para ${esc(x.name)}">
+            ${["WhatsApp","Difusión","Llamada","En mano","Mail"].map(o => `<option ${(x.canal || "WhatsApp") === o ? "selected" : ""}>${o}</option>`).join("")}
+          </select>
+          <span></span>
+        </div>`).join("")}</div>`
+      : `<div class="empty">Primero cargá tus invitados en la pestaña Invitados. Después vas a poder marcar acá a quién ya le mandaste la invitación y por qué medio.</div>`}`;
+  }
+
+  // ---------- Datos por tarea ----------
+  function fget(tid, f) {
+    if (f.bind) { const [a, b] = f.bind.split("."); const v = (state[a] || {})[b]; return a === "gastos" && !v ? "" : v == null ? "" : v; }
+    const v = ((state.fields || {})[tid] || {})[f.k]; return v == null ? "" : v;
+  }
+  function fset(tid, f, raw) {
+    const val = f.t === "number" ? (raw === "" ? "" : Number(raw) || 0) : raw;
+    if (f.bind) { const [a, b] = f.bind.split("."); state[a] = Object.assign({}, state[a], { [b]: a === "gastos" ? Number(val) || 0 : val }); return; }
+    state.fields = state.fields || {};
+    state.fields[tid] = Object.assign({}, state.fields[tid], { [f.k]: val });
+  }
+  function filledCount(tid) { return (FIELDS[tid] || []).filter(f => String(fget(tid, f)).trim() !== "").length; }
+
+  function fichaView() {
+    const s = state.setup, i = state.inv || {};
+    const row = (l, v) => `<div class="kv"><span class="muted">${l}</span><span class="${String(v).trim() ? "" : "muted"}">${String(v).trim() ? esc(v) : "Sin completar"}</span></div>`;
+    const blocks = PHASES.map(p => {
+      const ts = TASKS.filter(t => t.phase === p.id && FIELDS[t.id]);
+      if (!ts.length) return "";
+      return `<div class="idea"><span class="eyebrow">${p.name}</span>${ts.map(t => `
+        <div class="ficha-task"><h3><b>${esc(t.title)}</b> ${state.done[t.id] ? '<span class="chip ok">Hecho</span>' : ""}</h3>
+        ${FIELDS[t.id].map(f => row(f.l, f.t === "number" && f.bind && fget(t.id, f) ? money(fget(t.id, f)) : fget(t.id, f))).join("")}</div>`).join("")}</div>`;
+    }).join("");
+    const filled = Object.keys(FIELDS).reduce((a, k) => a + filledCount(k), 0);
+    const total = Object.keys(FIELDS).reduce((a, k) => a + FIELDS[k].length, 0);
+    return `
+      <p class="section-intro muted">Todo lo que fuiste cargando en cada paso, en un solo lugar. Tenés ${filled} de ${total} datos completos. Para cargar o cambiar algo, abrí la tarea en la Ruta.</p>
+      <div class="ideas">
+        <div class="idea"><span class="eyebrow">El evento</span>
+          ${row("Mamá", s.nombre)}${row("Fecha", eventDate() ? longDate(eventDate()) : "")}${row("Horario", s.hora + (i.fin ? " a " + i.fin : "") + " h")}
+          ${row("Lugar", s.lugar)}${row("Dirección", i.direccion)}${row("Invitados previstos", s.invitados)}${row("Presupuesto", money(s.presupuesto))}
+          ${row("Lista de regalos", i.regalos)}${row("Confirmar a", i.contacto)}
+        </div>
+        ${blocks}
+      </div>`;
+  }
+
+  // ---------- Itinerario para invitados ----------
+  const toMin = hhmm => { const [h, m] = (hhmm || "0:0").split(":").map(Number); return (h || 0) * 60 + (m || 0); };
+  function itinItems() {
+    if (state.itin) return state.itin;
+    const juegos = ((state.fields || {}).t14 || {}).juegos;
+    return ITIN_DEFAULT.map(([min, title, desc], n) => ({
+      id: "i" + n, min, title,
+      desc: desc || (title === "Juegos" ? (juegos ? juegos + "." : "Preparate para jugar y ganar premios.") : (state.setup.nombre || "La futura mamá") + " abre los regalos.")
+    }));
+  }
+  function itinMeta() {
+    const m = state.itinMeta || {};
+    return { titulo: m.titulo || "Baby shower de " + (state.setup.nombre || "[nombre]"), pie: m.pie || "¡Gracias por acompañarnos en este momento tan especial!" };
+  }
+  function editItin(fn) { state.itin = itinItems().map(x => Object.assign({}, x)); fn(state.itin); state.itin.sort((a, b) => a.min - b.min); persist(); rerenderKeepScroll(); }
+
+  function itinPreview() {
+    const m = itinMeta(), i = state.inv || {}, s = state.setup;
+    return `
+      <div class="itin-card">
+        <p class="itin-eyebrow">Itinerario</p>
+        <h2 class="itin-title">${esc(m.titulo)}</h2>
+        <p class="itin-sub">${esc(longDate(eventDate()))}${s.lugar ? " · " + esc(s.lugar) : ""}${i.direccion ? "<br>" + esc(i.direccion) : ""}</p>
+        <ol class="itin-list">${itinItems().map(x => `
+          <li><time>${timeAt(x.min)}</time><div><b>${esc(x.title)}</b>${x.desc ? `<p>${esc(x.desc)}</p>` : ""}</div></li>`).join("")}</ol>
+        <p class="itin-foot">${esc(m.pie)}</p>
+      </div>`;
+  }
+
+  function printableHTML() {
+    const m = itinMeta(), i = state.inv || {}, s = state.setup;
+    return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(m.titulo)}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;600&display=swap">
+<style>@page{size:A4;margin:16mm}*{box-sizing:border-box}body{margin:0;background:#fff;color:#1D2925;font-family:Figtree,"Segoe UI",sans-serif}
+.card{max-width:150mm;margin:12mm auto;text-align:center;border:1.5px solid #2E6A5B;border-radius:6mm;padding:14mm 12mm}
+.e{letter-spacing:.2em;text-transform:uppercase;font-size:11pt;color:#2E6A5B;margin:0}h1{font-family:"Bricolage Grotesque",sans-serif;font-size:30pt;margin:4mm 0;line-height:1.1}
+.sub{color:#62716B;font-size:12pt;margin:0 0 10mm}ol{list-style:none;padding:0;margin:0 auto;text-align:left;max-width:115mm}
+li{display:grid;grid-template-columns:24mm 1fr;gap:5mm;padding:4mm 0;border-bottom:1px dashed #DCE3DC}li:last-child{border-bottom:0}
+time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt;color:#2E6A5B}b{font-size:13pt}p.d{margin:1mm 0 0;color:#62716B;font-size:11pt}
+.f{margin:10mm 0 0;font-size:12pt}.dots{color:#E8B4A8;letter-spacing:.4em}</style></head><body>
+<div class="card"><p class="e">Itinerario</p><h1>${esc(m.titulo)}</h1><p class="sub">${esc(longDate(eventDate()))}${s.lugar ? " · " + esc(s.lugar) : ""}${i.direccion ? "<br>" + esc(i.direccion) : ""}</p>
+<ol>${itinItems().map(x => `<li><time>${timeAt(x.min)}</time><div><b>${esc(x.title)}</b>${x.desc ? `<p class="d">${esc(x.desc)}</p>` : ""}</div></li>`).join("")}</ol>
+<p class="f"><span class="dots">•••</span><br>${esc(m.pie)}</p></div></body></html>`;
+  }
+
+  function itinView() {
+    const m = state.itinMeta || {};
+    const d = itinMeta();
+    return `
+      <p class="section-intro muted">Lo que ven los invitados: qué va a pasar y a qué hora. Se arma con tu hora de inicio y tus datos. Editá lo que quieras, descargalo y abrilo para imprimir (Ctrl+P o Compartir › Imprimir en el celular). También sirve para mandarlo por WhatsApp.</p>
+      <div class="itin-layout">
+        <div class="itin-edit">
+          <div class="setup-grid" style="margin:0 0 14px">
+            <label class="field">Título<input type="text" id="it-tit" data-itinmeta="titulo" value="${esc(m.titulo || "")}" placeholder="${esc(d.titulo)}"></label>
+            <label class="field">Mensaje final<input type="text" id="it-pie" data-itinmeta="pie" value="${esc(m.pie || "")}" placeholder="${esc(d.pie)}"></label>
+          </div>
+          <div class="tasks">${itinItems().map(x => `
+            <div class="task itin-row">
+              <input type="time" id="it-h-${x.id}" data-itin="${x.id}|hora" value="${timeAt(x.min)}" aria-label="Hora">
+              <input type="text" id="it-t-${x.id}" data-itin="${x.id}|title" value="${esc(x.title)}" aria-label="Momento">
+              <button class="x" data-act="delitin" data-id="${x.id}" aria-label="Quitar ${esc(x.title)}">×</button>
+              <input type="text" id="it-d-${x.id}" data-itin="${x.id}|desc" value="${esc(x.desc)}" placeholder="Descripción (opcional)" aria-label="Descripción" class="itin-desc">
+            </div>`).join("")}</div>
+          <div class="msg-actions" style="margin-top:12px">
+            <button class="btn ghost" data-act="additin">Agregar momento</button>
+            <button class="btn ghost" data-act="resetitin">Volver al original</button>
+          </div>
+        </div>
+        <div>
+          ${itinPreview()}
+          <div class="msg-actions" style="margin-top:12px;justify-content:center">
+            <button class="btn" data-act="dlitin">Descargar para imprimir</button>
+          </div>
+          <p class="muted" id="dl-msg" style="text-align:center;margin-top:8px;font-size:13px"></p>
+        </div>
+      </div>`;
+  }
+
+  function ideasView() {
+    return `<div class="ideas">${IDEAS.map(b => `
+      <div class="idea"><h3><b>${b.title}</b></h3><ul>${b.items.map(([k, v]) => `<li><b>${k}:</b> <span class="muted">${v}</span></li>`).join("")}</ul></div>`).join("")}</div>`;
+  }
+
+  // ---------- Render y eventos ----------
+  const app = document.getElementById("app");
+  function render() {
+    app.innerHTML = `
+      <div class="topbar">
+        <button class="brand" data-act="home"><span class="dot"></span>Yo Organizo</button>
+        ${view === "plan" ? `<span class="save" id="save">${esc(saveMsg)}</span>` : ""}
+      </div>
+      ${view === "plan" ? planView() : homeView()}`;
+    openSet.forEach(id => { const d = document.getElementById(id); if (d) d.open = true; });
+  }
+  // Mantiene abiertos los desplegables y el foco del campo al volver a dibujar
+  const openSet = new Set(state.setup.nombre ? [] : ["setup"]);
+  app.addEventListener("toggle", e => { const d = e.target; if (d.tagName === "DETAILS" && d.id) { if (d.open) openSet.add(d.id); else openSet.delete(d.id); } }, true);
+  function rerenderKeepScroll() {
+    setTimeout(() => {
+      const y = window.scrollY;
+      const focusId = document.activeElement && document.activeElement.id;
+      render(); window.scrollTo(0, y);
+      const f = focusId && document.getElementById(focusId); if (f) f.focus({ preventScroll: true });
+    }, 0);
+  }
+
+  app.addEventListener("click", ev => {
+    const el = ev.target.closest("[data-act]");
+    if (!el) return;
+    const act = el.dataset.act, id = el.dataset.id;
+    if (act === "open") { view = "plan"; rememberView(); render(); window.scrollTo(0, 0); }
+    else if (act === "home") { view = "home"; rememberView(); render(); }
+    else if (act === "tab") { tab = id; rememberView(); rerenderKeepScroll(); }
+    else if (act === "copy") {
+      const pre = document.getElementById("m-" + id);
+      const done = () => { el.textContent = "Copiado"; setTimeout(() => { el.textContent = "Copiar"; }, 1600); };
+      const selectIt = () => { const r = document.createRange(); r.selectNodeContents(pre); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); el.textContent = "Seleccionado: copialo"; };
+      try { navigator.clipboard.writeText(pre.textContent).then(done, selectIt); } catch (e) { selectIt(); }
+    }
+    else if (act === "delitin") { editItin(list => { const n = list.findIndex(y => y.id === id); if (n >= 0) list.splice(n, 1); }); }
+    else if (act === "additin") { editItin(list => { const last = list.length ? list[list.length - 1].min : 0; list.push({ id: "i" + Date.now().toString(36), min: last + 30, title: "Nuevo momento", desc: "" }); }); }
+    else if (act === "resetitin") { state.itin = null; persist(); rerenderKeepScroll(); }
+    else if (act === "dlitin") {
+      const msg = document.getElementById("dl-msg");
+      const html = printableHTML();
+      const say = t => { if (msg) msg.textContent = t; };
+      if (!window.claude || !window.claude.use) {
+        // Fuera de claude.ai: descarga directa del navegador
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+        a.download = "itinerario-baby-shower.html";
+        document.body.appendChild(a); a.click(); a.remove();
+        say("Listo. Abrí el archivo y usá Imprimir: entra en una hoja A4.");
+        return;
+      }
+      window.claude.use("downloads").then(dl => {
+        if (!dl) { say("La descarga no está disponible en esta vista. Abrí la app desde claude.ai para descargarlo."); return; }
+        return dl.save({ filename: "itinerario-baby-shower.html", data: new Blob([html], { type: "text/html" }) })
+          .then(() => say("Listo. Abrí el archivo y usá Imprimir: entra en una hoja A4."),
+                e => say(e && e.code === "declined" ? "" : "No se pudo descargar. Probá de nuevo en un momento."));
+      });
+    }
+    else if (act === "delguest") { state.guests = state.guests.filter(g => g.id !== id); persist(); rerenderKeepScroll(); }
+  });
+  app.addEventListener("change", ev => {
+    const el = ev.target;
+    if (el.dataset.act === "check") { state.done[el.dataset.id] = el.checked; if (!el.checked) delete state.done[el.dataset.id]; }
+    else if (el.dataset.setup) { const k = el.dataset.setup; state.setup[k] = el.type === "number" ? Number(el.value) || 0 : el.value; }
+    else if (el.dataset.gasto) { state.gastos[el.dataset.gasto] = Number(el.value) || 0; }
+    else if (el.dataset.rsvp) { const g = state.guests.find(x => x.id === el.dataset.rsvp); if (g) g.rsvp = el.value; }
+    else if (el.dataset.sent) { const g = state.guests.find(x => x.id === el.dataset.sent); if (g) g.sent = el.checked; }
+    else if (el.dataset.canal) { const g = state.guests.find(x => x.id === el.dataset.canal); if (g) g.canal = el.value; }
+    else if (el.dataset.inv) { state.inv = Object.assign({}, state.inv, { [el.dataset.inv]: el.value }); }
+    else if (el.dataset.field) { const [tid, k] = el.dataset.field.split("|"); const f = (FIELDS[tid] || []).find(x => x.k === k); if (f) fset(tid, f, el.value); }
+    else if (el.dataset.itinmeta) { state.itinMeta = Object.assign({}, state.itinMeta, { [el.dataset.itinmeta]: el.value.trim() }); }
+    else if (el.dataset.itin) {
+      const [id, k] = el.dataset.itin.split("|");
+      editItin(list => { const x = list.find(y => y.id === id); if (!x) return; if (k === "hora") x.min = toMin(el.value) - toMin(state.setup.hora); else x[k] = el.value; });
+      return;
+    }
+    else if (el.dataset.note) { state.notes[el.dataset.note] = el.value; persist(); return; }
+    else return;
+    persist(); rerenderKeepScroll();
+  });
+  app.addEventListener("submit", ev => {
+    if (ev.target.id !== "guest-form") return;
+    ev.preventDefault();
+    const name = document.getElementById("guest-name").value.trim();
+    if (!name) return;
+    state.guests.push({ id: "g" + Date.now().toString(36), name, group: document.getElementById("guest-group").value, rsvp: "pend" });
+    persist(); rerenderKeepScroll();
+    const inp = document.getElementById("guest-name"); if (inp) inp.focus();
+  });
+
+  if (saveMode === "local") saveMsg = "";
+  render();
+  connect();
+})();
+</script>
+</body>
+</html>
