@@ -206,9 +206,11 @@ label.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); fon
 .bar.over > i { background: var(--warn); }
 .next { background: var(--blush); color: var(--blush-ink); border-radius: var(--r); padding: 14px 16px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px; }
 .next b { font-family: var(--font-display); font-size: 17px; }
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
-.tab { background: none; border: 0; padding: 10px 14px; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; }
-.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent-text); }
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 22px; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; }
+.tab { justify-content: center; background: transparent; border: 0; padding: 9px 12px; border-radius: 999px; font-weight: 600; color: var(--muted); white-space: nowrap; transition: background .2s, color .2s; }
+.tab:hover { background: var(--accent-soft); color: var(--accent-text); }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: 0 4px 12px -6px var(--accent); }
+@media (max-width: 560px) { .tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; } .tab { justify-content: flex-start; padding: 9px 12px; } }
 
 .setup { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; margin-bottom: 20px; }
 .setup summary { cursor: pointer; font-weight: 600; }
@@ -774,7 +776,7 @@ a.btn { text-decoration: none; display: inline-block; }
       </details>
 
       <div class="tabs" role="tablist">
-        ${[["ruta","Ruta","footprints"],["ficha","Ficha","clipboard-list"],["presupuesto","Presupuesto","piggy-bank"],["invitados","Invitados","users"],["invitaciones","Invitaciones","mail"],["itinerario","Itinerario","scroll-text"],["dia","Cronograma interno","clock"],["ideas","Ideas","lightbulb"]].map(([id, l, i]) =>
+        ${[["ruta","Ruta","footprints"],["ficha","Ficha","clipboard-list"],["presupuesto","Presupuesto","piggy-bank"],["invitados","Invitados","users"],["invitaciones","Invitaciones","mail"],["itinerario","Itinerario","scroll-text"],["dia","Cronograma","clock"],["ideas","Ideas","lightbulb"]].map(([id, l, i]) =>
           `<button class="tab" role="tab" aria-selected="${tab === id}" data-act="tab" data-id="${id}">${ic(i)} ${l}</button>`).join("")}
       </div>
       <div id="panel">${panel()}</div>`;
