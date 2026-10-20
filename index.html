@@ -94,6 +94,12 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, 20px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
 .baby-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 13px; }
 .baby-name { color: var(--accent-text); }
+.save-row { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+.save-btn { display: inline-flex; align-items: center; gap: 6px; }
+.dirty-msg { display: none; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #8A6500; background: #FFF2C4; border-radius: 999px; padding: 4px 12px; }
+#setup-form.dirty .dirty-msg { display: inline-flex; }
+#setup-form.dirty .save-btn { box-shadow: 0 0 0 4px var(--accent-soft), 0 8px 18px -8px var(--accent); }
+#setup-form .pick-err { margin-right: auto; }
 .reset-zone { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .reset-confirm { background: #FDF3EF; border: 1px solid #F3C9B8; border-radius: 16px; padding: 14px; display: grid; gap: 10px; color: #6B2E16; font-size: 14px; }
 .btn.danger-btn { background: #C2562A; color: #fff; display: inline-flex; align-items: center; gap: 6px; }
@@ -854,16 +860,23 @@ a.btn { text-decoration: none; display: inline-block; }
 
       <details class="setup" id="setup">
         <summary>${ic("settings-2")} Datos del evento</summary>
+        <form id="setup-form" novalidate>
         <div class="setup-grid">
-          <label class="field">Nombre del bebé<input type="text" id="s-bebe" data-setup="bebeNombre" value="${esc(s.bebeNombre || "")}" placeholder="${s.bebe === "nena" ? "Ej: Emma" : s.bebe === "nene" ? "Ej: Noah" : "Si ya lo eligieron"}"></label>
-          <label class="field">Nombre de la mamá<input type="text" id="s-nombre" data-setup="nombre" value="${esc(s.nombre)}" placeholder="Ej: Caro"></label>
-          <label class="field">Nombre del papá<input type="text" id="s-papa" data-setup="papa" value="${esc(s.papa || "")}" placeholder="Ej: Juan"></label>
-          <label class="field">Fecha<input type="date" id="s-fecha" data-setup="fecha" value="${esc(s.fecha)}"></label>
-          <label class="field">Hora de inicio<input type="time" id="s-hora" data-setup="hora" value="${esc(s.hora)}"></label>
-          <label class="field">Invitados previstos<input type="number" id="s-inv" data-setup="invitados" min="0" value="${esc(s.invitados)}"></label>
-          <label class="field">Presupuesto total ($)<input type="number" id="s-pres" data-setup="presupuesto" min="0" step="1000" value="${esc(s.presupuesto)}"></label>
-          <label class="field">Lugar<input type="text" id="s-lugar" data-setup="lugar" value="${esc(s.lugar)}" placeholder="Ej: casa de la abuela"></label>
+          <label class="field">Nombre del bebé<input type="text" id="s-bebe" data-sf="bebeNombre" value="${esc(s.bebeNombre || "")}" placeholder="${s.bebe === "nena" ? "Ej: Emma" : s.bebe === "nene" ? "Ej: Noah" : "Si ya lo eligieron"}"></label>
+          <label class="field">Nombre de la mamá<input type="text" id="s-nombre" data-sf="nombre" value="${esc(s.nombre)}" placeholder="Ej: Caro"></label>
+          <label class="field">Nombre del papá<input type="text" id="s-papa" data-sf="papa" value="${esc(s.papa || "")}" placeholder="Ej: Juan"></label>
+          <label class="field">Fecha<input type="date" id="s-fecha" data-sf="fecha" value="${esc(s.fecha)}"></label>
+          <label class="field">Hora de inicio<input type="time" id="s-hora" data-sf="hora" value="${esc(s.hora)}"></label>
+          <label class="field">Invitados previstos<input type="number" id="s-inv" data-sf="invitados" min="0" value="${esc(s.invitados)}"></label>
+          <label class="field">Presupuesto total ($)<input type="number" id="s-pres" data-sf="presupuesto" min="0" step="1000" value="${esc(s.presupuesto)}"></label>
+          <label class="field">Lugar<input type="text" id="s-lugar" data-sf="lugar" value="${esc(s.lugar)}" placeholder="Ej: casa de la abuela"></label>
         </div>
+        <div class="save-row">
+          <span class="dirty-msg">${ic("pencil")} Tenés cambios sin guardar</span>
+          <p class="pick-err" id="setup-err" role="alert" hidden>La fecha, la hora, los invitados y el presupuesto no pueden quedar vacíos.</p>
+          <button class="btn save-btn" type="submit">${ic("check")} Guardar cambios</button>
+        </div>
+        </form>
         <div class="reset-zone">
           ${confirmReset ? `<div class="reset-confirm" role="alert">
               <p><b>¿Seguro que querés empezar de nuevo?</b> Se borra todo lo que cargaste en este navegador: datos, tareas, presupuesto, invitados e invitaciones. No se puede deshacer.</p>
@@ -1572,6 +1585,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
   });
   let qTimer = null;
   app.addEventListener("input", ev => {
+    if (ev.target.dataset && ev.target.dataset.sf) { const f = document.getElementById("setup-form"); if (f) f.classList.add("dirty"); return; }
     if (ev.target.id !== "guest-q") return;
     gFilter.q = ev.target.value; clearTimeout(qTimer);
     qTimer = setTimeout(() => { const pos = ev.target.selectionStart; rerenderKeepScroll(); setTimeout(() => { const q = document.getElementById("guest-q"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }, 20); }, 250);
@@ -1586,6 +1600,20 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       state.custom = (state.custom || []).concat([{ id: "c" + Date.now().toString(36), phase: ph, off, title }]);
       persist(); rerenderKeepScroll(); toast("Tarea agregada", "plus");
       setTimeout(() => { const inp = document.getElementById("add-" + ph); if (inp) inp.focus(); }, 30);
+      return;
+    }
+    if (ev.target.id === "setup-form") {
+      ev.preventDefault();
+      const f = ev.target, vals = {};
+      f.querySelectorAll("[data-sf]").forEach(inp => { vals[inp.dataset.sf] = inp.value.trim(); });
+      const bad = ["fecha", "hora", "invitados", "presupuesto"].map(k => f.querySelector(`[data-sf="${k}"]`))
+        .filter(inp => inp && (!inp.value.trim() || (inp.type === "number" && !(Number(inp.value) > 0))));
+      f.querySelectorAll(".shake").forEach(x => x.classList.remove("shake"));
+      if (bad.length) { bad.forEach(inp => { void inp.offsetWidth; inp.classList.add("shake"); }); bad[0].focus(); const e = document.getElementById("setup-err"); if (e) e.hidden = false; return; }
+      Object.keys(vals).forEach(k => { state.setup[k] = (k === "invitados" || k === "presupuesto") ? Number(vals[k]) || 0 : vals[k]; });
+      openSet.delete("setup");
+      persist(); rerenderKeepScroll();
+      toast("Cambios guardados", "check");
       return;
     }
     if (ev.target.id === "onb-form") {
