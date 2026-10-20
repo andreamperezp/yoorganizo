@@ -94,6 +94,9 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, 20px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
 .baby-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 13px; }
 .baby-name { color: var(--accent-text); }
+.reset-zone { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.reset-confirm { background: #FDF3EF; border: 1px solid #F3C9B8; border-radius: 16px; padding: 14px; display: grid; gap: 10px; color: #6B2E16; font-size: 14px; }
+.btn.danger-btn { background: #C2562A; color: #fff; display: inline-flex; align-items: center; gap: 6px; }
 .onb { background: var(--surface); border: 2px solid var(--accent); border-radius: 28px; padding: 24px 22px; display: grid; gap: 18px; box-shadow: 0 18px 40px -28px var(--accent); animation: pop .4s cubic-bezier(.2,1.3,.4,1); }
 .onb-top { display: grid; gap: 8px; }
 .onb-top h2 { font-size: clamp(22px, 4vw, 28px); }
@@ -671,6 +674,7 @@ a.btn { text-decoration: none; display: inline-block; }
     if (f) f.href = "data:image/svg+xml," + encodeURIComponent(faviconSVG(c[0], c[1]));
   }
   let picker = false;
+  let confirmReset = false;
   function pickerHTML() {
     const cur = state.setup.bebe;
     const first = !cur;
@@ -859,6 +863,13 @@ a.btn { text-decoration: none; display: inline-block; }
           <label class="field">Invitados previstos<input type="number" id="s-inv" data-setup="invitados" min="0" value="${esc(s.invitados)}"></label>
           <label class="field">Presupuesto total ($)<input type="number" id="s-pres" data-setup="presupuesto" min="0" step="1000" value="${esc(s.presupuesto)}"></label>
           <label class="field">Lugar<input type="text" id="s-lugar" data-setup="lugar" value="${esc(s.lugar)}" placeholder="Ej: casa de la abuela"></label>
+        </div>
+        <div class="reset-zone">
+          ${confirmReset ? `<div class="reset-confirm" role="alert">
+              <p><b>¿Seguro que querés empezar de nuevo?</b> Se borra todo lo que cargaste en este navegador: datos, tareas, presupuesto, invitados e invitaciones. No se puede deshacer.</p>
+              <div class="msg-actions"><button class="btn danger-btn" data-act="doreset">${ic("trash-2")} Sí, borrar todo</button><button class="btn ghost" data-act="cancelreset">Cancelar</button></div>
+            </div>`
+          : `<button class="link-btn danger" data-act="askreset">${ic("rotate-ccw")} Empezar de nuevo</button>`}
         </div>
       </details>
 
@@ -1454,6 +1465,14 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       if (!wasPlan) window.scrollTo(0, 0);
       balloons(b.sw);
       toast(welcome(), b.icon);
+    }
+    else if (act === "askreset") { confirmReset = true; rerenderKeepScroll(); }
+    else if (act === "cancelreset") { confirmReset = false; rerenderKeepScroll(); }
+    else if (act === "doreset") {
+      confirmReset = false;
+      state = freshState(); tab = "ruta"; openSet.clear();
+      persist(); picker = true; view = "plan"; rememberView(); render(); window.scrollTo(0, 0);
+      setTimeout(() => { const n = document.getElementById("pick-name"); if (n) n.focus(); }, 300);
     }
     else if (act === "home") { view = "home"; rememberView(); render(); }
     else if (act === "tab") { tab = id; rememberView(); rerenderKeepScroll(); }
