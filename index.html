@@ -676,7 +676,7 @@ a.btn { text-decoration: none; display: inline-block; }
         <div class="stat"><span class="eyebrow">${ic("users")} Confirmados</span><span class="big">${confirmed}</span><span class="muted">de ${s.invitados || 0} previstos</span></div>
       </div>
 
-      ${next ? `<div class="next"><span class="icon-bubble next-ico">${ic("footprints")}</span><div style="flex:1;min-width:0"><span class="eyebrow" style="color:inherit">Tu próximo paso</span><br><b>${esc(next.title)}</b></div><span class="chip ${status(next).cls}">${status(next).label}</span></div>` : `<div class="next"><span class="icon-bubble next-ico">${ic("party-popper")}</span><b>Hiciste todo. Ahora a disfrutar.</b></div>`}
+      ${next ? `<div class="next"><span class="icon-bubble next-ico">${ic("footprints")}</span><div style="flex:1;min-width:0"><span class="eyebrow" style="color:inherit">Tu próximo paso</span><br><b>${esc(next.title)}</b></div></div>` : `<div class="next"><span class="icon-bubble next-ico">${ic("party-popper")}</span><b>Hiciste todo. Ahora a disfrutar.</b></div>`}
 
       <details class="setup" id="setup">
         <summary>${ic("settings-2")} Datos del evento</summary>
@@ -720,7 +720,7 @@ a.btn { text-decoration: none; display: inline-block; }
         <section class="phase">
           <div class="rail"><span class="n ${ts.length && d === ts.length ? "full" : ""}">${ts.length && d === ts.length ? "✓" : i + 1}</span>${i < PHASES.length - 1 ? '<span class="line"></span>' : ""}</div>
           <div class="phase-body">
-            <div class="phase-title"><h2>${p.name}</h2><span class="muted">${p.when} · ${d}/${ts.length}</span></div>
+            <div class="phase-title"><h2>${p.name}</h2><span class="muted">${d} de ${ts.length} ${ts.length === 1 ? "hecha" : "hechas"}</span></div>
             <div class="tasks">${ts.map(taskView).join("")}</div>
             <form class="add-task" data-phase="${p.id}">
               <input type="text" id="add-${p.id}" placeholder="Agregar una tarea a esta fase…" aria-label="Nueva tarea para ${p.name}">
@@ -741,7 +741,6 @@ a.btn { text-decoration: none; display: inline-block; }
         <div class="task-row">
           <input type="checkbox" id="c-${t.id}" data-act="check" data-id="${t.id}" ${state.done[t.id] ? "checked" : ""} aria-label="${esc(t.title)}">
           <label for="c-${t.id}" class="t-title">${esc(t.title)}</label>
-          ${st.label ? `<span class="chip ${st.cls}">${st.label}</span>` : ""}
         </div>
         <details id="d-${t.id}">
           <summary>${t.custom ? "Fecha y notas" : FIELDS[t.id] ? "Datos, consejo y notas" : "Consejo y notas"}${filledCount(t.id) ? " · " + filledCount(t.id) + " datos cargados" : note ? " · tiene notas" : ""}</summary>
