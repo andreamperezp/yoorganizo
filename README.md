@@ -13,9 +13,9 @@ Tu event planner de bolsillo: una guía paso a paso para organizar un evento sin
 
 ## Qué incluye el baby shower
 
-- **Personalizado para el bebé**: al entrar elegís nene (celeste pastel), nena (rosa pastel) o sorpresa (menta y amarillo) y cargás su nombre. Toda la app cambia de paleta y se titula con su nombre (por ejemplo, "Baby shower de Noah"), igual que las invitaciones y el itinerario.
+- **Personalizado para el bebé**: al entrar elegís nene (celeste pastel), nena (rosa pastel) o sorpresa (menta y amarillo) y cargás su nombre y el de la mamá y el papá. Toda la app cambia de paleta y se titula con su nombre (por ejemplo, "Baby shower de Noah"), igual que las invitaciones y el itinerario.
 
-- **Ruta**: 35 tareas en 8 fases, desde 10 semanas antes hasta los agradecimientos, con fecha límite, consejo de planner, campos para cargar datos (dirección, contactos, costos) y notas.
+- **Ruta**: 34 tareas en 8 fases (podés quitar las que no necesites y agregar las tuyas), desde 10 semanas antes hasta los agradecimientos, con fecha límite, consejo de planner, campos para cargar datos (dirección, contactos, costos) y notas.
 - **Ficha**: resumen de todo lo cargado en cada paso.
 - **Presupuesto**: reparto sugerido por rubro y control de lo gastado.
 - **Invitados**: lista con estado de confirmación.

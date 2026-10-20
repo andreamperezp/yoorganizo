@@ -6,14 +6,17 @@
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Yo Organizo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" type="image/svg+xml" href="favicon.svg" id="favicon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap">
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <style>
 /* Layout: una columna de app; resumen arriba, pestañas, contenido. Ruta = fases en orden cronológico.
-   La paleta cambia según data-baby en <html>: nene (celeste), nena (rosa), sorpresa (menta y amarillo). */
+   La paleta cambia según data-baby en <html>: nene (celeste), nena (rosa), sorpresa (menta y amarillo).
+   Diseño siempre claro y pastel, también en equipos con modo oscuro. */
 :root {
+  color-scheme: light;
   --bg: #F6F7F4;
   --surface: #FFFFFF;
   --ink: #2A2F3A;
@@ -32,35 +35,11 @@
   --font-body: "Nunito", "Segoe UI", system-ui, sans-serif;
   --r: 18px;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #141A18; --surface: #1C2421; --ink: #E7EEEA; --muted: #9AABA4; --line: #2E3A36;
-    --accent: #7CC4AE; --accent-ink: #0F1A16; --accent-soft: #23362F; --accent-text: #7CC4AE;
-    --blush: #3F2A24; --blush-ink: #F0B9A6; --warn: #F0A06C; --ok: #7FD39F;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #141A18; --surface: #1C2421; --ink: #E7EEEA; --muted: #9AABA4; --line: #2E3A36;
-  --accent: #7CC4AE; --accent-ink: #0F1A16; --accent-soft: #23362F; --accent-text: #7CC4AE;
-  --blush: #3F2A24; --blush-ink: #F0B9A6; --warn: #F0A06C; --ok: #7FD39F;
-  color-scheme: dark;
-}
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --deco: #34413C; } }
-:root[data-theme="dark"] { --deco: #34413C; }
 
 /* Paletas del bebé */
-:root[data-baby="nene"] { --bg: #F0F8FE; --line: #D9ECF8; --accent: #8ACBF0; --accent-ink: #12395A; --accent-soft: #DDF0FB; --accent-text: #2E86C1; --blush: #FFF4CF; --blush-ink: #7A5A00; --deco: #BFE2F7; --ink: #23364A; --muted: #5F7389; }
+:root[data-baby="nene"] { --bg: #EEF8FE; --line: #D3ECFA; --accent: #86CCF2; --accent-ink: #0F3A5A; --accent-soft: #DCF1FC; --accent-text: #2B8AC6; --blush: #FFF4CF; --blush-ink: #7A5A00; --deco: #BCE3F8; --ink: #22384D; --muted: #5C7389; }
 :root[data-baby="nena"] { --bg: #FFF5F8; --line: #F6E1E8; --accent: #F5AFC6; --accent-ink: #5A1E35; --accent-soft: #FDE7EF; --accent-text: #C2557F; --blush: #FFEADF; --blush-ink: #8A4128; --deco: #F9CCDB; --ink: #3A2830; --muted: #846A74; }
 :root[data-baby="sorpresa"] { --bg: #F3FBF7; --line: #D9EEE4; --accent: #96DCC5; --accent-ink: #134236; --accent-soft: #E0F5EC; --accent-text: #2E8A70; --blush: #FFF2C4; --blush-ink: #7A5A00; --deco: #C2EADA; --ink: #23352F; --muted: #61776F; }
-@media (prefers-color-scheme: dark) {
-  :root[data-baby="nene"]:not([data-theme="light"]) { --bg: #121A24; --surface: #1A2533; --line: #2A3A4E; --ink: #E6EEF8; --muted: #9FB1C8; --accent: #9FD3F5; --accent-text: #9FD3F5; --accent-ink: #0E1A28; --accent-soft: #1F3247; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #2A4560; }
-  :root[data-baby="nena"]:not([data-theme="light"]) { --bg: #1E1418; --surface: #291C22; --line: #42303A; --ink: #F6E8EE; --muted: #C3A5B2; --accent: #F6B3CA; --accent-text: #F6B3CA; --accent-ink: #2A0F1A; --accent-soft: #432532; --blush: #3E2A22; --blush-ink: #F5BFA0; --deco: #5A3346; }
-  :root[data-baby="sorpresa"]:not([data-theme="light"]) { --bg: #121B18; --surface: #1A2622; --line: #2C3D37; --ink: #E5F2EC; --muted: #9DB5AB; --accent: #9FE0C9; --accent-text: #9FE0C9; --accent-ink: #0D1C17; --accent-soft: #1F3A31; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #24473B; }
-}
-:root[data-baby="nene"][data-theme="dark"] { --bg: #121A24; --surface: #1A2533; --line: #2A3A4E; --ink: #E6EEF8; --muted: #9FB1C8; --accent: #9FD3F5; --accent-text: #9FD3F5; --accent-ink: #0E1A28; --accent-soft: #1F3247; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #2A4560; }
-:root[data-baby="nena"][data-theme="dark"] { --bg: #1E1418; --surface: #291C22; --line: #42303A; --ink: #F6E8EE; --muted: #C3A5B2; --accent: #F6B3CA; --accent-text: #F6B3CA; --accent-ink: #2A0F1A; --accent-soft: #432532; --blush: #3E2A22; --blush-ink: #F5BFA0; --deco: #5A3346; }
-:root[data-baby="sorpresa"][data-theme="dark"] { --bg: #121B18; --surface: #1A2622; --line: #2C3D37; --ink: #E5F2EC; --muted: #9DB5AB; --accent: #9FE0C9; --accent-text: #9FE0C9; --accent-ink: #0D1C17; --accent-soft: #1F3A31; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #24473B; }
 body { transition: background-color .6s ease, color .6s ease; }
 
 /* Iconos */
@@ -76,15 +55,21 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .wrap { position: relative; z-index: 1; }
 
 /* Selector nene / nena / sorpresa */
-.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: color-mix(in srgb, var(--ink) 35%, transparent); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); animation: fade .25s ease; }
-.modal-card { background: var(--surface); border-radius: 28px; padding: 28px 22px; max-width: 620px; width: 100%; text-align: center; display: grid; gap: 18px; animation: pop .35s cubic-bezier(.2,1.4,.4,1); max-height: 90vh; overflow: auto; }
+.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(255, 255, 255, .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); animation: fade .25s ease; }
+.modal-card { position: relative; background: linear-gradient(160deg, #FFFFFF 0%, #FFF8FB 45%, #F2F9FF 100%); color: #2A2F3A; border: 1px solid #EEE7F2; box-shadow: 0 30px 60px -30px rgba(120, 110, 170, .45); border-radius: 32px; padding: 34px 24px 26px; max-width: 640px; width: 100%; text-align: center; display: grid; gap: 18px; animation: pop .35s cubic-bezier(.2,1.4,.4,1); max-height: 90vh; overflow: auto; }
+.modal-card .muted, .modal-card .eyebrow { color: #6B7180; }
+.modal-card .pick-name input { background: #FFFFFF; border-color: #E6DDEC; color: #2A2F3A; }
+.modal-card .btn.ghost { color: #6B7180; border-color: #E6DDEC; }
+.modal-hero { display: flex; justify-content: center; gap: 10px; color: #F5AFC6; font-size: 26px; }
+.modal-hero span:nth-child(2) { color: #86CCF2; font-size: 34px; animation: bob 3s ease-in-out infinite; }
+.modal-hero span:nth-child(3) { color: #96DCC5; }
 .modal-card h2 { font-size: 26px; }
 .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .choice { border: 2px solid transparent; border-radius: 22px; padding: 18px 10px; display: grid; gap: 8px; justify-items: center; font-family: var(--font-display); font-weight: 600; font-size: 17px; transition: transform .2s ease, border-color .2s; }
-.choice:hover { transform: translateY(-4px); }
+.choice:hover { transform: translateY(-4px); box-shadow: 0 14px 24px -16px currentColor; }
 .choice .ico { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; background: #FFFFFF; animation: bob 3s ease-in-out infinite; }
 .choice small { font-family: var(--font-body); font-weight: 400; font-size: 13px; opacity: .8; }
-.choice.nene { background: #DDF0FB; color: #2E78AE; }
+.choice.nene { background: #DCF1FC; color: #2B8AC6; }
 .choice.nena { background: #FDE7EF; color: #B04872; }
 .choice.sorpresa { background: #E0F5EC; color: #2A7D66; }
 .choice.sel { border-color: currentColor; }
@@ -109,6 +94,14 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, 20px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
 .baby-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 13px; }
 .baby-name { color: var(--accent-text); }
+.add-task { display: grid; grid-template-columns: 1fr 160px auto; gap: 8px; margin-top: 10px; }
+.add-task input[type=text] { border-style: dashed; background: transparent; }
+.add-task .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; }
+.task-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+.link-btn { background: none; border: 0; padding: 6px 0; color: var(--muted); font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.link-btn:hover { color: var(--accent-text); }
+.link-btn.danger:hover { color: var(--warn); }
+@media (max-width: 560px) { .add-task { grid-template-columns: 1fr 1fr; } .add-task input[type=text] { grid-column: 1 / -1; } }
 .pick-name { text-align: left; max-width: 320px; width: 100%; justify-self: center; }
 .pick-name input { font-size: 16px; text-align: center; border-radius: 999px; padding: 10px 14px; }
 .baby-chip:hover { filter: brightness(.97); }
@@ -304,7 +297,6 @@ a.btn { text-decoration: none; display: inline-block; }
     { id: "f8", name: "Después", when: "Hasta 2 semanas después" }
   ];
   const TASKS = [
-    ["t1","f1",-70,"Decidir si la fiesta es sorpresa para la mamá","Si es sorpresa, necesitás un cómplice cercano (pareja o mejor amiga) que maneje la agenda de la mamá. Si no lo es, involucrala en las decisiones grandes: invitados y regalos."],
     ["t2","f1",-70,"Elegir la fecha","Lo ideal es entre la semana 28 y 34 de embarazo: la panza se luce y ella todavía está cómoda. Alejate de la fecha probable de parto. Sábado o domingo a la tarde es lo que mejor funciona."],
     ["t3","f1",-66,"Definir el presupuesto total y quién aporta","Antes de enamorarte de cualquier idea, poné un número. Si aportan varias personas, acuerden montos ahora y anotalos acá. Separá un 5% para imprevistos."],
     ["t4","f1",-63,"Hacer la lista preliminar de invitados","La cantidad de invitados define el lugar, la comida y el presupuesto. Hacé dos listas: imprescindibles y 'si hay lugar'. Contá con que entre 10% y 20% no va a poder ir."],
@@ -432,11 +424,25 @@ a.btn { text-decoration: none; display: inline-block; }
   ];
 
   const BABY = {
-    nene: { label: "Es nene", name: "Nene", icon: "baby", hint: "Celestes y amarillo patito", sw: ["#8ACBF0", "#BFE2F7", "#FFE7A3"], hello: "¡Bienvenido, bebé!" },
+    nene: { label: "Es nene", name: "Nene", icon: "baby", hint: "Celeste y amarillo patito", sw: ["#86CCF2", "#BCE3F8", "#FFE7A3"], hello: "¡Bienvenido, bebé!" },
     nena: { label: "Es nena", name: "Nena", icon: "baby", hint: "Rosas y durazno", sw: ["#F5AFC6", "#F9CCDB", "#FFD6C2"], hello: "¡Bienvenida, bebé!" },
     sorpresa: { label: "Es sorpresa", name: "Todavía no sabemos", icon: "sparkles", hint: "Menta y amarillo", sw: ["#96DCC5", "#C2EADA", "#FFE7A3"], hello: "¡Que sea sorpresa!" }
   };
+  const PHASE_OFF = { f1: -60, f2: -48, f3: -35, f4: -21, f5: -7, f6: -2, f7: 0, f8: 7 };
+  function allTasks() {
+    const hid = state.hidden || {};
+    const custom = (state.custom || []).map(c => Object.assign({ tip: "", custom: true }, c));
+    const order = id => PHASES.findIndex(p => p.id === id);
+    return TASKS.filter(t => !hid[t.id]).concat(custom).sort((a, b) => order(a.phase) - order(b.phase) || a.off - b.off);
+  }
+  const isoOf = d => d ? d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") : "";
+  function offFromIso(iso, fallback) {
+    const e = eventDate(); const p = (iso || "").split("-").map(Number);
+    if (!e || p.length !== 3 || !p[0]) return fallback;
+    return Math.round((new Date(p[0], p[1] - 1, p[2]) - e) / 86400000);
+  }
   const babyName = () => String(state.setup.bebeNombre || "").trim();
+  const parents = () => [state.setup.nombre, state.setup.papa].map(x => String(x || "").trim()).filter(Boolean).join(" y ");
   const partyName = () => babyName() || String(state.setup.nombre || "").trim();
   function welcome() {
     const n = babyName(), b = state.setup.bebe;
@@ -497,15 +503,26 @@ a.btn { text-decoration: none; display: inline-block; }
     setTimeout(() => t.remove(), 3000);
   }
   function drawIcons() { try { if (window.lucide) window.lucide.createIcons(); } catch (e) {} }
+  const FAV = { nene: ["#86CCF2", "#FFE7A3"], nena: ["#F5AFC6", "#FFD6C2"], sorpresa: ["#96DCC5", "#FFE7A3"], "": ["#B9BBE6", "#F9CCDB"] };
+  function faviconSVG(bg, cheek) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="' + bg + '"/>' +
+      '<circle cx="32" cy="35" r="19" fill="#fff"/><path d="M30 16c-4 0-6 3-4 5 1 1 3 0 3-1" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>' +
+      '<circle cx="25" cy="34" r="2.4" fill="#3A3F4F"/><circle cx="39" cy="34" r="2.4" fill="#3A3F4F"/>' +
+      '<circle cx="21" cy="40" r="3.2" fill="' + cheek + '"/><circle cx="43" cy="40" r="3.2" fill="' + cheek + '"/>' +
+      '<path d="M27.5 42c2.5 2.6 6.5 2.6 9 0" fill="none" stroke="#3A3F4F" stroke-width="2.4" stroke-linecap="round"/></svg>';
+  }
   function applyBaby() {
     const b = view === "plan" ? state.setup.bebe : "";
     if (b) document.documentElement.setAttribute("data-baby", b); else document.documentElement.removeAttribute("data-baby");
+    const f = document.getElementById("favicon"), c = FAV[b || ""] || FAV[""];
+    if (f) f.href = "data:image/svg+xml," + encodeURIComponent(faviconSVG(c[0], c[1]));
   }
   let picker = false;
   function pickerHTML() {
     const cur = state.setup.bebe;
     return `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="pick-title">
       <div class="modal-card">
+        <div class="modal-hero" aria-hidden="true"><span>${ic("heart")}</span><span>${ic("baby")}</span><span>${ic("star")}</span></div>
         <div><p class="eyebrow">Para pintar tu planner</p><h2 id="pick-title">¿Qué esperan?</h2>
         <p class="muted">Elegí y toda la app se viste con colores para tu baby shower. Lo podés cambiar cuando quieras.</p></div>
         <label class="field pick-name">¿Ya tiene nombre? (opcional)
@@ -527,7 +544,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function freshState() {
     return {
-      setup: { nombre: "", bebe: "", bebeNombre: "", fecha: isoPlus(63), hora: "16:00", invitados: 30, presupuesto: 400000, lugar: "" },
+      setup: { nombre: "", papa: "", bebe: "", bebeNombre: "", fecha: isoPlus(63), hora: "16:00", invitados: 30, presupuesto: 400000, lugar: "" },
       inv: { direccion: "", fin: "19:00", regalos: "", contacto: "", vestimenta: "" },
       done: {}, notes: {}, gastos: {}, guests: [], fields: {}, itin: null, itinMeta: { titulo: "", pie: "" }
     };
@@ -634,12 +651,13 @@ a.btn { text-decoration: none; display: inline-block; }
     const s = state.setup;
     const e = eventDate();
     const left = e ? daysTo(e) : null;
-    const doneN = TASKS.filter(t => state.done[t.id]).length;
-    const pct = Math.round(doneN / TASKS.length * 100);
+    const tasks = allTasks();
+    const doneN = tasks.filter(t => state.done[t.id]).length;
+    const pct = tasks.length ? Math.round(doneN / tasks.length * 100) : 0;
     const spent = BUDGET.reduce((a, c) => a + (Number(state.gastos[c.id]) || 0), 0);
     const budgetPct = s.presupuesto ? Math.round(spent / s.presupuesto * 100) : 0;
     const confirmed = state.guests.filter(g => g.rsvp === "si").length;
-    const next = TASKS.filter(t => !state.done[t.id]).sort((a, b) => a.off - b.off)[0];
+    const next = tasks.filter(t => !state.done[t.id]).sort((a, b) => a.off - b.off)[0];
     const leftLabel = left == null ? "Sin fecha" : left > 0 ? left : left === 0 ? "¡Hoy!" : "Ya pasó";
 
     return `
@@ -647,13 +665,13 @@ a.btn { text-decoration: none; display: inline-block; }
         <div class="head-row"><p class="eyebrow">Baby shower${s.lugar ? " · " + esc(s.lugar) : ""}</p>
         ${s.bebe ? `<button class="baby-chip" data-act="changebaby" title="Cambiar colores">${ic(BABY[s.bebe].icon)} ${BABY[s.bebe].label} · cambiar</button>` : `<button class="baby-chip" data-act="changebaby">${ic("palette")} Elegir colores</button>`}</div>
         <h1>${babyName() ? "Baby shower de <span class=\"baby-name\">" + esc(babyName()) + "</span>" : s.nombre ? "El baby shower de " + esc(s.nombre) : "Tu baby shower"}</h1>
-        ${babyName() && s.nombre ? `<p class="muted">Celebramos con ${esc(s.nombre)} la dulce espera</p>` : ""}
+        ${parents() ? `<p class="muted">Celebramos con ${esc(parents())} la dulce espera</p>` : ""}
         <p class="muted">${e ? e.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }) + " · " + esc(s.hora) + " h" : "Cargá la fecha para calcular la ruta."}</p>
       </div>
 
       <div class="stats">
         <div class="stat"><span class="eyebrow">${ic("calendar-heart")} Faltan</span><span class="big">${leftLabel}</span><span class="muted">${typeof leftLabel === "number" ? (left === 1 ? "día" : "días") : ""}</span></div>
-        <div class="stat"><span class="eyebrow">${ic("footprints")} Avance</span><span class="big">${pct}%</span><div class="bar"><i style="width:${pct}%"></i></div><span class="muted">${doneN} de ${TASKS.length} tareas</span></div>
+        <div class="stat"><span class="eyebrow">${ic("footprints")} Avance</span><span class="big">${pct}%</span><div class="bar"><i style="width:${pct}%"></i></div><span class="muted">${doneN} de ${tasks.length} tareas</span></div>
         <div class="stat"><span class="eyebrow">${ic("piggy-bank")} Gastado</span><span class="big">${money(spent)}</span><div class="bar ${budgetPct > 100 ? "over" : ""}"><i style="width:${Math.min(budgetPct, 100)}%"></i></div><span class="muted">${budgetPct}% de ${money(s.presupuesto)}</span></div>
         <div class="stat"><span class="eyebrow">${ic("users")} Confirmados</span><span class="big">${confirmed}</span><span class="muted">de ${s.invitados || 0} previstos</span></div>
       </div>
@@ -665,6 +683,7 @@ a.btn { text-decoration: none; display: inline-block; }
         <div class="setup-grid">
           <label class="field">Nombre del bebé<input type="text" id="s-bebe" data-setup="bebeNombre" value="${esc(s.bebeNombre || "")}" placeholder="${s.bebe === "nena" ? "Ej: Emma" : s.bebe === "nene" ? "Ej: Noah" : "Si ya lo eligieron"}"></label>
           <label class="field">Nombre de la mamá<input type="text" id="s-nombre" data-setup="nombre" value="${esc(s.nombre)}" placeholder="Ej: Caro"></label>
+          <label class="field">Nombre del papá<input type="text" id="s-papa" data-setup="papa" value="${esc(s.papa || "")}" placeholder="Ej: Juan"></label>
           <label class="field">Fecha<input type="date" id="s-fecha" data-setup="fecha" value="${esc(s.fecha)}"></label>
           <label class="field">Hora de inicio<input type="time" id="s-hora" data-setup="hora" value="${esc(s.hora)}"></label>
           <label class="field">Invitados previstos<input type="number" id="s-inv" data-setup="invitados" min="0" value="${esc(s.invitados)}"></label>
@@ -692,15 +711,23 @@ a.btn { text-decoration: none; display: inline-block; }
   }
 
   function routeView() {
+    const tasks = allTasks();
     return PHASES.map((p, i) => {
-      const ts = TASKS.filter(t => t.phase === p.id);
+      const ts = tasks.filter(t => t.phase === p.id);
       const d = ts.filter(t => state.done[t.id]).length;
+      const hiddenN = TASKS.filter(t => t.phase === p.id && (state.hidden || {})[t.id]).length;
       return `
         <section class="phase">
-          <div class="rail"><span class="n ${d === ts.length ? "full" : ""}">${d === ts.length ? "✓" : i + 1}</span>${i < PHASES.length - 1 ? '<span class="line"></span>' : ""}</div>
+          <div class="rail"><span class="n ${ts.length && d === ts.length ? "full" : ""}">${ts.length && d === ts.length ? "✓" : i + 1}</span>${i < PHASES.length - 1 ? '<span class="line"></span>' : ""}</div>
           <div class="phase-body">
             <div class="phase-title"><h2>${p.name}</h2><span class="muted">${p.when} · ${d}/${ts.length}</span></div>
             <div class="tasks">${ts.map(taskView).join("")}</div>
+            <form class="add-task" data-phase="${p.id}">
+              <input type="text" id="add-${p.id}" placeholder="Agregar una tarea a esta fase…" aria-label="Nueva tarea para ${p.name}">
+              <input type="date" id="add-d-${p.id}" aria-label="Fecha límite (opcional)" title="Fecha límite (opcional)">
+              <button class="btn ghost" type="submit">${ic("plus")} Agregar</button>
+            </form>
+            ${hiddenN ? `<button class="link-btn" data-act="restore" data-id="${p.id}">${ic("rotate-ccw")} Recuperar ${hiddenN === 1 ? "1 tarea quitada" : hiddenN + " tareas quitadas"}</button>` : ""}
           </div>
         </section>`;
     }).join("");
@@ -717,11 +744,14 @@ a.btn { text-decoration: none; display: inline-block; }
           ${st.label ? `<span class="chip ${st.cls}">${st.label}</span>` : ""}
         </div>
         <details id="d-${t.id}">
-          <summary>${FIELDS[t.id] ? "Datos, consejo y notas" : "Consejo y notas"}${filledCount(t.id) ? " · " + filledCount(t.id) + " datos cargados" : note ? " · tiene notas" : ""}</summary>
-          <div class="tip"><b>Lo que haría una planner</b>${esc(t.tip)}</div>
+          <summary>${t.custom ? "Fecha y notas" : FIELDS[t.id] ? "Datos, consejo y notas" : "Consejo y notas"}${filledCount(t.id) ? " · " + filledCount(t.id) + " datos cargados" : note ? " · tiene notas" : ""}</summary>
+          ${t.custom ? `<label class="field" style="margin-bottom:10px;max-width:220px">Fecha límite<input type="date" id="cd-${t.id}" data-cdate="${t.id}" value="${isoOf(due(t))}"></label>` : `<div class="tip"><b>Lo que haría una planner</b>${esc(t.tip)}</div>`}
           ${FIELDS[t.id] ? `<div class="setup-grid" style="margin:0 0 10px">${FIELDS[t.id].map(f => `
             <label class="field">${f.l}<input type="${f.t || "text"}" id="f-${t.id}-${f.k}" data-field="${t.id}|${f.k}" value="${esc(fget(t.id, f))}" placeholder="${esc(f.ph || "")}"${f.t === "number" ? ' min="0"' : ""}></label>`).join("")}</div>` : ""}
           <textarea id="n-${t.id}" data-note="${t.id}" placeholder="Tus notas: teléfonos, precios, links…">${esc(note)}</textarea>
+          <div class="task-actions">${t.custom
+            ? `<button class="link-btn danger" data-act="deltask" data-id="${t.id}">${ic("trash-2")} Eliminar tarea</button>`
+            : `<button class="link-btn" data-act="hidetask" data-id="${t.id}">${ic("eye-off")} No la necesito, quitar de mi lista</button>`}</div>
         </details>
       </div>`;
   }
@@ -823,7 +853,7 @@ a.btn { text-decoration: none; display: inline-block; }
     const dir = i.direccion || "[dirección]";
     const lines = [
       `¡Te invitamos al baby shower de ${nombre}! 🍼`,
-      ...(babyName() && s.nombre ? [`Vamos a celebrar con ${s.nombre} la dulce espera.`] : []),
+      ...(parents() ? [`Vamos a celebrar con ${parents()} la dulce espera.`] : []),
       ``,
       `📅 ${fecha}`,
       `🕓 De ${s.hora || "[hora]"} a ${i.fin || "[hora]"} h`,
@@ -935,7 +965,7 @@ a.btn { text-decoration: none; display: inline-block; }
       <p class="section-intro muted">Todo lo que fuiste cargando en cada paso, en un solo lugar. Tenés ${filled} de ${total} datos completos. Para cargar o cambiar algo, abrí la tarea en la Ruta.</p>
       <div class="ideas">
         <div class="idea"><span class="eyebrow">El evento</span>
-          ${row("Bebé", babyName() + (s.bebe ? (babyName() ? " · " : "") + BABY[s.bebe].label : ""))}${row("Mamá", s.nombre)}${row("Fecha", eventDate() ? longDate(eventDate()) : "")}${row("Horario", s.hora + (i.fin ? " a " + i.fin : "") + " h")}
+          ${row("Bebé", babyName() + (s.bebe ? (babyName() ? " · " : "") + BABY[s.bebe].label : ""))}${row("Mamá", s.nombre)}${row("Papá", s.papa || "")}${row("Fecha", eventDate() ? longDate(eventDate()) : "")}${row("Horario", s.hora + (i.fin ? " a " + i.fin : "") + " h")}
           ${row("Lugar", s.lugar)}${row("Dirección", i.direccion)}${row("Invitados previstos", s.invitados)}${row("Presupuesto", money(s.presupuesto))}
           ${row("Lista de regalos", i.regalos)}${row("Confirmar a", i.contacto)}
         </div>
@@ -1062,6 +1092,19 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       if (!state.setup.bebe) { picker = true; render(); return; }
       view = "plan"; rememberView(); render(); window.scrollTo(0, 0);
     }
+    else if (act === "hidetask") {
+      state.hidden = Object.assign({}, state.hidden, { [id]: true }); delete state.done[id];
+      persist(); rerenderKeepScroll(); toast("Tarea quitada. La podés recuperar al final de la fase.", "eye-off");
+    }
+    else if (act === "deltask") {
+      state.custom = (state.custom || []).filter(c => c.id !== id); delete state.done[id]; delete state.notes[id];
+      persist(); rerenderKeepScroll(); toast("Tarea eliminada", "trash-2");
+    }
+    else if (act === "restore") {
+      const h = Object.assign({}, state.hidden);
+      TASKS.filter(t => t.phase === id).forEach(t => { delete h[t.id]; });
+      state.hidden = h; persist(); rerenderKeepScroll(); toast("Tareas recuperadas", "rotate-ccw");
+    }
     else if (act === "changebaby") { picker = true; rerenderKeepScroll(); }
     else if (act === "closepicker") { picker = false; rerenderKeepScroll(); }
     else if (act === "pickbaby") {
@@ -1114,9 +1157,9 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       state.done[el.dataset.id] = el.checked; if (!el.checked) delete state.done[el.dataset.id];
       if (el.checked) {
         const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2);
-        const t = TASKS.find(x => x.id === el.dataset.id);
+        const t = allTasks().find(x => x.id === el.dataset.id);
         const ph = t && PHASES.find(p => p.id === t.phase);
-        if (ph && TASKS.filter(x => x.phase === ph.id).every(x => state.done[x.id])) setTimeout(() => toast("¡Fase completa: " + ph.name + "!", "party-popper"), 350);
+        if (ph && allTasks().filter(x => x.phase === ph.id).every(x => state.done[x.id])) setTimeout(() => toast("¡Fase completa: " + ph.name + "!", "party-popper"), 350);
       }
     }
     else if (el.dataset.setup) { const k = el.dataset.setup; state.setup[k] = el.type === "number" ? Number(el.value) || 0 : el.value; }
@@ -1125,6 +1168,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (el.dataset.sent) { const g = state.guests.find(x => x.id === el.dataset.sent); if (g) g.sent = el.checked; }
     else if (el.dataset.canal) { const g = state.guests.find(x => x.id === el.dataset.canal); if (g) g.canal = el.value; }
     else if (el.dataset.inv) { state.inv = Object.assign({}, state.inv, { [el.dataset.inv]: el.value }); }
+    else if (el.dataset.cdate) { const c = (state.custom || []).find(x => x.id === el.dataset.cdate); if (c) c.off = offFromIso(el.value, c.off); }
     else if (el.dataset.field) { const [tid, k] = el.dataset.field.split("|"); const f = (FIELDS[tid] || []).find(x => x.k === k); if (f) fset(tid, f, el.value); }
     else if (el.dataset.itinmeta) { state.itinMeta = Object.assign({}, state.itinMeta, { [el.dataset.itinmeta]: el.value.trim() }); }
     else if (el.dataset.itin) {
@@ -1137,6 +1181,17 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     persist(); rerenderKeepScroll();
   });
   app.addEventListener("submit", ev => {
+    if (ev.target.classList.contains("add-task")) {
+      ev.preventDefault();
+      const ph = ev.target.dataset.phase;
+      const title = document.getElementById("add-" + ph).value.trim();
+      if (!title) return;
+      const off = offFromIso(document.getElementById("add-d-" + ph).value, PHASE_OFF[ph]);
+      state.custom = (state.custom || []).concat([{ id: "c" + Date.now().toString(36), phase: ph, off, title }]);
+      persist(); rerenderKeepScroll(); toast("Tarea agregada", "plus");
+      setTimeout(() => { const inp = document.getElementById("add-" + ph); if (inp) inp.focus(); }, 30);
+      return;
+    }
     if (ev.target.id !== "guest-form") return;
     ev.preventDefault();
     const name = document.getElementById("guest-name").value.trim();
