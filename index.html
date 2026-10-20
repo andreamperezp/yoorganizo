@@ -22,6 +22,7 @@
   --accent: #6C6FB8;
   --accent-ink: #FFFFFF;
   --accent-soft: #ECECF8;
+  --accent-text: #6C6FB8;
   --blush: #FCE8D6;
   --blush-ink: #8A4E22;
   --warn: #C2562A;
@@ -34,14 +35,14 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #141A18; --surface: #1C2421; --ink: #E7EEEA; --muted: #9AABA4; --line: #2E3A36;
-    --accent: #7CC4AE; --accent-ink: #0F1A16; --accent-soft: #23362F;
+    --accent: #7CC4AE; --accent-ink: #0F1A16; --accent-soft: #23362F; --accent-text: #7CC4AE;
     --blush: #3F2A24; --blush-ink: #F0B9A6; --warn: #F0A06C; --ok: #7FD39F;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #141A18; --surface: #1C2421; --ink: #E7EEEA; --muted: #9AABA4; --line: #2E3A36;
-  --accent: #7CC4AE; --accent-ink: #0F1A16; --accent-soft: #23362F;
+  --accent: #7CC4AE; --accent-ink: #0F1A16; --accent-soft: #23362F; --accent-text: #7CC4AE;
   --blush: #3F2A24; --blush-ink: #F0B9A6; --warn: #F0A06C; --ok: #7FD39F;
   color-scheme: dark;
 }
@@ -49,23 +50,23 @@
 :root[data-theme="dark"] { --deco: #34413C; }
 
 /* Paletas del bebé */
-:root[data-baby="nene"] { --bg: #F2F7FC; --line: #DDE7F2; --accent: #3F7FBF; --accent-soft: #E1EEFA; --blush: #FFF1C9; --blush-ink: #7A5A00; --deco: #A9CCEE; --ink: #24324A; --muted: #637189; }
-:root[data-baby="nena"] { --bg: #FDF4F6; --line: #F2E0E6; --accent: #C4537A; --accent-soft: #FBE4EC; --blush: #FBE6D8; --blush-ink: #8A4128; --deco: #F4B8CB; --ink: #3A2830; --muted: #846A74; }
-:root[data-baby="sorpresa"] { --bg: #F4FAF6; --line: #DDEDE3; --accent: #2F8F76; --accent-soft: #DEF2EA; --blush: #FFF0C2; --blush-ink: #7A5A00; --deco: #A8DCC8; --ink: #23352F; --muted: #61776F; }
+:root[data-baby="nene"] { --bg: #F0F8FE; --line: #D9ECF8; --accent: #8ACBF0; --accent-ink: #12395A; --accent-soft: #DDF0FB; --accent-text: #2E86C1; --blush: #FFF4CF; --blush-ink: #7A5A00; --deco: #BFE2F7; --ink: #23364A; --muted: #5F7389; }
+:root[data-baby="nena"] { --bg: #FFF5F8; --line: #F6E1E8; --accent: #F5AFC6; --accent-ink: #5A1E35; --accent-soft: #FDE7EF; --accent-text: #C2557F; --blush: #FFEADF; --blush-ink: #8A4128; --deco: #F9CCDB; --ink: #3A2830; --muted: #846A74; }
+:root[data-baby="sorpresa"] { --bg: #F3FBF7; --line: #D9EEE4; --accent: #96DCC5; --accent-ink: #134236; --accent-soft: #E0F5EC; --accent-text: #2E8A70; --blush: #FFF2C4; --blush-ink: #7A5A00; --deco: #C2EADA; --ink: #23352F; --muted: #61776F; }
 @media (prefers-color-scheme: dark) {
-  :root[data-baby="nene"]:not([data-theme="light"]) { --bg: #121A24; --surface: #1A2533; --line: #2A3A4E; --ink: #E6EEF8; --muted: #9FB1C8; --accent: #8EC0F0; --accent-ink: #0E1A28; --accent-soft: #1F3247; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #2A4560; }
-  :root[data-baby="nena"]:not([data-theme="light"]) { --bg: #1E1418; --surface: #291C22; --line: #42303A; --ink: #F6E8EE; --muted: #C3A5B2; --accent: #F29BBC; --accent-ink: #2A0F1A; --accent-soft: #432532; --blush: #3E2A22; --blush-ink: #F5BFA0; --deco: #5A3346; }
-  :root[data-baby="sorpresa"]:not([data-theme="light"]) { --bg: #121B18; --surface: #1A2622; --line: #2C3D37; --ink: #E5F2EC; --muted: #9DB5AB; --accent: #7FD3B8; --accent-ink: #0D1C17; --accent-soft: #1F3A31; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #24473B; }
+  :root[data-baby="nene"]:not([data-theme="light"]) { --bg: #121A24; --surface: #1A2533; --line: #2A3A4E; --ink: #E6EEF8; --muted: #9FB1C8; --accent: #9FD3F5; --accent-text: #9FD3F5; --accent-ink: #0E1A28; --accent-soft: #1F3247; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #2A4560; }
+  :root[data-baby="nena"]:not([data-theme="light"]) { --bg: #1E1418; --surface: #291C22; --line: #42303A; --ink: #F6E8EE; --muted: #C3A5B2; --accent: #F6B3CA; --accent-text: #F6B3CA; --accent-ink: #2A0F1A; --accent-soft: #432532; --blush: #3E2A22; --blush-ink: #F5BFA0; --deco: #5A3346; }
+  :root[data-baby="sorpresa"]:not([data-theme="light"]) { --bg: #121B18; --surface: #1A2622; --line: #2C3D37; --ink: #E5F2EC; --muted: #9DB5AB; --accent: #9FE0C9; --accent-text: #9FE0C9; --accent-ink: #0D1C17; --accent-soft: #1F3A31; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #24473B; }
 }
-:root[data-baby="nene"][data-theme="dark"] { --bg: #121A24; --surface: #1A2533; --line: #2A3A4E; --ink: #E6EEF8; --muted: #9FB1C8; --accent: #8EC0F0; --accent-ink: #0E1A28; --accent-soft: #1F3247; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #2A4560; }
-:root[data-baby="nena"][data-theme="dark"] { --bg: #1E1418; --surface: #291C22; --line: #42303A; --ink: #F6E8EE; --muted: #C3A5B2; --accent: #F29BBC; --accent-ink: #2A0F1A; --accent-soft: #432532; --blush: #3E2A22; --blush-ink: #F5BFA0; --deco: #5A3346; }
-:root[data-baby="sorpresa"][data-theme="dark"] { --bg: #121B18; --surface: #1A2622; --line: #2C3D37; --ink: #E5F2EC; --muted: #9DB5AB; --accent: #7FD3B8; --accent-ink: #0D1C17; --accent-soft: #1F3A31; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #24473B; }
+:root[data-baby="nene"][data-theme="dark"] { --bg: #121A24; --surface: #1A2533; --line: #2A3A4E; --ink: #E6EEF8; --muted: #9FB1C8; --accent: #9FD3F5; --accent-text: #9FD3F5; --accent-ink: #0E1A28; --accent-soft: #1F3247; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #2A4560; }
+:root[data-baby="nena"][data-theme="dark"] { --bg: #1E1418; --surface: #291C22; --line: #42303A; --ink: #F6E8EE; --muted: #C3A5B2; --accent: #F6B3CA; --accent-text: #F6B3CA; --accent-ink: #2A0F1A; --accent-soft: #432532; --blush: #3E2A22; --blush-ink: #F5BFA0; --deco: #5A3346; }
+:root[data-baby="sorpresa"][data-theme="dark"] { --bg: #121B18; --surface: #1A2622; --line: #2C3D37; --ink: #E5F2EC; --muted: #9DB5AB; --accent: #9FE0C9; --accent-text: #9FE0C9; --accent-ink: #0D1C17; --accent-soft: #1F3A31; --blush: #3A3420; --blush-ink: #F5D77A; --deco: #24473B; }
 body { transition: background-color .6s ease, color .6s ease; }
 
 /* Iconos */
 .ic { width: 1.15em; height: 1.15em; stroke-width: 1.9; vertical-align: -0.2em; flex: none; }
 svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; }
-.icon-bubble { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 20px; }
+.icon-bubble { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); font-size: 20px; }
 
 /* Fondo decorativo que flota */
 .sky { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; color: var(--deco); }
@@ -83,9 +84,9 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .choice:hover { transform: translateY(-4px); }
 .choice .ico { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; background: #FFFFFF; animation: bob 3s ease-in-out infinite; }
 .choice small { font-family: var(--font-body); font-weight: 400; font-size: 13px; opacity: .8; }
-.choice.nene { background: #E1EEFA; color: #2C5F94; }
-.choice.nena { background: #FBE4EC; color: #A23A62; }
-.choice.sorpresa { background: #DEF2EA; color: #23735E; }
+.choice.nene { background: #DDF0FB; color: #2E78AE; }
+.choice.nena { background: #FDE7EF; color: #B04872; }
+.choice.sorpresa { background: #E0F5EC; color: #2A7D66; }
 .choice.sel { border-color: currentColor; }
 .choice .ico { color: inherit; }
 .choice:nth-child(2) .ico { animation-delay: .4s; }
@@ -101,12 +102,15 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .float-up { position: fixed; bottom: -80px; z-index: 60; pointer-events: none; animation: rise 2.6s cubic-bezier(.3,.6,.4,1) forwards; }
 .float-up svg { width: 100%; height: 100%; }
 @keyframes rise { to { transform: translate(var(--dx, 0), -115vh) rotate(var(--rot, 0deg)); opacity: .2; } }
-.spark { position: fixed; z-index: 60; pointer-events: none; width: 14px; height: 14px; color: var(--accent); animation: burst .8s ease-out forwards; }
+.spark { position: fixed; z-index: 60; pointer-events: none; width: 14px; height: 14px; color: var(--accent-text); animation: burst .8s ease-out forwards; }
 .spark svg { width: 100%; height: 100%; display: block; }
 @keyframes burst { to { transform: translate(var(--x), var(--y)) scale(.4); opacity: 0; } }
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 70; background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-weight: 600; display: flex; gap: 8px; align-items: center; animation: toast 2.8s ease forwards; max-width: calc(100% - 32px); }
 @keyframes toast { 0% { opacity: 0; transform: translate(-50%, 20px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, 10px); } }
-.baby-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent); border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 13px; }
+.baby-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border: 0; border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 13px; }
+.baby-name { color: var(--accent-text); }
+.pick-name { text-align: left; max-width: 320px; width: 100%; justify-self: center; }
+.pick-name input { font-size: 16px; text-align: center; border-radius: 999px; padding: 10px 14px; }
 .baby-chip:hover { filter: brightness(.97); }
 @media (prefers-reduced-motion: reduce) {
   .sky span, .choice .ico, .float-up, .spark, .modal, .modal-card { animation: none !important; }
@@ -124,9 +128,9 @@ p { margin: 0; }
 .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 .btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 9px 18px; font-weight: 600; }
-.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+.btn.ghost { background: transparent; color: var(--accent-text); border: 1px solid var(--line); }
 input[type=text], input[type=number], input[type=date], input[type=time], select, textarea {
   background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0;
 }
@@ -142,11 +146,11 @@ label.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); fon
 .hero p { font-size: 17px; color: var(--muted); }
 .templates { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
 .tpl { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 8px; align-content: start; min-height: 170px; }
-.tpl.open { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tpl.open { border-color: var(--accent-text); box-shadow: 0 0 0 1px var(--accent); }
 .tpl.open:hover { background: var(--accent-soft); }
 .tpl.locked { opacity: .62; cursor: not-allowed; }
 .tpl .tag { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; justify-self: start; }
-.tpl.open .tag { background: var(--accent-soft); color: var(--accent); }
+.tpl.open .tag { background: var(--accent-soft); color: var(--accent-text); }
 .tpl.locked .tag { background: var(--line); color: var(--muted); }
 .tpl h3 { font-size: 20px; font-weight: 700; }
 .how { margin-top: 36px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
@@ -164,7 +168,7 @@ label.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); fon
 .next-ico { background: var(--surface); color: var(--blush-ink); flex: none; }
 .tab { display: inline-flex; align-items: center; gap: 6px; }
 .stat .eyebrow { display: flex; align-items: center; gap: 6px; }
-.stat .eyebrow .ic, .stat .eyebrow svg { color: var(--accent); }
+.stat .eyebrow .ic, .stat .eyebrow svg { color: var(--accent-text); }
 .stat, .tpl, .task, .idea, .msg, .setup { box-shadow: 0 1px 0 var(--line), 0 6px 18px -12px color-mix(in srgb, var(--accent) 45%, transparent); }
 .tpl.open, .stat, .idea { transition: transform .25s ease; }
 .tpl.open:hover, .idea:hover { transform: translateY(-3px); }
@@ -184,7 +188,7 @@ label.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); fon
 .next b { font-family: var(--font-display); font-size: 17px; }
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
 .tab { background: none; border: 0; padding: 10px 14px; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; }
-.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent-text); }
 
 .setup { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; margin-bottom: 20px; }
 .setup summary { cursor: pointer; font-weight: 600; }
@@ -192,7 +196,7 @@ label.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); fon
 
 .phase { display: grid; grid-template-columns: 28px 1fr; gap: 0 14px; }
 .rail { display: flex; flex-direction: column; align-items: center; }
-.rail .n { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--bg); }
+.rail .n { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent-text); display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--bg); }
 .rail .n.full { background: var(--accent); color: var(--accent-ink); }
 .rail .line { flex: 1; width: 2px; background: var(--line); margin: 4px 0; }
 .phase-body { padding-bottom: 26px; min-width: 0; }
@@ -200,7 +204,7 @@ label.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); fon
 .tasks { display: grid; gap: 8px; }
 .task { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
 .task-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; }
-.task-row input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
+.task-row input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent-text); margin: 0; }
 .task.done .t-title { text-decoration: line-through; color: var(--muted); }
 .t-title { font-weight: 500; min-width: 0; }
 .chip { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 99px; white-space: nowrap; background: var(--line); color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -208,10 +212,10 @@ label.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); fon
 .chip.soon { background: var(--blush); color: var(--blush-ink); }
 .chip.ok { background: var(--accent-soft); color: var(--ok); }
 .task details { border-top: 1px solid var(--line); padding: 0 12px; }
-.task details summary { cursor: pointer; font-size: 13px; color: var(--accent); font-weight: 600; padding: 8px 0; }
+.task details summary { cursor: pointer; font-size: 13px; color: var(--accent-text); font-weight: 600; padding: 8px 0; }
 .task details[open] { padding-bottom: 12px; }
 .tip { font-size: 14px; background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; max-width: 70ch; }
-.tip b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; color: var(--accent); }
+.tip b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; color: var(--accent-text); }
 
 .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
@@ -236,7 +240,7 @@ td input[type=number] { max-width: 130px; text-align: right; margin-left: auto; 
 .sched { display: grid; gap: 0; }
 .slot { display: grid; grid-template-columns: 72px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .slot time { font-family: var(--font-display); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
-.slot .who { font-size: 13px; color: var(--accent); font-weight: 600; }
+.slot .who { font-size: 13px; color: var(--accent-text); font-weight: 600; }
 .slot.pre time { color: var(--muted); }
 
 .ideas { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
@@ -253,13 +257,13 @@ a.btn { text-decoration: none; display: inline-block; }
 .itin-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; padding: 10px; align-items: center; }
 .itin-row .itin-desc { grid-column: 1 / -1; }
 .itin-card { background: var(--surface); border: 1.5px solid var(--accent); border-radius: 16px; padding: 28px 22px; text-align: center; }
-.itin-eyebrow { letter-spacing: .2em; text-transform: uppercase; font-size: 12px; color: var(--accent); font-weight: 600; }
+.itin-eyebrow { letter-spacing: .2em; text-transform: uppercase; font-size: 12px; color: var(--accent-text); font-weight: 600; }
 .itin-title { font-size: 28px; margin: 6px 0; }
 .itin-sub { color: var(--muted); margin-bottom: 18px; }
 .itin-list { list-style: none; padding: 0; margin: 0 auto; text-align: left; max-width: 380px; }
 .itin-list li { display: grid; grid-template-columns: 64px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
 .itin-list li:last-child { border-bottom: 0; }
-.itin-list time { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.itin-list time { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--accent-text); font-variant-numeric: tabular-nums; }
 .itin-list p { color: var(--muted); font-size: 14px; }
 .itin-foot { margin-top: 18px; }
 @media (max-width: 760px) { .itin-layout { grid-template-columns: 1fr; } }
@@ -428,10 +432,18 @@ a.btn { text-decoration: none; display: inline-block; }
   ];
 
   const BABY = {
-    nene: { label: "Es nene", name: "Nene", icon: "baby", hint: "Celestes y amarillo patito", sw: ["#3F7FBF", "#A9CCEE", "#FFE08A"], hello: "¡Bienvenido, bebé!" },
-    nena: { label: "Es nena", name: "Nena", icon: "baby", hint: "Rosas y durazno", sw: ["#C4537A", "#F4B8CB", "#F7C9AE"], hello: "¡Bienvenida, bebé!" },
-    sorpresa: { label: "Es sorpresa", name: "Todavía no sabemos", icon: "sparkles", hint: "Menta y amarillo", sw: ["#2F8F76", "#A8DCC8", "#FFE08A"], hello: "¡Que sea sorpresa!" }
+    nene: { label: "Es nene", name: "Nene", icon: "baby", hint: "Celestes y amarillo patito", sw: ["#8ACBF0", "#BFE2F7", "#FFE7A3"], hello: "¡Bienvenido, bebé!" },
+    nena: { label: "Es nena", name: "Nena", icon: "baby", hint: "Rosas y durazno", sw: ["#F5AFC6", "#F9CCDB", "#FFD6C2"], hello: "¡Bienvenida, bebé!" },
+    sorpresa: { label: "Es sorpresa", name: "Todavía no sabemos", icon: "sparkles", hint: "Menta y amarillo", sw: ["#96DCC5", "#C2EADA", "#FFE7A3"], hello: "¡Que sea sorpresa!" }
   };
+  const babyName = () => String(state.setup.bebeNombre || "").trim();
+  const partyName = () => babyName() || String(state.setup.nombre || "").trim();
+  function welcome() {
+    const n = babyName(), b = state.setup.bebe;
+    if (b === "nene") return "¡Bienvenido, " + (n || "bebé") + "!";
+    if (b === "nena") return "¡Bienvenida, " + (n || "bebé") + "!";
+    return n ? "¡Te esperamos, " + n + "!" : "¡Que sea sorpresa!";
+  }
   const ic = (name, cls) => `<i data-lucide="${name}" class="ic${cls ? " " + cls : ""}" aria-hidden="true"></i>`;
   // Formas para animaciones (se dibujan sin depender de la librería)
   const SHAPES = {
@@ -496,6 +508,8 @@ a.btn { text-decoration: none; display: inline-block; }
       <div class="modal-card">
         <div><p class="eyebrow">Para pintar tu planner</p><h2 id="pick-title">¿Qué esperan?</h2>
         <p class="muted">Elegí y toda la app se viste con colores para tu baby shower. Lo podés cambiar cuando quieras.</p></div>
+        <label class="field pick-name">¿Ya tiene nombre? (opcional)
+          <input type="text" id="pick-name" value="${esc(state.setup.bebeNombre || "")}" placeholder="Ej: Noah, Emma…" autocomplete="off"></label>
         <div class="choices">${Object.entries(BABY).map(([k, b]) => `
           <button class="choice ${k}${cur === k ? " sel" : ""}" data-act="pickbaby" data-id="${k}">
             <span class="ico">${ic(b.icon)}</span>
@@ -513,7 +527,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function freshState() {
     return {
-      setup: { nombre: "", fecha: isoPlus(63), hora: "16:00", invitados: 30, presupuesto: 400000, lugar: "" },
+      setup: { nombre: "", bebe: "", bebeNombre: "", fecha: isoPlus(63), hora: "16:00", invitados: 30, presupuesto: 400000, lugar: "" },
       inv: { direccion: "", fin: "19:00", regalos: "", contacto: "", vestimenta: "" },
       done: {}, notes: {}, gastos: {}, guests: [], fields: {}, itin: null, itinMeta: { titulo: "", pie: "" }
     };
@@ -632,7 +646,8 @@ a.btn { text-decoration: none; display: inline-block; }
       <div class="plan-head">
         <div class="head-row"><p class="eyebrow">Baby shower${s.lugar ? " · " + esc(s.lugar) : ""}</p>
         ${s.bebe ? `<button class="baby-chip" data-act="changebaby" title="Cambiar colores">${ic(BABY[s.bebe].icon)} ${BABY[s.bebe].label} · cambiar</button>` : `<button class="baby-chip" data-act="changebaby">${ic("palette")} Elegir colores</button>`}</div>
-        <h1>${s.nombre ? "El baby shower de " + esc(s.nombre) : "Tu baby shower"}</h1>
+        <h1>${babyName() ? "Baby shower de <span class=\"baby-name\">" + esc(babyName()) + "</span>" : s.nombre ? "El baby shower de " + esc(s.nombre) : "Tu baby shower"}</h1>
+        ${babyName() && s.nombre ? `<p class="muted">Celebramos con ${esc(s.nombre)} la dulce espera</p>` : ""}
         <p class="muted">${e ? e.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }) + " · " + esc(s.hora) + " h" : "Cargá la fecha para calcular la ruta."}</p>
       </div>
 
@@ -648,6 +663,7 @@ a.btn { text-decoration: none; display: inline-block; }
       <details class="setup" id="setup">
         <summary>${ic("settings-2")} Datos del evento</summary>
         <div class="setup-grid">
+          <label class="field">Nombre del bebé<input type="text" id="s-bebe" data-setup="bebeNombre" value="${esc(s.bebeNombre || "")}" placeholder="${s.bebe === "nena" ? "Ej: Emma" : s.bebe === "nene" ? "Ej: Noah" : "Si ya lo eligieron"}"></label>
           <label class="field">Nombre de la mamá<input type="text" id="s-nombre" data-setup="nombre" value="${esc(s.nombre)}" placeholder="Ej: Caro"></label>
           <label class="field">Fecha<input type="date" id="s-fecha" data-setup="fecha" value="${esc(s.fecha)}"></label>
           <label class="field">Hora de inicio<input type="time" id="s-hora" data-setup="hora" value="${esc(s.hora)}"></label>
@@ -801,12 +817,13 @@ a.btn { text-decoration: none; display: inline-block; }
 
   function messages() {
     const s = state.setup, i = state.inv || {};
-    const nombre = s.nombre || "[nombre de la mamá]";
+    const nombre = partyName() || "[nombre del bebé o de la mamá]";
     const fecha = longDate(eventDate());
     const rsvp = longDate(plusDays(-10));
     const dir = i.direccion || "[dirección]";
     const lines = [
       `¡Te invitamos al baby shower de ${nombre}! 🍼`,
+      ...(babyName() && s.nombre ? [`Vamos a celebrar con ${s.nombre} la dulce espera.`] : []),
       ``,
       `📅 ${fecha}`,
       `🕓 De ${s.hora || "[hora]"} a ${i.fin || "[hora]"} h`,
@@ -918,7 +935,7 @@ a.btn { text-decoration: none; display: inline-block; }
       <p class="section-intro muted">Todo lo que fuiste cargando en cada paso, en un solo lugar. Tenés ${filled} de ${total} datos completos. Para cargar o cambiar algo, abrí la tarea en la Ruta.</p>
       <div class="ideas">
         <div class="idea"><span class="eyebrow">El evento</span>
-          ${row("Mamá", s.nombre)}${row("Fecha", eventDate() ? longDate(eventDate()) : "")}${row("Horario", s.hora + (i.fin ? " a " + i.fin : "") + " h")}
+          ${row("Bebé", babyName() + (s.bebe ? (babyName() ? " · " : "") + BABY[s.bebe].label : ""))}${row("Mamá", s.nombre)}${row("Fecha", eventDate() ? longDate(eventDate()) : "")}${row("Horario", s.hora + (i.fin ? " a " + i.fin : "") + " h")}
           ${row("Lugar", s.lugar)}${row("Dirección", i.direccion)}${row("Invitados previstos", s.invitados)}${row("Presupuesto", money(s.presupuesto))}
           ${row("Lista de regalos", i.regalos)}${row("Confirmar a", i.contacto)}
         </div>
@@ -938,7 +955,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function itinMeta() {
     const m = state.itinMeta || {};
-    return { titulo: m.titulo || "Baby shower de " + (state.setup.nombre || "[nombre]"), pie: m.pie || "¡Gracias por acompañarnos en este momento tan especial!" };
+    return { titulo: m.titulo || "Baby shower de " + (partyName() || "[nombre]"), pie: m.pie || "¡Gracias por acompañarnos en este momento tan especial!" };
   }
   function editItin(fn) { state.itin = itinItems().map(x => Object.assign({}, x)); fn(state.itin); state.itin.sort((a, b) => a.min - b.min); persist(); rerenderKeepScroll(); }
 
@@ -1021,6 +1038,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       ${view === "plan" ? planView() : homeView()}
       ${picker ? pickerHTML() : ""}`;
     applyBaby();
+    document.title = view === "plan" && partyName() ? "Baby shower de " + partyName() + " · Yo Organizo" : "Yo Organizo";
     drawIcons();
     openSet.forEach(id => { const d = document.getElementById(id); if (d) d.open = true; });
   }
@@ -1048,12 +1066,14 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (act === "closepicker") { picker = false; rerenderKeepScroll(); }
     else if (act === "pickbaby") {
       const b = BABY[id]; if (!b) return;
+      const nameInput = document.getElementById("pick-name");
+      if (nameInput) state.setup.bebeNombre = nameInput.value.trim();
       state.setup.bebe = id; picker = false; persist();
       const wasPlan = view === "plan";
       view = "plan"; rememberView(); render();
       if (!wasPlan) window.scrollTo(0, 0);
       balloons(b.sw);
-      toast(b.hello, b.icon);
+      toast(welcome(), b.icon);
     }
     else if (act === "home") { view = "home"; rememberView(); render(); }
     else if (act === "tab") { tab = id; rememberView(); rerenderKeepScroll(); }
