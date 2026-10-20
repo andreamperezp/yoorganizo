@@ -13,6 +13,8 @@ Tu event planner de bolsillo: una guía paso a paso para organizar un evento sin
 
 ## Qué incluye el baby shower
 
+- **Colores según el bebé**: al entrar elegís nene (celestes), nena (rosas) o sorpresa (menta y amarillo) y toda la app cambia de paleta. Se puede cambiar cuando quieras.
+
 - **Ruta**: 35 tareas en 8 fases, desde 10 semanas antes hasta los agradecimientos, con fecha límite, consejo de planner, campos para cargar datos (dirección, contactos, costos) y notas.
 - **Ficha**: resumen de todo lo cargado en cada paso.
 - **Presupuesto**: reparto sugerido por rubro y control de lo gastado.
@@ -24,6 +26,11 @@ Tu event planner de bolsillo: una guía paso a paso para organizar un evento sin
 
 ## Cómo usarla
 
-Abrí `index.html` en el navegador. No necesita instalación. Los datos se guardan en el navegador (localStorage).
+Publicada en https://yoorganizo.vercel.app. También podés abrir `index.html` directo en el navegador. No necesita instalación. Los datos se guardan en el navegador (localStorage).
 
 Para publicarla en internet, activá GitHub Pages en *Settings › Pages* con la rama `main` y la carpeta raíz.
+
+## Librerías
+
+- Iconos: [Lucide](https://lucide.dev) 0.469.0
+- Tipografías: Fredoka y Nunito (Google Fonts)
