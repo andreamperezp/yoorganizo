@@ -129,7 +129,17 @@ td.num .cat-tip { text-align: right; margin-left: auto; }
 .link-btn:hover { color: var(--accent-text); }
 .link-btn.danger:hover { color: var(--warn); }
 @media (max-width: 560px) { .add-task { grid-template-columns: 1fr 1fr; } .add-task input[type=text] { grid-column: 1 / -1; } }
-.pick-name { text-align: left; max-width: 320px; width: 100%; justify-self: center; }
+.pick-name { text-align: left; max-width: 340px; width: 100%; justify-self: center; font-size: 14px; color: #3A3F4F; font-weight: 700; }
+.pick-step { position: relative; display: grid; gap: 10px; justify-items: center; padding-top: 16px; border-top: 1px dashed #EEE3EC; }
+.step-n { width: 26px; height: 26px; border-radius: 50%; background: #F5AFC6; color: #fff; font-weight: 700; display: grid; place-items: center; font-size: 13px; }
+.step-2 .step-n { background: #86CCF2; }
+.step-l { font-weight: 700; font-size: 14px; color: #3A3F4F; }
+.no-name { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #6B7180; cursor: pointer; }
+.no-name input { accent-color: #C2557F; width: 16px; height: 16px; }
+.pick-err { color: #C2562A; font-size: 13px; font-weight: 600; }
+.pick-name input:disabled { opacity: .5; }
+.shake { animation: shake .4s; border-color: #C2562A !important; }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
 .pick-name input { font-size: 16px; text-align: center; border-radius: 999px; padding: 10px 14px; }
 .baby-chip:hover { filter: brightness(.97); }
 @media (prefers-reduced-motion: reduce) {
@@ -646,22 +656,35 @@ a.btn { text-decoration: none; display: inline-block; }
   let picker = false;
   function pickerHTML() {
     const cur = state.setup.bebe;
+    const first = !cur;
+    const noName = !!state.setup.sinNombre;
     return `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="pick-title">
       <div class="modal-card">
         <div class="modal-hero" aria-hidden="true"><span>${ic("heart")}</span><span>${ic("baby")}</span><span>${ic("star")}</span></div>
-        <div><p class="eyebrow">Para pintar tu planner</p><h2 id="pick-title">¿Qué esperan?</h2>
-        <p class="muted">Elegí y toda la app se viste con colores para tu baby shower. Lo podés cambiar cuando quieras.</p></div>
-        <label class="field pick-name">¿Ya tiene nombre? (opcional)
-          <input type="text" id="pick-name" value="${esc(state.setup.bebeNombre || "")}" placeholder="Ej: Noah, Emma…" autocomplete="off"></label>
-        <div class="choices">${Object.entries(BABY).map(([k, b]) => `
-          <button class="choice ${k}${cur === k ? " sel" : ""}" data-act="pickbaby" data-id="${k}">
-            <span class="ico">${ic(b.icon)}</span>
-            <span>${b.name}<br><small>${b.hint}</small></span>
-            <span class="swatches">${b.sw.map(c => `<i style="background:${c}"></i>`).join("")}</span>
-          </button>`).join("")}</div>
+        <div><p class="eyebrow">${first ? "Bienvenida a Yo Organizo" : "Para pintar tu planner"}</p>
+        <h2 id="pick-title">${first ? "¡Empecemos con tu baby shower!" : "¿Qué esperan?"}</h2>
+        <p class="muted">${first ? "Contanos cómo se llama el bebé y si es nene, nena o sorpresa. Con eso armamos todo tu planner con sus colores." : "Elegí y toda la app se viste con colores para tu baby shower."}</p></div>
+        <div class="pick-step">
+          <span class="step-n">1</span>
+          <label class="field pick-name" for="pick-name">¿Cómo se llama el bebé?
+            <input type="text" id="pick-name" value="${esc(state.setup.bebeNombre || "")}" placeholder="Ej: Noah, Emma…" autocomplete="off" ${noName ? "disabled" : ""}></label>
+          <label class="no-name"><input type="checkbox" id="pick-noname" ${noName ? "checked" : ""}> Todavía no lo elegimos</label>
+          <p class="pick-err" id="pick-err" role="alert" hidden>Escribí el nombre o marcá "Todavía no lo elegimos".</p>
+        </div>
+        <div class="pick-step step-2">
+          <span class="step-n">2</span>
+          <p class="step-l">¿Qué esperan?</p>
+          <div class="choices">${Object.entries(BABY).map(([k, b]) => `
+            <button class="choice ${k}${cur === k ? " sel" : ""}" data-act="pickbaby" data-id="${k}">
+              <span class="ico">${ic(b.icon)}</span>
+              <span>${b.name}<br><small>${b.hint}</small></span>
+              <span class="swatches">${b.sw.map(c => `<i style="background:${c}"></i>`).join("")}</span>
+            </button>`).join("")}</div>
+        </div>
         ${cur ? '<button class="btn ghost" data-act="closepicker" style="justify-self:center">Dejar como está</button>' : ""}
       </div></div>`;
   }
+
 
   // ---------- Estado ----------
   function isoPlus(days) {
@@ -1322,7 +1345,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     if (!el) return;
     const act = el.dataset.act, id = el.dataset.id;
     if (act === "open") {
-      if (!state.setup.bebe) { picker = true; render(); return; }
+      if (!state.setup.bebe) { picker = true; render(); setTimeout(() => { const n = document.getElementById("pick-name"); if (n) n.focus(); }, 300); return; }
       view = "plan"; rememberView(); render(); window.scrollTo(0, 0);
     }
     else if (act === "gotask") {
@@ -1354,7 +1377,15 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (act === "pickbaby") {
       const b = BABY[id]; if (!b) return;
       const nameInput = document.getElementById("pick-name");
-      if (nameInput) state.setup.bebeNombre = nameInput.value.trim();
+      const noName = document.getElementById("pick-noname");
+      const typed = nameInput ? nameInput.value.trim() : "";
+      if (!typed && !(noName && noName.checked)) {
+        const err = document.getElementById("pick-err"); if (err) err.hidden = false;
+        if (nameInput) { nameInput.classList.remove("shake"); void nameInput.offsetWidth; nameInput.classList.add("shake"); nameInput.focus(); }
+        return;
+      }
+      state.setup.sinNombre = !typed && !!(noName && noName.checked);
+      state.setup.bebeNombre = typed;
       state.setup.bebe = id; picker = false; persist();
       const wasPlan = view === "plan";
       view = "plan"; rememberView(); render();
@@ -1434,6 +1465,12 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (el.dataset.bname) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bname); if (c && el.value.trim()) c.name = el.value.trim(); }); return; }
     else if (el.dataset.bplan) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bplan); if (c) c.plan = el.value === "" ? null : Number(el.value) || 0; }); return; }
     else if (el.dataset.gasto) { state.gastos[el.dataset.gasto] = Number(el.value) || 0; }
+    else if (el.id === "pick-noname") {
+      const n = document.getElementById("pick-name"); const err = document.getElementById("pick-err");
+      if (n) { n.disabled = el.checked; if (el.checked) n.value = ""; else n.focus(); }
+      if (err) err.hidden = true;
+      return;
+    }
     else if (el.dataset.gf) { gFilter[el.dataset.gf] = el.value; rerenderKeepScroll(); return; }
     else if (el.dataset.gnote) { const g = state.guests.find(x => x.id === el.dataset.gnote); if (g) g.note = el.value.trim(); persist(); return; }
     else if (el.dataset.ggroup) { const g = state.guests.find(x => x.id === el.dataset.ggroup); if (g) g.group = el.value; }
@@ -1503,7 +1540,10 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
   if (saveMode === "local") saveMsg = "";
   document.getElementById("sky-slot").innerHTML = skyHTML();
   window.addEventListener("keydown", e => { if (e.key === "Escape" && picker && state.setup.bebe) { picker = false; rerenderKeepScroll(); } });
+  // Primera visita: pedir nombre y nene/nena/sorpresa antes de empezar
+  if (!state.setup.bebe) picker = true;
   render();
+  if (picker) setTimeout(() => { const n = document.getElementById("pick-name"); if (n && !n.disabled) n.focus(); }, 350);
   connect();
 })();
 </script>
