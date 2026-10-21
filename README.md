@@ -27,7 +27,7 @@ Tu event planner de bolsillo: una guía paso a paso para organizar un evento sin
 
 ## Qué incluye el cumpleaños
 
-Al entrar se carga quién cumple, cuántos años y el tipo de festejo. Cada tipo tiene su propia ruta, presupuesto sugerido, cronograma, itinerario, ideas, mensajes de invitación, categorías de invitados y colores:
+Al entrar se carga quién cumple, cuántos años, si es de tarde o de noche y el tipo de festejo. El momento propone la hora de inicio y cambia el fondo (sol y globos o luna y estrellas). Cada tipo tiene su propia ruta, presupuesto sugerido, cronograma, itinerario, ideas, mensajes de invitación, categorías de invitados y colores:
 
 - **Infantil** (8 semanas): salón o casa, animación, sorpresitas, alergias, horario de retiro y ayudantes en la puerta.
 - **Adulto** (6 semanas): formato, comida y bebidas con cantidades por persona, cómo se paga, regalo grupal y vuelta segura. Si es **sorpresa**, suma el cómplice, el grupo sin el cumpleañero y la coordinación de la llegada.

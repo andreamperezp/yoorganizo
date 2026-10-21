@@ -81,6 +81,16 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .choice.infantil { background: #FFF0D4; color: #B76400; }
 .choice.adulto { background: #ECE8FC; color: #5B46BE; }
 .choice.quince { background: #FAE6F5; color: #A23F8E; }
+.moment { display: inline-flex; gap: 8px; background: #F4F1F8; border-radius: 999px; padding: 4px; }
+.moment-opt { position: relative; }
+.moment-opt input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.moment-opt span { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; color: #6B7180; }
+.moment-opt input:checked + span { background: #fff; color: #2A2F3A; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+.moment-opt input[value="tarde"]:checked + span svg { color: #E9A23B; }
+.moment-opt input[value="noche"]:checked + span svg { color: #6650C9; }
+.moment-opt input:focus-visible + span { outline: 2px solid #6650C9; }
+.head-tags { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.head-tags span { display: inline-flex; align-items: center; gap: 6px; }
 .pick-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%; }
 .pick-row .pick-name { flex: 1 1 200px; max-width: 260px; }
 .pick-row .pick-age { flex: 0 1 140px; }
@@ -996,8 +1006,13 @@ a.btn { text-decoration: none; display: inline-block; }
     ["balloon", 6, 12, 34, 0], ["star", 88, 18, 22, 2], ["heart", 78, 62, 20, 4], ["balloon", 10, 66, 28, 6],
     ["balloon", 82, 82, 30, 3], ["star", 30, 40, 14, 5], ["heart", 92, 40, 14, 1], ["star", 52, 92, 18, 7]
   ];
+  const SKY_NIGHT = [
+    ["moon", 8, 10, 34, 0], ["star", 88, 18, 22, 2], ["star", 78, 62, 16, 4], ["balloon", 10, 66, 28, 6],
+    ["star", 82, 84, 20, 3], ["star", 30, 40, 12, 5], ["moon", 92, 42, 18, 1], ["star", 52, 92, 18, 7]
+  ];
   function skyHTML() {
-    return `<div class="sky" aria-hidden="true">${(isCumple() ? SKY_PARTY : SKY).map(([k, x, y, w, d]) =>
+    const sky = isCumple() ? (state.setup.momento === "noche" ? SKY_NIGHT : SKY_PARTY) : SKY;
+    return `<div class="sky" aria-hidden="true">${sky.map(([k, x, y, w, d]) =>
       `<span style="left:${x}%;top:${y}%;width:${w}px;height:${k === "cloud" ? w * 0.62 : k === "balloon" ? w * 1.75 : w}px;animation-delay:-${d * 2}s">${SHAPES[k]}</span>`).join("")}</div>`;
   }
   const reduced = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
@@ -1073,6 +1088,11 @@ a.btn { text-decoration: none; display: inline-block; }
             <label class="field pick-name pick-age" for="pick-age">¿Cuántos cumple?
               <input type="number" id="pick-age" value="${esc(s.edad || "")}" placeholder="Ej: 5" min="1" max="120" inputmode="numeric"></label>
           </div>
+          <p class="step-l">¿Es de tarde o de noche?</p>
+          <div class="moment" role="radiogroup" aria-label="Momento del día">
+            <label class="moment-opt"><input type="radio" name="pick-moment" value="tarde" ${s.momento === "tarde" ? "checked" : ""}><span>${ic("sun")} De tarde</span></label>
+            <label class="moment-opt"><input type="radio" name="pick-moment" value="noche" ${s.momento === "noche" ? "checked" : ""}><span>${ic("moon")} De noche</span></label>
+          </div>
           <p class="pick-err" id="pick-err" role="alert" hidden>Escribí el nombre de quien cumple.</p>
         </div>
         <div class="pick-step step-2">
@@ -1130,7 +1150,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function freshState() {
     return {
-      setup: { nombre: "", papa: "", bebe: "", bebeNombre: "", tipo: "", cumpleNombre: "", edad: "", sorpresa: false, fecha: "", hora: "", invitados: "", presupuesto: "", lugar: "" },
+      setup: { nombre: "", papa: "", bebe: "", bebeNombre: "", tipo: "", cumpleNombre: "", edad: "", momento: "", sorpresa: false, fecha: "", hora: "", invitados: "", presupuesto: "", lugar: "" },
       inv: { direccion: "", fin: "19:00", regalos: "", contacto: "", vestimenta: "" },
       done: {}, notes: {}, gastos: {}, guests: [], fields: {}, itin: null, itinMeta: { titulo: "", pie: "" }
     };
@@ -1373,7 +1393,7 @@ a.btn { text-decoration: none; display: inline-block; }
           ? (s.tipo ? `<button class="baby-chip" data-act="changebaby" title="Cambiar tipo de cumple">${ic(CUMPLE_TYPES[s.tipo].icon)} ${CUMPLE_TYPES[s.tipo].label} · cambiar</button>` : `<button class="baby-chip" data-act="changebaby">${ic("palette")} Elegir tipo</button>`)
           : (s.bebe ? `<button class="baby-chip" data-act="changebaby" title="Cambiar colores">${ic(BABY[s.bebe].icon)} ${BABY[s.bebe].label} · cambiar</button>` : `<button class="baby-chip" data-act="changebaby">${ic("palette")} Elegir colores</button>`)}</div>
         <h1>${eventTitle(state, EV, true)}</h1>
-        ${isCumple() ? (s.sorpresa && s.tipo === "adulto" ? `<p class="muted">${ic("party-popper")} Fiesta sorpresa: shhh, que no se entere</p>` : "") : (parents() ? `<p class="muted">Celebramos con ${esc(parents())} la dulce espera</p>` : "")}
+        ${isCumple() ? `<p class="muted head-tags">${s.momento ? `<span>${ic(s.momento === "noche" ? "moon" : "sun")} Cumple de ${s.momento}</span>` : ""}${s.sorpresa && s.tipo === "adulto" ? `<span>${ic("party-popper")} Fiesta sorpresa: shhh, que no se entere</span>` : ""}</p>` : (parents() ? `<p class="muted">Celebramos con ${esc(parents())} la dulce espera</p>` : "")}
         ${e ? `<p class="muted">${e.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}${s.hora ? " · " + esc(s.hora) + " h" : ""}</p>` : ""}
       </div>
       ${ready ? "" : onboardingView(totalSteps)}
@@ -1394,7 +1414,8 @@ a.btn { text-decoration: none; display: inline-block; }
         <div class="setup-grid">
           ${isCumple() ? `
           <label class="field">¿Quién cumple?<input type="text" id="s-cnombre" data-sf="cumpleNombre" value="${esc(s.cumpleNombre || "")}" placeholder="Ej: Valentina"></label>
-          <label class="field">¿Cuántos cumple?<input type="number" id="s-edad" data-sf="edad" min="1" value="${esc(s.edad || "")}" placeholder="Ej: 5"></label>` : `
+          <label class="field">¿Cuántos cumple?<input type="number" id="s-edad" data-sf="edad" min="1" value="${esc(s.edad || "")}" placeholder="Ej: 5"></label>
+          <label class="field">¿De tarde o de noche?<select id="s-momento" data-sf="momento"><option value="tarde" ${s.momento !== "noche" ? "selected" : ""}>De tarde</option><option value="noche" ${s.momento === "noche" ? "selected" : ""}>De noche</option></select></label>` : `
           <label class="field">Nombre del bebé<input type="text" id="s-bebe" data-sf="bebeNombre" value="${esc(s.bebeNombre || "")}" placeholder="${s.bebe === "nena" ? "Ej: Emma" : s.bebe === "nene" ? "Ej: Noah" : "Si ya lo eligieron"}"></label>
           <label class="field">Nombre de la mamá<input type="text" id="s-nombre" data-sf="nombre" value="${esc(s.nombre)}" placeholder="Ej: Caro"></label>
           <label class="field">Nombre del papá<input type="text" id="s-papa" data-sf="papa" value="${esc(s.papa || "")}" placeholder="Ej: Juan"></label>`}
@@ -1435,7 +1456,9 @@ a.btn { text-decoration: none; display: inline-block; }
     const H = isCumple() ? {
       intro: "Contanos lo básico de " + esc(titleInSentence()) + ". Con esto calculamos cuántos días faltan, cuánto podés gastar por invitado y el horario del día.",
       fecha: { infantil: "Un sábado o domingo. Si cae en semana, el fin de semana más cercano.", adulto: "Viernes o sábado a la noche es lo más convocante.", quince: "Los mejores sábados se reservan con hasta un año." }[tipo] || "",
-      hora: { infantil: "Ej: 16 h. El horario de retiro lo ponés en la invitación.", adulto: "Ej: 21 h para una cena o 13 h para un asado.", quince: "Ej: 21:30 h. El salón te dice el horario de cierre." }[tipo] || "",
+      hora: (s.momento === "noche"
+        ? { infantil: "De noche, mejor que termine antes de las 22 h: al otro día hay que levantarse.", adulto: "Una cena arranca 21 h; una fiesta, 22 h.", quince: "Lo clásico es 21:30 h. El salón te dice el horario de cierre." }
+        : { infantil: "Después de la siesta, a las 16 h. El horario de retiro lo ponés en la invitación.", adulto: "Un asado arranca 13 h; una merienda o tarde de juegos, 17 h.", quince: "Fiesta de día: 13 h con almuerzo o 17 h con merienda." })[tipo] || "",
       inv: tipo === "infantil" ? "¿Cuántos nenes calculás?" : "¿Cuántos invitados calculás?",
       invHelp: tipo === "infantil" ? "Los adultos que se quedan los sumás después en la lista." : "Un número aproximado alcanza; después lo ajustás con la lista.",
       lugarPh: { infantil: "Ej: salón Pelotero Feliz", adulto: "Ej: casa, bar o quincho", quince: "Ej: salón Los Aromos" }[tipo] || ""
@@ -1883,7 +1906,7 @@ a.btn { text-decoration: none; display: inline-block; }
         <section class="sheet-sec"><h3 class="sheet-title">El evento</h3>
           <div class="sheet-group">
             ${isCumple()
-              ? row("Cumpleañero", s.cumpleNombre || "") + row("Cumple", s.tipo === "quince" ? 15 : (s.edad || "")) + row("Tipo", s.tipo ? CUMPLE_TYPES[s.tipo].label + (s.tipo === "adulto" && s.sorpresa ? " · sorpresa" : "") : "")
+              ? row("Cumpleañero", s.cumpleNombre || "") + row("Cumple", s.tipo === "quince" ? 15 : (s.edad || "")) + row("Tipo", s.tipo ? CUMPLE_TYPES[s.tipo].label + (s.momento ? " de " + s.momento : "") + (s.tipo === "adulto" && s.sorpresa ? " · sorpresa" : "") : "")
               : row("Bebé", babyName() + (s.bebe ? (babyName() ? " · " : "") + BABY[s.bebe].label : "")) + row("Mamá", s.nombre) + row("Papá", s.papa || "")}
             ${row("Fecha", eventDate() ? longDate(eventDate()) : "")}${row("Horario", s.hora + (i.fin ? " a " + i.fin : "") + " h")}
             ${row("Lugar", s.lugar)}${row("Dirección", i.direccion)}${row("Invitados previstos", s.invitados)}${row("Presupuesto", money(s.presupuesto))}
@@ -1981,8 +2004,11 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
 
   // ---------- Render y eventos ----------
   const app = document.getElementById("app");
+  let skyKey = "";
   function render() {
     applyPack();
+    const sk = EV + (isCumple() ? state.setup.momento : "");
+    if (sk !== skyKey) { skyKey = sk; const sl = document.getElementById("sky-slot"); if (sl) sl.innerHTML = skyHTML(); }
     app.innerHTML = `
       <div class="topbar">
         <button class="brand" data-act="home"><span class="icon-bubble brand-ico">${ic("heart-handshake")}</span>Yo Organizo</button>
@@ -2077,11 +2103,23 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       const T = CUMPLE_TYPES[id]; if (!T) return;
       const nameInput = document.getElementById("pick-name"), ageInput = document.getElementById("pick-age");
       const typed = nameInput ? nameInput.value.trim() : "";
+      const momentEl = document.querySelector('input[name="pick-moment"]:checked');
+      const err = document.getElementById("pick-err");
       if (!typed) {
-        const err = document.getElementById("pick-err"); if (err) err.hidden = false;
+        if (err) { err.textContent = "Escribí el nombre de quien cumple."; err.hidden = false; }
         if (nameInput) { nameInput.classList.remove("shake"); void nameInput.offsetWidth; nameInput.classList.add("shake"); nameInput.focus(); }
         return;
       }
+      if (!momentEl) {
+        if (err) { err.textContent = "Contanos si es de tarde o de noche."; err.hidden = false; }
+        const m = document.querySelector(".moment"); if (m) { m.classList.remove("shake"); void m.offsetWidth; m.classList.add("shake"); }
+        return;
+      }
+      const momento = momentEl.value;
+      // Hora sugerida según tipo y momento (si todavía no cargó una)
+      const HORA = { infantil: { tarde: "16:00", noche: "19:00" }, adulto: { tarde: "17:00", noche: "21:00" }, quince: { tarde: "13:00", noche: "21:30" } };
+      if (!setupComplete() || state.setup.momento !== momento) state.setup.hora = HORA[id][momento];
+      state.setup.momento = momento;
       state.setup.cumpleNombre = typed;
       state.setup.edad = id === "quince" ? 15 : (Number(ageInput && ageInput.value) || "");
       if (id !== "adulto") state.setup.sorpresa = false;
@@ -2179,6 +2217,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (el.dataset.bname) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bname); if (c && el.value.trim()) c.name = el.value.trim(); }); return; }
     else if (el.dataset.bplan) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bplan); if (c) c.plan = el.value === "" ? null : Number(el.value) || 0; }); return; }
     else if (el.dataset.gasto) { state.gastos[el.dataset.gasto] = Number(el.value) || 0; }
+    else if (el.name === "pick-moment") { const err = document.getElementById("pick-err"); if (err) err.hidden = true; return; }
     else if (el.id === "pick-noname") {
       const n = document.getElementById("pick-name"); const err = document.getElementById("pick-err");
       if (n) { n.disabled = el.checked; if (el.checked) n.value = ""; else n.focus(); }
