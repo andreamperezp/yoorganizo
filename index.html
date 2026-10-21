@@ -139,7 +139,11 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .onb-help { font-size: 12px; color: var(--muted); }
 .onb-btn { justify-self: center; display: inline-flex; align-items: center; gap: 8px; font-size: 16px; padding: 13px 26px; }
 .onb-after { display: flex; align-items: center; gap: 8px; justify-content: center; text-align: center; font-size: 13px; color: var(--muted); }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.table-wrap { position: relative; }
+/* Seguro: la página nunca se desplaza de costado en el celular */
+html, body { overflow-x: hidden; max-width: 100%; }
+@supports (overflow-x: clip) { html, body { overflow-x: clip; } }
 table.budget { min-width: 640px; }
 .cell-name { font-weight: 700; border-color: transparent !important; background: transparent !important; padding: 4px 6px !important; margin-left: -6px; }
 .cell-name:hover, .cell-name:focus { border-color: var(--line) !important; background: var(--surface) !important; }
