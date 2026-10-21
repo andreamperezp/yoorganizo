@@ -7,7 +7,7 @@ Tu event planner de bolsillo: una guía paso a paso para organizar un evento sin
 | Plantilla | Estado |
 |---|---|
 | Baby shower | Disponible |
-| Cumpleaños | Próximamente |
+| Cumpleaños | Disponible: infantil, adulto (también sorpresa) y fiesta de 15 |
 | Despedida de solteros | Próximamente |
 | Bodas | Próximamente |
 
@@ -24,6 +24,16 @@ Tu event planner de bolsillo: una guía paso a paso para organizar un evento sin
 - **Itinerario**: el programa del evento para los invitados, editable y descargable para imprimir en A4.
 - **Cronograma interno**: horario del día para vos y tus ayudantes.
 - **Ideas**: temáticas, juegos, menú y errores a evitar.
+
+## Qué incluye el cumpleaños
+
+Al entrar se carga quién cumple, cuántos años y el tipo de festejo. Cada tipo tiene su propia ruta, presupuesto sugerido, cronograma, itinerario, ideas, mensajes de invitación, categorías de invitados y colores:
+
+- **Infantil** (8 semanas): salón o casa, animación, sorpresitas, alergias, horario de retiro y ayudantes en la puerta.
+- **Adulto** (6 semanas): formato, comida y bebidas con cantidades por persona, cómo se paga, regalo grupal y vuelta segura. Si es **sorpresa**, suma el cómplice, el grupo sin el cumpleañero y la coordinación de la llegada.
+- **Fiesta de 15** (12 meses): salón, catering, DJ, foto y video, vestido, vals, ceremonia de velas, carnaval carioca y mesas.
+
+Cada plantilla guarda su propio planner, en el navegador o en la cuenta.
 
 ## Cómo usarla
 

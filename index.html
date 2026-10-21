@@ -41,6 +41,10 @@
 :root[data-baby="nene"] { --bg: #EEF8FE; --line: #D3ECFA; --accent: #86CCF2; --accent-ink: #0F3A5A; --accent-soft: #DCF1FC; --accent-text: #2B8AC6; --blush: #FFF4CF; --blush-ink: #7A5A00; --deco: #BCE3F8; --ink: #22384D; --muted: #5C7389; }
 :root[data-baby="nena"] { --bg: #FFF5F8; --line: #F6E1E8; --accent: #F5AFC6; --accent-ink: #5A1E35; --accent-soft: #FDE7EF; --accent-text: #C2557F; --blush: #FFEADF; --blush-ink: #8A4128; --deco: #F9CCDB; --ink: #3A2830; --muted: #846A74; }
 :root[data-baby="sorpresa"] { --bg: #F3FBF7; --line: #D9EEE4; --accent: #96DCC5; --accent-ink: #134236; --accent-soft: #E0F5EC; --accent-text: #2E8A70; --blush: #FFF2C4; --blush-ink: #7A5A00; --deco: #C2EADA; --ink: #23352F; --muted: #61776F; }
+/* Paletas del cumple: infantil (amarillo, turquesa y coral), adulto (lavanda y dorado), 15 (rosa lila y plata) */
+:root[data-baby="infantil"] { --bg: #FFF9EE; --line: #F5E6C8; --accent: #FFC46B; --accent-ink: #4A2E00; --accent-soft: #FFF0D4; --accent-text: #B76400; --blush: #DDF5F1; --blush-ink: #1E6B62; --deco: #FFD99E; --ink: #3A2E1E; --muted: #7D6B55; }
+:root[data-baby="adulto"] { --bg: #F7F5FE; --line: #E4DFF7; --accent: #B3A6F0; --accent-ink: #261C57; --accent-soft: #ECE8FC; --accent-text: #6650C9; --blush: #FFF2CC; --blush-ink: #7A5A00; --deco: #D5CCF7; --ink: #2A2640; --muted: #6F6A88; }
+:root[data-baby="quince"] { --bg: #FDF5FB; --line: #F2DDEC; --accent: #E8AEDB; --accent-ink: #4E1844; --accent-soft: #FAE6F5; --accent-text: #AD4699; --blush: #EEE9FA; --blush-ink: #57409A; --deco: #F3CDEA; --ink: #3A2438; --muted: #86697F; }
 body { transition: background-color .6s ease, color .6s ease; }
 
 /* Iconos */
@@ -74,6 +78,16 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .choice.nena { background: #FDE7EF; color: #B04872; }
 .choice.sorpresa { background: #E0F5EC; color: #2A7D66; }
 .choice.sel { border-color: currentColor; }
+.choice.infantil { background: #FFF0D4; color: #B76400; }
+.choice.adulto { background: #ECE8FC; color: #5B46BE; }
+.choice.quince { background: #FAE6F5; color: #A23F8E; }
+.pick-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%; }
+.pick-row .pick-name { flex: 1 1 200px; max-width: 260px; }
+.pick-row .pick-age { flex: 0 1 140px; }
+.onb-check { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; cursor: pointer; font-size: 14px; }
+.onb-check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent-text); }
+.onb-check small { color: var(--muted); }
+.tpl-saved { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--accent-text); background: var(--accent-soft); border-radius: 999px; padding: 4px 10px; justify-self: start; }
 .choice .ico { color: inherit; }
 .choice:nth-child(2) .ico { animation-delay: .4s; }
 .choice:nth-child(3) .ico { animation-delay: .8s; }
@@ -471,7 +485,7 @@ a.btn { text-decoration: none; display: inline-block; }
   "use strict";
 
   // ---------- Contenido del planner ----------
-  const PHASES = [
+  const BS_PHASES = [
     { id: "f1", name: "Definir lo esencial", when: "10 a 8 semanas antes" },
     { id: "f2", name: "Reservar lo importante", when: "8 a 6 semanas antes" },
     { id: "f3", name: "Invitar", when: "6 a 4 semanas antes" },
@@ -481,7 +495,7 @@ a.btn { text-decoration: none; display: inline-block; }
     { id: "f7", name: "El gran día", when: "Día del evento" },
     { id: "f8", name: "Después", when: "Hasta 2 semanas después" }
   ];
-  const TASKS = [
+  const BS_TASKS = [
     ["t3","f1",-66,"Definir el presupuesto total y quién aporta","Antes de enamorarte de cualquier idea, poné un número. Si aportan varias personas, acuerden montos ahora y anotalos acá. Separá un 5% para imprevistos."],
     ["t4","f1",-63,"Hacer la lista preliminar de invitados","La cantidad de invitados define el lugar, la comida y el presupuesto. Hacé dos listas: imprescindibles y 'si hay lugar'. Contá con que entre 10% y 20% no va a poder ir."],
     ["t5","f1",-60,"Decidir el formato","Brunch (11 a 14 h), merienda (16 a 19 h) o after (19 a 22 h). ¿Solo mujeres o mixto? Entre 3 y 4 horas es la duración ideal: la embarazada se cansa."],
@@ -518,7 +532,7 @@ a.btn { text-decoration: none; display: inline-block; }
   ].map(([id, phase, off, title, tip]) => ({ id, phase, off, title, tip }));
 
   // Datos que se cargan en cada tarea. `bind` comparte el valor con otra parte de la app.
-  const FIELDS = {
+  const BS_FIELDS = {
     t3: [{ k: "aportes", l: "Quién aporta y cuánto" }],
     t5: [{ k: "formato", l: "Formato", ph: "Merienda, brunch o after" }, { k: "publico", l: "Público", ph: "Solo mujeres o mixto" }],
     t6: [{ k: "tematica", l: "Temática" }, { k: "colores", l: "Colores" }],
@@ -538,7 +552,7 @@ a.btn { text-decoration: none; display: inline-block; }
     t29: [{ k: "montaje", l: "Hora de montaje", t: "time" }]
   };
 
-  const ITIN_DEFAULT = [
+  const BS_ITIN = [
     [0, "Bienvenida", "Te recibimos con algo fresco para tomar."],
     [30, "A comer", "Mesa salada para picar y charlar."],
     [75, "Juegos", ""],
@@ -547,7 +561,7 @@ a.btn { text-decoration: none; display: inline-block; }
     [180, "Despedida", "Llevate tu recuerdito."]
   ];
 
-  const BUDGET = [
+  const BS_BUDGET = [
     ["comida","Comida y bebida",40,"El rubro más grande. La opción mixta (salado contratado, dulce casero) es la que más rinde."],
     ["lugar","Lugar y alquileres",15,"Si es en una casa, este monto va a mesas, sillas y manteles alquilados."],
     ["torta","Torta y mesa dulce",12,"Pedí 3 presupuestos y calculá porciones para el total de invitados."],
@@ -558,7 +572,7 @@ a.btn { text-decoration: none; display: inline-block; }
     ["extra","Imprevistos",5,"No lo toques hasta la última semana."]
   ].map(([id, name, pct, tip]) => ({ id, name, pct, tip }));
 
-  const DAY = [
+  const BS_DAY = [
     [-180,"Montaje","Mesas, mesa dulce, deco y fondo para fotos. Fotos de la deco vacía.","Vos + 2 ayudantes"],
     [-30,"Últimos detalles","Hielo en las heladeras, música puesta, velas y encendedor a mano.","Cocina"],
     [0,"Llegada y bienvenida","Bebida de bienvenida y tarjeta de predicciones en la entrada.","Recepción"],
@@ -570,7 +584,7 @@ a.btn { text-decoration: none; display: inline-block; }
     [210,"Desarmado","Separá los regalos para cargar en el auto de la mamá.","Todos"]
   ];
 
-  const IDEAS = [
+  const BS_IDEAS = [
     { title: "Temáticas que funcionan", items: [
       ["Osito","tonos tierra y beige, peluches como deco"],
       ["Nubes y cielo","celeste, blanco y dorado; globos como nubes"],
@@ -602,7 +616,7 @@ a.btn { text-decoration: none; display: inline-block; }
 
   const TEMPLATES = [
     { id: "babyshower", name: "Baby shower", icon: "baby", desc: "Ruta completa de 10 semanas: tareas, presupuesto, invitados y cronograma del día.", open: true },
-    { id: "cumple", name: "Cumpleaños", icon: "cake", desc: "Infantil o adulto, en casa o en salón.", open: false },
+    { id: "cumple", name: "Cumpleaños", icon: "cake", desc: "Tres recorridos: infantil, adulto (también sorpresa) y fiesta de 15.", open: true },
     { id: "despedida", name: "Despedida de solteros", icon: "party-popper", desc: "Noche, viaje o actividad, con gastos divididos.", open: false },
     { id: "boda", name: "Bodas", icon: "gem", desc: "La ruta larga: 12 meses, proveedores y mesa de invitados.", open: false }
   ];
@@ -612,12 +626,333 @@ a.btn { text-decoration: none; display: inline-block; }
     nena: { label: "Es nena", name: "Nena", icon: "baby", hint: "Rosas y durazno", sw: ["#F5AFC6", "#F9CCDB", "#FFD6C2"], hello: "¡Bienvenida, bebé!" },
     sorpresa: { label: "Es sorpresa", name: "Todavía no sabemos", icon: "sparkles", hint: "Menta y amarillo", sw: ["#96DCC5", "#C2EADA", "#FFE7A3"], hello: "¡Que sea sorpresa!" }
   };
-  const PHASE_OFF = { f1: -60, f2: -48, f3: -35, f4: -21, f5: -7, f6: -2, f7: 0, f8: 7 };
+  const BS_PHASE_OFF = { f1: -60, f2: -48, f3: -35, f4: -21, f5: -7, f6: -2, f7: 0, f8: 7 };
+  // ---------- Plantilla Cumpleaños: tres recorridos ----------
+  const isSorpresa = s => !!s.sorpresa;
+  const tk = (id, phase, off, title, tip, cond) => ({ id, phase, off, title, tip, cond });
+  const CUMPLE_TYPES = {
+    infantil: { label: "Cumple infantil", name: "Infantil", icon: "party-popper", hint: "Hasta 12 años, en casa o salón", sw: ["#FFC46B", "#7FD8CC", "#FF9E8A"] },
+    adulto: { label: "Cumple adulto", name: "Adulto", icon: "wine", hint: "Reunión, bar o fiesta, ¡o sorpresa!", sw: ["#B3A6F0", "#D9D1FA", "#FFE08A"] },
+    quince: { label: "Fiesta de 15", name: "Fiesta de 15", icon: "crown", hint: "La gran noche, con vals y velas", sw: ["#E8AEDB", "#F5D3EC", "#D9D9E8"] }
+  };
+  const CUMPLE_PACKS = {
+    infantil: {
+      phases: [
+        { id: "c1", name: "Definir lo esencial", when: "8 a 6 semanas antes" },
+        { id: "c2", name: "Reservar lo importante", when: "6 a 4 semanas antes" },
+        { id: "c3", name: "Invitar", when: "4 a 3 semanas antes" },
+        { id: "c4", name: "Detalles y compras", when: "3 a 1 semana antes" },
+        { id: "c5", name: "Confirmar todo", when: "La última semana" },
+        { id: "c6", name: "El gran día", when: "Día del cumple" },
+        { id: "c7", name: "Después", when: "La semana siguiente" }
+      ],
+      phaseOff: { c1: -50, c2: -38, c3: -26, c4: -14, c5: -5, c6: 0, c7: 3 },
+      tasks: [
+        tk("i1", "c1", -56, "Elegir el formato con la familia", "Salón infantil (resuelve animación, comida y limpieza), en casa (más barato, pero necesitás actividades y ayuda), plaza o pelotero. Para 1 a 3 años, en casa con la familia alcanza."),
+        tk("i2", "c1", -54, "Elegir la temática con el cumpleañero", "Preguntale qué le gusta: un personaje, un color, animales, superhéroes. A esta edad cambian rápido de idea: confirmalo antes de comprar nada."),
+        tk("i3", "c1", -52, "Definir horario y duración", "Hasta 3 años: 2 horas, a media mañana o después de la siesta. De 4 a 10: entre 2 y 3 horas. Poné horario de entrada y de retiro."),
+        tk("i4", "c1", -50, "Armar la lista de nenes y adultos", "Si invitás a la sala o al grado, invitá a todos o a un grupo chico: nunca dejes a uno o dos afuera. Con menores de 4, calculá un adulto por nene."),
+        tk("i5", "c2", -44, "Reservar el salón o el lugar", "Preguntá qué incluye: animación, comida, torta, sorpresitas, cuántos nenes, cuánto dura y cuánto es la seña. Los sábados se reservan con 1 o 2 meses."),
+        tk("i6", "c2", -40, "Contratar animación o planear los juegos", "Animador, mago, títeres, inflable o pintacaritas. Si lo hacés vos: 3 o 4 juegos de 15 minutos (búsqueda del tesoro, baile congelado, stop, piñata)."),
+        tk("i7", "c2", -36, "Encargar la torta", "Con la temática y para el total de nenes y adultos. Acordate de las velitas y de la vela con el número."),
+        tk("i8", "c2", -34, "Preguntar por alergias y comidas especiales", "Sumá en la invitación: 'Avisanos si tiene alguna alergia'. Celiaquía y alergia al maní son las más comunes: tené una opción aparte."),
+        tk("i9", "c3", -28, "Diseñar la invitación", "Nombre, cuántos cumple, fecha, horario de entrada y de retiro, dirección, si tiene que ir con ropa cómoda o malla, y hasta cuándo confirmar."),
+        tk("i10", "c3", -24, "Mandar la invitación a las familias", "Por el grupo de WhatsApp de padres o en mano en la sala. Si es en casa, mandala de a una familia para saber bien quién viene."),
+        tk("i11", "c3", -22, "Definir el menú para nenes y adultos", "Para los nenes: panchos, pizzetas, sanguchitos de miga, jugo y agua. Para los adultos: sándwiches, café o mate. Calculá 4 a 6 bocados salados por nene."),
+        tk("i12", "c4", -18, "Comprar cotillón y decoración", "Globos de la temática, guirnalda con el nombre, mantel y vasos. Lo de los personajes se agota: compralo con tiempo."),
+        tk("i13", "c4", -14, "Armar las sorpresitas", "Una por nene y algunas de más para hermanitos. Golosinas, burbujeros, stickers, crayones o un juguetito de la temática."),
+        tk("i14", "c4", -12, "Preparar la piñata y los premios", "Rellenala con golosinas blandas y algún juguetito. Que peguen primero los más chicos y al final el cumpleañero."),
+        tk("i15", "c4", -10, "Armar la playlist", "Canciones infantiles que conozcan y las de su personaje favorito. Descargala por si no hay buena señal."),
+        tk("i16", "c4", -8, "Asignar ayudantes adultos", "Alguien en la puerta que reciba y anote quién retira a cada nene, alguien con los juegos, alguien con la comida y alguien que saque fotos."),
+        tk("i17", "c5", -5, "Confirmar cuántos nenes vienen", "Escribile a las familias que no respondieron. Con el número final, avisale al salón o ajustá la comida y las sorpresitas."),
+        tk("i18", "c5", -4, "Confirmar salón, animación y torta", "Horario de llegada de cada uno, saldo a pagar y un teléfono de contacto. Anotalo en las notas."),
+        tk("i19", "c5", -3, "Comprar bebidas, descartables y velitas", "Jugos, agua, vasos con nombre (evitan que se mezclen), servilletas, bolsas de residuos y encendedor."),
+        tk("i20", "c5", -2, "Armar el kit de emergencia", "Curitas, toallitas, ropa de cambio para el cumpleañero, bolsas, cargador y cinta."),
+        tk("i21", "c6", 0, "Armar todo con 2 horas de margen", "Primero la mesa y la decoración, después la comida. Sacá fotos de la deco antes de que lleguen los nenes."),
+        tk("i22", "c6", 0, "Cantar el feliz cumpleaños a mitad de la fiesta", "No lo dejes para el final: los nenes se cansan y los padres empiezan a llegar. Tené las velitas y el encendedor a mano."),
+        tk("i23", "c6", 0, "Entregar las sorpresitas al retirar", "Así cada nene se va con la suya y no se pierden durante la fiesta."),
+        tk("i24", "c7", 2, "Mandar fotos y agradecer a las familias", "Un mensaje al grupo con un par de fotos lindas de los nenes."),
+        tk("i25", "c7", 4, "Pagar saldos y anotar lo gastado", "Cargalo en la pestaña Presupuesto para saber cuánto salió.")
+      ],
+      fields: {
+        i1: [{ k: "formato", l: "Formato", ph: "Salón, casa, plaza…" }],
+        i2: [{ k: "tematica", l: "Temática" }, { k: "colores", l: "Colores" }],
+        i5: [{ k: "lugar", l: "Nombre del lugar", bind: "setup.lugar" }, { k: "dir", l: "Dirección", bind: "inv.direccion" }, { k: "contacto", l: "Contacto" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.lugar" }],
+        i6: [{ k: "prov", l: "Animador o actividad" }, { k: "contacto", l: "Contacto" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.animacion" }],
+        i7: [{ k: "prov", l: "Pastelera" }, { k: "sabor", l: "Sabor y diseño" }, { k: "entrega", l: "Día y hora de entrega" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.torta" }],
+        i9: [{ k: "link", l: "Link del diseño" }, { k: "confirma", l: "Confirmar a", bind: "inv.contacto" }],
+        i11: [{ k: "menu", l: "Menú" }, { k: "bebidas", l: "Bebidas" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.comida" }],
+        i12: [{ k: "compras", l: "Dónde comprás" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.deco" }],
+        i13: [{ k: "que", l: "Qué llevan" }, { k: "cant", l: "Cantidad", t: "number" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.souvenirs" }],
+        i14: [{ k: "juegos", l: "Juegos elegidos", ph: "Ej: Piñata, búsqueda del tesoro" }],
+        i15: [{ k: "link", l: "Link de la playlist" }],
+        i16: [{ k: "puerta", l: "Puerta y retiro" }, { k: "juegos", l: "Juegos" }, { k: "comida", l: "Comida" }, { k: "fotos", l: "Fotos" }]
+      },
+      budget: [
+        ["lugar", "Salón o lugar", 35, "Si es en casa, este monto va a alquiler de juegos o inflable."],
+        ["animacion", "Animación y juegos", 20, "Animador, show o materiales para los juegos."],
+        ["comida", "Comida y bebida", 15, "Para nenes y adultos."],
+        ["torta", "Torta", 10, "Para el total de nenes y adultos."],
+        ["deco", "Cotillón y decoración", 8, "Globos, guirnalda y vajilla de la temática."],
+        ["souvenirs", "Sorpresitas", 7, "Una por nene y algunas extra."],
+        ["extra", "Imprevistos", 5, "No lo toques hasta la última semana."]
+      ],
+      day: [
+        [-120, "Montaje", "Mesa, decoración y cartel con el nombre. Fotos de la deco.", "Vos + 1 ayudante"],
+        [-15, "Últimos detalles", "Música puesta, bebidas frías, velitas y encendedor a mano.", "Comida"],
+        [0, "Llegada", "Recibir a cada nene y anotar quién lo retira.", "Puerta"],
+        [15, "Juego libre", "Que se suelten mientras llegan todos.", "Juegos"],
+        [30, "Animación o juegos", "Show o juegos organizados de 15 minutos.", "Juegos"],
+        [75, "A comer", "Primero los nenes, después los adultos.", "Comida"],
+        [100, "Feliz cumpleaños", "Torta, velitas y foto con todos.", "Fotos"],
+        [115, "Piñata y baile", "Que peguen primero los más chicos.", "Juegos"],
+        [140, "Retiro", "Entregar la sorpresita a cada nene.", "Puerta"]
+      ],
+      itin: [
+        [0, "Llegada", "¡Bienvenidos! Arrancamos jugando."],
+        [30, "Show y juegos", "Música, juegos y mucha diversión."],
+        [75, "A comer", "Panchos, pizzetas y algo rico para tomar."],
+        [100, "¡Feliz cumpleaños!", "Soplamos las velitas todos juntos."],
+        [115, "Piñata", "¡A juntar golosinas!"],
+        [140, "Hasta la próxima", "Cada uno se lleva su sorpresita."]
+      ],
+      ideas: [
+        { title: "Temáticas que funcionan", items: [["Superhéroes", "capas y antifaces de regalo"], ["Dinosaurios", "excavación de huesos en arena"], ["Espacio", "planetas colgantes y estrellas que brillan"], ["Princesas y castillos", "coronas para decorar"], ["Granja", "animalitos y juegos de embocar"]] },
+        { title: "Juegos sin animador", items: [["Búsqueda del tesoro", "pistas con dibujos para los que no leen"], ["Baile congelado", "música y se quedan quietos al cortar"], ["Carrera de embolsados", "en patio o jardín"], ["Pintacaritas", "un adulto con pinturas al agua"], ["Piñata", "el cierre que nunca falla"]] },
+        { title: "Menú infantil", items: [["Salado", "panchos, pizzetas, sanguchitos de miga, chipá"], ["Dulce", "torta, gelatinas, chupetines, frutas cortadas"], ["Bebidas", "jugo, agua y algo para los adultos"], ["Cálculo", "4 a 6 bocados salados por nene"]] },
+        { title: "Errores que evita una planner", items: [["Dejar a uno o dos afuera", "invitá a toda la sala o a un grupo chico"], ["Torta al final", "los nenes se cansan: mejor a mitad"], ["Sin horario de retiro", "ponelo siempre en la invitación"], ["Nadie en la puerta", "alguien anota quién retira a cada nene"], ["Olvidar las alergias", "preguntá antes y tené opción aparte"]] }
+      ],
+      groups: ["Compañeros de la sala o grado", "Familia", "Amigos del barrio", "Hijos de amigos"],
+      inv: { std: -35, inv: -24, rsvp: -7, prev: -1 }
+    },
+    adulto: {
+      phases: [
+        { id: "c1", name: "Definir lo esencial", when: "6 a 4 semanas antes" },
+        { id: "c2", name: "Reservar y decidir", when: "4 a 3 semanas antes" },
+        { id: "c3", name: "Invitar", when: "3 a 2 semanas antes" },
+        { id: "c4", name: "Detalles y compras", when: "2 a 1 semana antes" },
+        { id: "c5", name: "Confirmar todo", when: "La última semana" },
+        { id: "c6", name: "El gran día", when: "Día del cumple" },
+        { id: "c7", name: "Después", when: "La semana siguiente" }
+      ],
+      phaseOff: { c1: -38, c2: -26, c3: -18, c4: -10, c5: -4, c6: 0, c7: 3 },
+      tasks: [
+        tk("a1", "c1", -42, "Elegir el formato", "Cena o asado en casa, bar o restó, salón con DJ, o algo distinto: karaoke, picnic, escapada. El formato define el presupuesto."),
+        tk("a2", "c1", -41, "Elegir un cómplice y la excusa", "Alguien muy cercano que lleve al cumpleañero al lugar sin que sospeche. Inventen juntos la excusa: una cena tranquila, un mandado, una visita.", isSorpresa),
+        tk("a3", "c1", -40, "Armar la lista de invitados", "Separá familia, amigos y trabajo. En un bar o restó, la lista manda: confirmá cuántos entran."),
+        tk("a4", "c1", -39, "Armar un grupo sin el cumpleañero", "Un grupo de WhatsApp aparte para organizar. En la descripción: 'Es sorpresa, no se lo cuenten'.", isSorpresa),
+        tk("a5", "c1", -38, "Definir cómo se paga", "Lo paga el cumpleañero, se divide entre amigos, o cada invitado paga lo suyo en el bar. Que quede claro en la invitación."),
+        tk("a6", "c2", -30, "Reservar el lugar", "En bares: preguntá si hay mínimo de consumo, si podés llevar torta y hasta qué hora tenés el espacio. Pedí la confirmación por escrito."),
+        tk("a7", "c2", -26, "Decidir la comida", "Asado: 400 a 500 g de carne por persona. Picada: 150 a 200 g entre fiambres y quesos. Finger food: 12 a 15 bocados por persona."),
+        tk("a8", "c2", -24, "Calcular las bebidas", "1 litro de bebida sin alcohol por persona. Si hay alcohol: media botella de vino o 1 litro de cerveza por persona que toma. Hielo: 1 kg cada 3 personas."),
+        tk("a9", "c2", -22, "Resolver la música", "Una playlist colaborativa donde cada invitado suma 3 canciones siempre funciona. Para más de 50 personas, conviene DJ."),
+        tk("a10", "c3", -20, "Mandar la invitación", "Fecha, hora, lugar, cómo se paga y hasta cuándo confirmar. Si es sorpresa: pedí que lleguen 30 minutos antes que el cumpleañero."),
+        tk("a11", "c3", -18, "Organizar el regalo grupal", "Una persona junta la plata y propone un monto. Así evitás regalos repetidos y sale algo lindo."),
+        tk("a12", "c3", -16, "Preparar un momento especial", "Un video con saludos, fotos de su vida o un brindis con unas palabras. Pedí los videos con una semana de margen."),
+        tk("a13", "c4", -12, "Encargar la torta", "Velas con el número que cumple y bengalas si el lugar lo permite."),
+        tk("a14", "c4", -10, "Comprar la decoración", "Globos con el número, una guirnalda, luces cálidas y un rincón para fotos alcanzan."),
+        tk("a15", "c4", -8, "Comprar bebidas, hielo y descartables", "Si es en casa: vasos, servilletas, bolsas de residuos y conservadoras para el hielo."),
+        tk("a16", "c5", -5, "Confirmar quiénes vienen", "Escribile a quien no respondió. En bar o restó, pasales el número final."),
+        tk("a17", "c5", -4, "Confirmar reserva y proveedores", "Horario, seña, saldo a pagar y un teléfono de contacto."),
+        tk("a18", "c5", -3, "Organizar cómo vuelve cada uno", "Si hay alcohol, que haya conductores designados o compartan auto de alquiler. Tené números de remises a mano."),
+        tk("a19", "c5", -1, "Coordinar la llegada del cumpleañero", "Hora exacta y una señal (un mensaje del cómplice). Todos llegan antes, luces bajas y celulares en silencio.", isSorpresa),
+        tk("a20", "c6", 0, "Armar y probar la música", "Probá el parlante y el volumen antes de que llegue la gente."),
+        tk("a21", "c6", 0, "Torta y brindis", "A mitad de la noche, cuando ya llegaron todos y antes de que alguno se vaya."),
+        tk("a22", "c7", 2, "Compartir fotos y agradecer", "Un álbum compartido para que todos suban las suyas."),
+        tk("a23", "c7", 4, "Dividir gastos y pagar saldos", "Si se dividió, mandá el detalle claro a cada uno. Cargalo en Presupuesto.")
+      ],
+      fields: {
+        a1: [{ k: "formato", l: "Formato", ph: "Asado, bar, salón…" }],
+        a2: [{ k: "complice", l: "Cómplice" }, { k: "excusa", l: "La excusa" }],
+        a5: [{ k: "modo", l: "Cómo se paga" }],
+        a6: [{ k: "lugar", l: "Nombre del lugar", bind: "setup.lugar" }, { k: "dir", l: "Dirección", bind: "inv.direccion" }, { k: "contacto", l: "Contacto" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.lugar" }],
+        a7: [{ k: "menu", l: "Menú" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.comida" }],
+        a8: [{ k: "bebidas", l: "Qué bebidas" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.bebidas" }],
+        a9: [{ k: "link", l: "Playlist o DJ" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.musica" }],
+        a10: [{ k: "link", l: "Link o imagen" }, { k: "confirma", l: "Confirmar a", bind: "inv.contacto" }],
+        a11: [{ k: "organiza", l: "Quién junta la plata" }, { k: "alias", l: "Alias o CBU" }, { k: "monto", l: "Monto sugerido" }],
+        a13: [{ k: "prov", l: "Pastelería" }, { k: "sabor", l: "Sabor" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.torta" }],
+        a14: [{ k: "costo", l: "Costo ($)", t: "number", bind: "gastos.deco" }]
+      },
+      budget: [
+        ["lugar", "Lugar", 20, "Reserva, alquiler o mínimo de consumo."],
+        ["comida", "Comida", 35, "El rubro más grande."],
+        ["bebidas", "Bebidas", 20, "Con y sin alcohol, más hielo."],
+        ["musica", "Música", 8, "Parlante, DJ o karaoke."],
+        ["torta", "Torta", 6, "Con velas del número."],
+        ["deco", "Decoración", 6, "Globos, luces y rincón de fotos."],
+        ["extra", "Imprevistos", 5, "No lo toques hasta la última semana."]
+      ],
+      day: [
+        [-120, "Montaje", "Mesas, decoración, luces y rincón de fotos.", "Vos + ayudantes"],
+        [-30, "Últimos detalles", "Hielo, música andando y comida lista para salir.", "Vos"],
+        [-15, "Todos escondidos", "Luces bajas, celulares en silencio y atentos a la señal.", "Todos", isSorpresa],
+        [0, "¡Sorpresa!", "Llega el cumpleañero con el cómplice.", "Cómplice", isSorpresa],
+        [0, "Llegan los invitados", "Algo para tomar al llegar.", "Recepción"],
+        [30, "Comida", "Que circule la comida o arranca el asado.", "Cocina"],
+        [120, "Torta y brindis", "Unas palabras y la foto de todos.", "Fotos"],
+        [150, "Música y baile", "Se sube el volumen.", "Música"]
+      ],
+      itin: [
+        [0, "Recepción", "Llegá con tiempo."],
+        [30, "A comer", "Mesa servida para compartir."],
+        [120, "Torta y brindis", "Un brindis por el cumpleañero."],
+        [150, "¡A bailar!", "Música hasta que el cuerpo aguante."]
+      ],
+      ideas: [
+        { title: "Formatos", items: [["Asado con amigos", "el clásico que nunca falla"], ["Cena en restó", "reservá mesa larga con anticipación"], ["Bar con reserva", "preguntá por mínimo de consumo"], ["Karaoke", "ideal para grupos que se animan"], ["Tarde de juegos", "picnic o juegos de mesa"]] },
+        { title: "Momentos que emocionan", items: [["Video de saludos", "de gente que no puede ir"], ["Fotos de su vida", "proyectadas o en una soga con broches"], ["Brindis", "unas palabras de un amigo cercano"], ["Rincón de fotos", "con props y luces"], ["Playlist colaborativa", "cada invitado suma 3 canciones"]] },
+        { title: "Qué servir", items: [["Picada", "150 a 200 g de fiambres y quesos por persona"], ["Asado", "400 a 500 g de carne por persona"], ["Finger food", "12 a 15 bocados por persona"], ["Pizza party", "media pizza por persona"]] },
+        { title: "Errores que evita una planner", items: [["No decir cómo se paga", "que quede claro en la invitación"], ["Torta muy tarde", "a esa hora ya se fue la mitad"], ["Quedarse sin hielo", "1 kg cada 3 personas"], ["Sorpresa contada", "grupo sin el cumpleañero y pocas personas en el secreto"], ["Volver sin plan", "conductor designado o remis"]] }
+      ],
+      groups: ["Familia", "Amigos", "Trabajo", "Facultad", "Otros"],
+      inv: { std: -30, inv: -20, rsvp: -7, prev: -1 }
+    },
+    quince: {
+      phases: [
+        { id: "c1", name: "Definir lo esencial", when: "12 a 9 meses antes" },
+        { id: "c2", name: "Contratar proveedores", when: "9 a 6 meses antes" },
+        { id: "c3", name: "La quinceañera", when: "6 a 3 meses antes" },
+        { id: "c4", name: "Invitar y detalles", when: "3 a 1 mes antes" },
+        { id: "c5", name: "El último mes", when: "4 semanas antes" },
+        { id: "c6", name: "El gran día", when: "Día de la fiesta" },
+        { id: "c7", name: "Después", when: "Las semanas siguientes" }
+      ],
+      phaseOff: { c1: -300, c2: -220, c3: -130, c4: -60, c5: -20, c6: 0, c7: 7 },
+      tasks: [
+        tk("q1", "c1", -340, "Decidir el tipo de festejo con ella", "Fiesta en salón con cena, fiesta de día, algo más chico o un viaje en lugar de fiesta. Que ella elija: es su noche."),
+        tk("q2", "c1", -330, "Definir presupuesto y quién aporta", "Una fiesta de 15 se paga en cuotas a los proveedores: armá un plan de pagos mes a mes."),
+        tk("q3", "c1", -320, "Armar la lista preliminar", "Familia de los dos lados, amigos del colegio y amigos de la familia. El número define el salón."),
+        tk("q4", "c1", -300, "Reservar el salón", "Los mejores sábados se toman con un año. Preguntá qué incluye (catering, mozos, DJ, mesa dulce), capacidad, horario de cierre y forma de pago."),
+        tk("q5", "c2", -250, "Contratar el catering", "Si el salón no lo incluye. Pedí degustación. Recepción, plato principal, postre y mesa dulce o de trasnoche."),
+        tk("q6", "c2", -230, "Contratar DJ, luces y sonido", "Pedí videos de otras fiestas. Que incluya pista, luces, pantalla para el video y micrófono para las palabras."),
+        tk("q7", "c2", -220, "Contratar fotografía y video", "Mirá trabajos completos, no solo las mejores fotos. Preguntá cuándo entregan y si incluye la sesión previa."),
+        tk("q8", "c2", -210, "Elegir temática y colores", "Con eso se definen invitación, ambientación, torta y el vestido."),
+        tk("q9", "c2", -200, "Contratar la ambientación", "Centros de mesa, iluminación, entrada y rincón de fotos. Muchos salones tienen opciones incluidas."),
+        tk("q10", "c3", -150, "Diseñar el vestido y empezar las pruebas", "Si es a medida, arrancá 5 o 6 meses antes. Muchas eligen dos looks: uno para la entrada y otro para bailar."),
+        tk("q11", "c3", -130, "Elegir el vals y con quién baila", "Lo clásico: papá, abuelos, padrinos, tíos y amigos. Armá la lista en orden y avisales para que estén atentos."),
+        tk("q12", "c3", -120, "Planear la entrada y la ceremonia de velas", "15 velas para 15 personas importantes, con unas palabras para cada una. Que lo lea ella o el DJ."),
+        tk("q13", "c3", -110, "Hacer la sesión de fotos previa", "En exteriores, uno o dos meses antes. Esas fotos se usan en la invitación y en el video."),
+        tk("q14", "c3", -100, "Encargar la torta y la mesa dulce", "Con la temática. Pedí que la torta tenga una parte decorativa para la foto y otra para servir."),
+        tk("q15", "c4", -60, "Mandar las invitaciones", "Dos meses antes. Fecha, horario, salón, vestimenta y hasta cuándo confirmar."),
+        tk("q16", "c4", -50, "Elegir los souvenirs", "Uno por familia o por invitado. Algo útil y lindo, con su nombre y la fecha."),
+        tk("q17", "c4", -45, "Armar el cotillón y el carnaval carioca", "Antifaces, collares luminosos, vinchas y gorros para la hora loca. Calculá uno por invitado."),
+        tk("q18", "c4", -40, "Reservar peinado y maquillaje con prueba", "Hacé la prueba una o dos semanas antes, con el vestido en mente."),
+        tk("q19", "c4", -30, "Armar la distribución de mesas", "Familia de cada lado, amigos del colegio juntos y la mesa principal cerca de la pista."),
+        tk("q20", "c5", -20, "Confirmar el número final al salón", "Pasales la lista de mesas y cualquier menú especial (celíacos, vegetarianos)."),
+        tk("q21", "c5", -14, "Última prueba del vestido y los zapatos", "Bailá con los zapatos en casa para ablandarlos."),
+        tk("q22", "c5", -10, "Ensayar el vals y la entrada", "Con la canción elegida y las personas de la lista."),
+        tk("q23", "c5", -7, "Pasar el cronograma a salón, DJ y fotógrafo", "El mismo horario para todos: entrada, vals, cena, velas, carioca y torta."),
+        tk("q24", "c5", -5, "Pagar saldos pendientes", "Llevá los pagos al día para no correr el día de la fiesta."),
+        tk("q25", "c6", 0, "Peinado y maquillaje con margen", "Empezá 4 horas antes. Tené agua y algo para comer: es un día largo."),
+        tk("q26", "c6", 0, "Disfrutar la noche", "Que un adulto de confianza sea el contacto del salón. La quinceañera solo disfruta."),
+        tk("q27", "c7", 3, "Agradecer a los invitados", "Un mensaje con una foto de la noche."),
+        tk("q28", "c7", 30, "Recibir fotos y video", "Revisá que esté todo lo acordado antes de pagar el saldo final.")
+      ],
+      fields: {
+        q1: [{ k: "formato", l: "Tipo de festejo" }],
+        q2: [{ k: "aportes", l: "Quién aporta y cuánto" }],
+        q4: [{ k: "lugar", l: "Salón", bind: "setup.lugar" }, { k: "dir", l: "Dirección", bind: "inv.direccion" }, { k: "contacto", l: "Contacto" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.salon" }],
+        q5: [{ k: "prov", l: "Catering" }, { k: "menu", l: "Menú" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.catering" }],
+        q6: [{ k: "prov", l: "DJ" }, { k: "contacto", l: "Contacto" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.dj" }],
+        q7: [{ k: "prov", l: "Fotógrafo" }, { k: "contacto", l: "Contacto" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.foto" }],
+        q8: [{ k: "tematica", l: "Temática" }, { k: "colores", l: "Colores" }],
+        q9: [{ k: "prov", l: "Ambientación" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.deco" }],
+        q10: [{ k: "prov", l: "Modista o tienda" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.vestido" }],
+        q11: [{ k: "cancion", l: "Canción del vals" }, { k: "quienes", l: "Con quién baila" }],
+        q12: [{ k: "entrada", l: "Canción de entrada" }, { k: "velas", l: "Quiénes reciben velas" }],
+        q14: [{ k: "prov", l: "Pastelería" }, { k: "sabor", l: "Sabor" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.torta" }],
+        q15: [{ k: "link", l: "Link del diseño" }, { k: "confirma", l: "Confirmar a", bind: "inv.contacto" }],
+        q16: [{ k: "que", l: "Qué souvenir" }, { k: "cant", l: "Cantidad", t: "number" }, { k: "costo", l: "Costo ($)", t: "number", bind: "gastos.souvenirs" }],
+        q18: [{ k: "prov", l: "Peinado y maquillaje" }, { k: "contacto", l: "Contacto" }]
+      },
+      budget: [
+        ["salon", "Salón", 30, "Muchos incluyen mozos, vajilla y limpieza."],
+        ["catering", "Catering", 25, "Si el salón no lo incluye."],
+        ["dj", "DJ, luces y sonido", 10, "Con pantalla para el video."],
+        ["foto", "Fotografía y video", 8, "Fiesta y sesión previa."],
+        ["vestido", "Vestido y look", 10, "Vestido, zapatos, peinado y maquillaje."],
+        ["deco", "Ambientación", 7, "Centros de mesa, luces y entrada."],
+        ["torta", "Torta y mesa dulce", 4, "Parte para la foto y parte para servir."],
+        ["souvenirs", "Souvenirs y cotillón", 3, "Uno por invitado o por familia."],
+        ["extra", "Imprevistos", 3, "No lo toques hasta el último mes."]
+      ],
+      day: [
+        [-240, "Peinado y maquillaje", "En casa o en el estudio.", "Quinceañera"],
+        [-120, "Salón", "Revisar mesas, ambientación y torta con el encargado.", "Adulto responsable"],
+        [0, "Recepción", "Llegan los invitados. Recepción y fotos.", "Salón"],
+        [45, "Entrada", "Entra la quinceañera con su canción.", "DJ"],
+        [55, "Vals", "Baila con cada persona de la lista.", "DJ"],
+        [75, "Cena", "Plato principal.", "Catering"],
+        [135, "Ceremonia de velas", "15 velas, 15 personas importantes.", "DJ"],
+        [150, "Baile", "Primera tanda de baile.", "DJ"],
+        [210, "Carnaval carioca", "Cotillón para todos.", "DJ"],
+        [240, "Torta y brindis", "Cortar la torta y unas palabras.", "Fotos"],
+        [300, "Cierre", "Souvenirs a la salida.", "Salón"]
+      ],
+      itin: [
+        [0, "Recepción", "Bienvenida y fotos."],
+        [45, "Entrada de la quinceañera", "¡Atentos a la puerta!"],
+        [55, "Vals", "Un baile con las personas más importantes."],
+        [75, "Cena", "A la mesa."],
+        [135, "Ceremonia de velas", "15 velas, 15 dedicatorias."],
+        [150, "¡A bailar!", "Se abre la pista."],
+        [210, "Carnaval carioca", "Cotillón y hora loca."],
+        [240, "Torta y brindis", "Un brindis por la quinceañera."]
+      ],
+      ideas: [
+        { title: "Temáticas", items: [["Noche de gala", "dorado, negro y velas"], ["París", "torre Eiffel y rosa empolvado"], ["Hollywood", "alfombra roja y estrellas"], ["Jardín encantado", "flores y luces cálidas"], ["Neón", "pista con luces y colores flúo"]] },
+        { title: "Momentos que emocionan", items: [["Video de su vida", "de bebé a hoy, en la pantalla"], ["Sorpresa de las amigas", "una coreo o un video"], ["Cambio de look", "para bailar más cómoda"], ["Baile con el papá", "antes del vals con todos"], ["Lluvia de deseos", "tarjetas para leer al otro día"]] },
+        { title: "Para no olvidar", items: [["Plan de pagos", "cuotas a cada proveedor, mes a mes"], ["Contrato por escrito", "con todo lo que incluye"], ["Un adulto de contacto", "que hable con el salón esa noche"], ["Lista de fotos", "las imprescindibles para el fotógrafo"]] },
+        { title: "Errores que evita una planner", items: [["Reservar tarde", "los buenos sábados se van con un año"], ["Zapatos nuevos sin usar", "ablandalos bailando en casa"], ["Cronograma distinto para cada uno", "uno solo para salón, DJ y fotógrafo"], ["Ceremonia de velas larga", "15 velas, 1 o 2 frases cada una"], ["Que ella organice esa noche", "delegá todo en un adulto"]] }
+      ],
+      groups: ["Familia", "Amigas y amigos del cole", "Amigos de la familia", "Otros"],
+      inv: { std: -120, inv: -60, rsvp: -20, prev: -3 }
+    }
+  };
+  // Formato de lista igual al del baby shower
+  Object.values(CUMPLE_PACKS).forEach(p => {
+    p.budget = p.budget.map(([id, name, pct, tip]) => ({ id, name, pct, tip }));
+  });
+
+  // Paquete activo (cambia según el evento y el tipo de cumple)
+  let PHASES = BS_PHASES, TASKS = BS_TASKS, FIELDS = BS_FIELDS, ITIN_DEFAULT = BS_ITIN, BUDGET = BS_BUDGET, DAY = BS_DAY, IDEAS = BS_IDEAS, PHASE_OFF = BS_PHASE_OFF;
+  let EV = "babyshower";
+  const isCumple = () => EV === "cumple";
+  const cpack = () => CUMPLE_PACKS[state.setup.tipo] || CUMPLE_PACKS.infantil;
+  function applyPack() {
+    if (!isCumple()) { PHASES = BS_PHASES; TASKS = BS_TASKS; FIELDS = BS_FIELDS; ITIN_DEFAULT = BS_ITIN; BUDGET = BS_BUDGET; DAY = BS_DAY; IDEAS = BS_IDEAS; PHASE_OFF = BS_PHASE_OFF; return; }
+    const p = cpack();
+    PHASES = p.phases; TASKS = p.tasks; FIELDS = p.fields; ITIN_DEFAULT = p.itin; BUDGET = p.budget; DAY = p.day; IDEAS = p.ideas; PHASE_OFF = p.phaseOff;
+  }
+  function chosen(st, kind) { st = st || state; kind = kind || EV; return kind === "cumple" ? st.setup.tipo : st.setup.bebe; }
+  // Nombre del evento para títulos ("Los 5 de Valentina", "Baby shower de Noah")
+  function eventTitle(st, kind, html) {
+    st = st || state; kind = kind || EV;
+    const wrap = n => html ? '<span class="baby-name">' + esc(n) + "</span>" : n;
+    const s = st.setup || {};
+    if (kind === "cumple") {
+      const n = String(s.cumpleNombre || "").trim(), e = Number(s.edad) || 0;
+      if (!n) return "Tu cumple";
+      if (s.tipo === "quince") return "Los 15 de " + wrap(n);
+      return e ? "Los " + e + " de " + wrap(n) : "Cumple de " + wrap(n);
+    }
+    const b = String(s.bebeNombre || "").trim();
+    if (b) return "Baby shower de " + wrap(b);
+    return s.nombre ? "El baby shower de " + (html ? esc(s.nombre) : s.nombre) : "Tu baby shower";
+  }
+  const titleInSentence = () => { const t = eventTitle(); return t.charAt(0).toLowerCase() + t.slice(1); };
+  function offLabel(d) {
+    const a = Math.abs(d);
+    if (a >= 60) return Math.round(a / 30) + " meses antes";
+    if (a >= 14) return Math.round(a / 7) + " semanas antes";
+    return a === 1 ? "1 día antes" : a + " días antes";
+  }
   function allTasks() {
     const hid = state.hidden || {};
     const custom = (state.custom || []).map(c => Object.assign({ tip: "", custom: true }, c));
     const order = id => PHASES.findIndex(p => p.id === id);
-    return TASKS.filter(t => !hid[t.id]).concat(custom).sort((a, b) => order(a.phase) - order(b.phase) || a.off - b.off);
+    return TASKS.filter(t => !hid[t.id] && (!t.cond || t.cond(state.setup))).concat(custom).sort((a, b) => order(a.phase) - order(b.phase) || a.off - b.off);
   }
   const isoOf = d => d ? d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") : "";
   function offFromIso(iso, fallback) {
@@ -631,8 +966,14 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   const babyName = () => String(state.setup.bebeNombre || "").trim();
   const parents = () => [state.setup.nombre, state.setup.papa].map(x => String(x || "").trim()).filter(Boolean).join(" y ");
-  const partyName = () => babyName() || String(state.setup.nombre || "").trim();
+  const partyName = () => isCumple() ? String(state.setup.cumpleNombre || "").trim() : (babyName() || String(state.setup.nombre || "").trim());
   function welcome() {
+    if (isCumple()) {
+      const n = partyName();
+      if (state.setup.tipo === "quince") return "¡Que empiece tu gran noche, " + n + "!";
+      if (state.setup.sorpresa) return "¡Shhh! Arranca la fiesta sorpresa para " + n;
+      return "¡Que empiece la fiesta, " + n + "!";
+    }
     const n = babyName(), b = state.setup.bebe;
     if (b === "nene") return "¡Bienvenido, " + (n || "bebé") + "!";
     if (b === "nena") return "¡Bienvenida, " + (n || "bebé") + "!";
@@ -651,9 +992,13 @@ a.btn { text-decoration: none; display: inline-block; }
     ["cloud", 6, 12, 90, 0], ["star", 88, 18, 22, 2], ["heart", 78, 62, 20, 4], ["moon", 10, 70, 28, 6],
     ["cloud", 70, 86, 70, 3], ["star", 30, 40, 14, 5], ["heart", 92, 40, 14, 1], ["star", 52, 92, 18, 7]
   ];
+  const SKY_PARTY = [
+    ["balloon", 6, 12, 34, 0], ["star", 88, 18, 22, 2], ["heart", 78, 62, 20, 4], ["balloon", 10, 66, 28, 6],
+    ["balloon", 82, 82, 30, 3], ["star", 30, 40, 14, 5], ["heart", 92, 40, 14, 1], ["star", 52, 92, 18, 7]
+  ];
   function skyHTML() {
-    return `<div class="sky" aria-hidden="true">${SKY.map(([k, x, y, w, d]) =>
-      `<span style="left:${x}%;top:${y}%;width:${w}px;height:${k === "cloud" ? w * 0.62 : w}px;animation-delay:-${d * 2}s">${SHAPES[k]}</span>`).join("")}</div>`;
+    return `<div class="sky" aria-hidden="true">${(isCumple() ? SKY_PARTY : SKY).map(([k, x, y, w, d]) =>
+      `<span style="left:${x}%;top:${y}%;width:${w}px;height:${k === "cloud" ? w * 0.62 : k === "balloon" ? w * 1.75 : w}px;animation-delay:-${d * 2}s">${SHAPES[k]}</span>`).join("")}</div>`;
   }
   const reduced = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
   function balloons(colors) {
@@ -691,7 +1036,12 @@ a.btn { text-decoration: none; display: inline-block; }
     setTimeout(() => t.remove(), 3000);
   }
   function drawIcons() { try { if (window.lucide) window.lucide.createIcons(); } catch (e) {} }
-  const FAV = { nene: ["#86CCF2", "#FFE7A3"], nena: ["#F5AFC6", "#FFD6C2"], sorpresa: ["#96DCC5", "#FFE7A3"], "": ["#B9BBE6", "#F9CCDB"] };
+  const FAV = { nene: ["#86CCF2", "#FFE7A3"], nena: ["#F5AFC6", "#FFD6C2"], sorpresa: ["#96DCC5", "#FFE7A3"], infantil: ["#FFC46B", "#FF9E8A"], adulto: ["#B3A6F0", "#FFE08A"], quince: ["#E8AEDB", "#D9D9E8"], "": ["#B9BBE6", "#F9CCDB"] };
+  function faviconCake(bg, top) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="' + bg + '"/>' +
+      '<rect x="14" y="30" width="36" height="20" rx="5" fill="#fff"/><path d="M14 36c4 4 8 4 12 0s8-4 12 0 8 4 12 0" fill="none" stroke="' + top + '" stroke-width="3"/>' +
+      '<rect x="30" y="18" width="4" height="12" rx="2" fill="#fff"/><path d="M32 9c3 3 3 6 0 7-3-1-3-4 0-7z" fill="#FFD36B"/></svg>';
+  }
   function faviconSVG(bg, cheek) {
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="' + bg + '"/>' +
       '<circle cx="32" cy="35" r="19" fill="#fff"/><path d="M30 16c-4 0-6 3-4 5 1 1 3 0 3-1" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>' +
@@ -700,14 +1050,47 @@ a.btn { text-decoration: none; display: inline-block; }
       '<path d="M27.5 42c2.5 2.6 6.5 2.6 9 0" fill="none" stroke="#3A3F4F" stroke-width="2.4" stroke-linecap="round"/></svg>';
   }
   function applyBaby() {
-    const b = view === "plan" ? state.setup.bebe : "";
+    const b = view === "plan" ? chosen() : "";
     if (b) document.documentElement.setAttribute("data-baby", b); else document.documentElement.removeAttribute("data-baby");
     const f = document.getElementById("favicon"), c = FAV[b || ""] || FAV[""];
-    if (f) f.href = "data:image/svg+xml," + encodeURIComponent(faviconSVG(c[0], c[1]));
+    if (f) f.href = "data:image/svg+xml," + encodeURIComponent(view === "plan" && isCumple() ? faviconCake(c[0], c[1]) : faviconSVG(c[0], c[1]));
   }
   let picker = false;
   let confirmReset = false;
+  function cumplePickerHTML() {
+    const s = state.setup, cur = s.tipo, first = !cur;
+    return `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="pick-title">
+      <div class="modal-card">
+        <div class="modal-hero" aria-hidden="true"><span>${ic("party-popper")}</span><span>${ic("cake")}</span><span>${ic("star")}</span></div>
+        <div><p class="eyebrow">${first ? "Plantilla Cumpleaños" : "Para pintar tu planner"}</p>
+        <h2 id="pick-title">${first ? "¡Armemos un cumple inolvidable!" : "¿Qué tipo de cumple es?"}</h2>
+        <p class="muted">${first ? "Contanos quién cumple y qué tipo de festejo es. Con eso armamos tu ruta, tu presupuesto y tus colores." : "Si cambiás el tipo, cambian las tareas y el presupuesto sugerido."}</p></div>
+        <div class="pick-step">
+          <span class="step-n">1</span>
+          <div class="pick-row">
+            <label class="field pick-name" for="pick-name">¿Quién cumple?
+              <input type="text" id="pick-name" value="${esc(s.cumpleNombre || "")}" placeholder="Ej: Valentina" autocomplete="off"></label>
+            <label class="field pick-name pick-age" for="pick-age">¿Cuántos cumple?
+              <input type="number" id="pick-age" value="${esc(s.edad || "")}" placeholder="Ej: 5" min="1" max="120" inputmode="numeric"></label>
+          </div>
+          <p class="pick-err" id="pick-err" role="alert" hidden>Escribí el nombre de quien cumple.</p>
+        </div>
+        <div class="pick-step step-2">
+          <span class="step-n">2</span>
+          <p class="step-l">¿Qué tipo de cumple es?</p>
+          <div class="choices">${Object.entries(CUMPLE_TYPES).map(([k, b]) => `
+            <button class="choice ${k}${cur === k ? " sel" : ""}" data-act="pickcumple" data-id="${k}">
+              <span class="ico">${ic(b.icon)}</span>
+              <span>${b.name}<br><small>${b.hint}</small></span>
+              <span class="swatches">${b.sw.map(c => `<i style="background:${c}"></i>`).join("")}</span>
+            </button>`).join("")}</div>
+        </div>
+        ${cur ? '<button class="btn ghost" data-act="closepicker" style="justify-self:center">Dejar como está</button>' : ""}
+        ${!cur && authReady() && !session ? `<p class="have-acct">¿Ya tenés tu planner guardado? <button class="link-btn" data-act="openauth">Ingresá a tu cuenta</button></p>` : ""}
+      </div></div>`;
+  }
   function pickerHTML() {
+    if (isCumple()) return cumplePickerHTML();
     const cur = state.setup.bebe;
     const first = !cur;
     const noName = !!state.setup.sinNombre;
@@ -747,7 +1130,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function freshState() {
     return {
-      setup: { nombre: "", papa: "", bebe: "", bebeNombre: "", fecha: "", hora: "", invitados: "", presupuesto: "", lugar: "" },
+      setup: { nombre: "", papa: "", bebe: "", bebeNombre: "", tipo: "", cumpleNombre: "", edad: "", sorpresa: false, fecha: "", hora: "", invitados: "", presupuesto: "", lugar: "" },
       inv: { direccion: "", fin: "19:00", regalos: "", contacto: "", vestimenta: "" },
       done: {}, notes: {}, gastos: {}, guests: [], fields: {}, itin: null, itinMeta: { titulo: "", pie: "" }
     };
@@ -757,15 +1140,20 @@ a.btn { text-decoration: none; display: inline-block; }
   let tab = "ruta";
   let saveMode = "local";
   let saveMsg = "";
-  const LS_KEY = "yo-organizo-babyshower";
-  try { const v = localStorage.getItem("yo-organizo-view"); if (v) { const o = JSON.parse(v); view = o.view || view; tab = o.tab || tab; } } catch (e) {}
-  try { const s = localStorage.getItem(LS_KEY); if (s) state = Object.assign(freshState(), JSON.parse(s)); } catch (e) {}
+  const lsKey = kind => "yo-organizo-" + (kind || EV);
+  function loadLocal(kind) {
+    try { const raw = localStorage.getItem(lsKey(kind)); if (raw) { const o = JSON.parse(raw); return Object.assign(freshState(), o, { setup: Object.assign(freshState().setup, o.setup || {}) }); } } catch (e) {}
+    return freshState();
+  }
+  try { const v = localStorage.getItem("yo-organizo-view"); if (v) { const o = JSON.parse(v); view = o.view || view; tab = o.tab || tab; EV = o.ev === "cumple" ? "cumple" : "babyshower"; } } catch (e) {}
+  state = loadLocal();
+  applyPack();
 
   let docRef = null;
   let writing = Promise.resolve();
   let saveTimer = null;
   function persist() {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+    try { localStorage.setItem(lsKey(), JSON.stringify(state)); } catch (e) {}
     if (session) { queuePush(); return; }
     if (!docRef) { setSave(saveMode === "local" ? "Guardado en este navegador" : ""); return; }
     clearTimeout(saveTimer);
@@ -794,12 +1182,15 @@ a.btn { text-decoration: none; display: inline-block; }
       else if (!session && prev) { render(); }
     });
   }
-  function hasLocalData() { return !!(state.setup && state.setup.bebe); }
+  function hasLocalData() { return !!(state.setup && chosen()); }
   async function pullRemote() {
     setSave("Buscando tus datos…");
-    const { data, error } = await sb.from("plans").select("data, updated_at").eq("user_id", session.user.id).maybeSingle();
+    const kind = EV;
+    const { data, error } = await sb.from("plans").select("data, updated_at").eq("user_id", session.user.id).eq("kind", kind).maybeSingle();
+    if (kind !== EV) return;
     if (error) { setSave("No pudimos leer tu cuenta"); toast("No pudimos conectar con tu cuenta. Probá de nuevo en un rato.", "cloud-off"); return; }
     if (!data) {
+      if (!hasLocalData()) { setSave(""); render(); return; }
       await pushNow();
       if (hasLocalData()) toast("Listo: tu planner quedó guardado en tu cuenta", "cloud");
       render(); return;
@@ -810,8 +1201,9 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function useRemote(remote) {
     state = remote;
-    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
-    picker = !state.setup.bebe; view = state.setup.bebe ? "plan" : view;
+    try { localStorage.setItem(lsKey(), JSON.stringify(state)); } catch (e) {}
+    applyPack();
+    picker = !chosen(); view = chosen() ? "plan" : view;
     setSave("Guardado en tu cuenta"); render();
   }
   function queuePush() {
@@ -821,7 +1213,8 @@ a.btn { text-decoration: none; display: inline-block; }
   function pushNow() {
     if (!session) return Promise.resolve();
     const snapshot = JSON.parse(JSON.stringify(state));
-    pushing = pushing.then(() => sb.from("plans").upsert({ user_id: session.user.id, data: snapshot, updated_at: new Date().toISOString() }))
+    const kind = EV;
+    pushing = pushing.then(() => sb.from("plans").upsert({ user_id: session.user.id, kind, data: snapshot, updated_at: new Date().toISOString() }, { onConflict: "user_id,kind" }))
       .then(r => setSave(r && r.error ? "No se pudo guardar en tu cuenta" : "Guardado en tu cuenta"), () => setSave("No se pudo guardar en tu cuenta"));
     return pushing;
   }
@@ -838,7 +1231,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   async function logout() {
     await pushing; await sb.auth.signOut();
-    state = freshState(); try { localStorage.removeItem(LS_KEY); } catch (e) {}
+    state = freshState(); try { localStorage.removeItem(lsKey()); } catch (e) {}
     session = null; picker = true; view = "plan"; render(); toast("Saliste de tu cuenta. Tus datos quedan guardados en ella.", "log-out");
   }
   function accountChip() {
@@ -875,13 +1268,13 @@ a.btn { text-decoration: none; display: inline-block; }
         <div><h2 id="cf-title">Encontramos dos planners</h2>
         <p class="muted">Tu cuenta ya tenía un planner guardado y este navegador tiene otro. ¿Con cuál seguimos?</p></div>
         <div class="cf-options">
-          <button class="cf-opt" data-act="cfremote">${ic("cloud")}<b>El de mi cuenta</b><span>${rn.bebeNombre ? "Baby shower de " + esc(rn.bebeNombre) : "Baby shower"}${when ? " · guardado el " + when : ""}</span></button>
-          <button class="cf-opt" data-act="cflocal">${ic("monitor-smartphone")}<b>El de este navegador</b><span>${state.setup.bebeNombre ? "Baby shower de " + esc(state.setup.bebeNombre) : "Baby shower"} · reemplaza al de la cuenta</span></button>
+          <button class="cf-opt" data-act="cfremote">${ic("cloud")}<b>El de mi cuenta</b><span>${esc(eventTitle(conflict.remote))}${when ? " · guardado el " + when : ""}</span></button>
+          <button class="cf-opt" data-act="cflocal">${ic("monitor-smartphone")}<b>El de este navegador</b><span>${esc(eventTitle(state))} · reemplaza al de la cuenta</span></button>
         </div>
       </div></div>`;
   }
   function setSave(msg) { saveMsg = msg; const el = document.getElementById("save"); if (el) el.textContent = msg; }
-  function rememberView() { try { localStorage.setItem("yo-organizo-view", JSON.stringify({ view, tab })); } catch (e) {} }
+  function rememberView() { try { localStorage.setItem("yo-organizo-view", JSON.stringify({ view, tab, ev: EV })); } catch (e) {} }
 
   async function connect() {
     if (!window.claude || !window.claude.use) return;
@@ -895,7 +1288,7 @@ a.btn { text-decoration: none; display: inline-block; }
       docRef = ref; saveMode = "cloud";
       if (snap.exists) {
         state = Object.assign(freshState(), snap.data());
-        try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+        try { localStorage.setItem(lsKey(), JSON.stringify(state)); } catch (e) {}
         setSave("Guardado en tu cuenta");
         render();
       } else {
@@ -931,6 +1324,10 @@ a.btn { text-decoration: none; display: inline-block; }
   }
 
   // ---------- Vistas ----------
+  function savedLine(kind) {
+    const st = kind === EV ? state : loadLocal(kind);
+    return chosen(st, kind) ? `<span class="tpl-saved">${ic("bookmark")} Seguir: ${esc(eventTitle(st, kind))}</span>` : "";
+  }
   function homeView() {
     return `
       <div class="hero">
@@ -944,6 +1341,7 @@ a.btn { text-decoration: none; display: inline-block; }
             <span class="tpl-top"><span class="icon-bubble">${ic(t.icon)}</span><span class="tag">${t.open ? "Disponible" : ic("lock") + " Próximamente"}</span></span>
             <h3>${t.name}</h3>
             <p class="muted">${t.desc}</p>
+            ${t.open ? savedLine(t.id) : ""}
           </button>`).join("")}
       </div>
       <div class="how">
@@ -970,10 +1368,12 @@ a.btn { text-decoration: none; display: inline-block; }
 
     return `
       <div class="plan-head">
-        <div class="head-row"><p class="eyebrow">Baby shower${s.lugar ? " · " + esc(s.lugar) : ""}</p>
-        ${s.bebe ? `<button class="baby-chip" data-act="changebaby" title="Cambiar colores">${ic(BABY[s.bebe].icon)} ${BABY[s.bebe].label} · cambiar</button>` : `<button class="baby-chip" data-act="changebaby">${ic("palette")} Elegir colores</button>`}</div>
-        <h1>${babyName() ? "Baby shower de <span class=\"baby-name\">" + esc(babyName()) + "</span>" : s.nombre ? "El baby shower de " + esc(s.nombre) : "Tu baby shower"}</h1>
-        ${parents() ? `<p class="muted">Celebramos con ${esc(parents())} la dulce espera</p>` : ""}
+        <div class="head-row"><p class="eyebrow">${isCumple() ? "Cumpleaños" : "Baby shower"}${s.lugar ? " · " + esc(s.lugar) : ""}</p>
+        ${isCumple()
+          ? (s.tipo ? `<button class="baby-chip" data-act="changebaby" title="Cambiar tipo de cumple">${ic(CUMPLE_TYPES[s.tipo].icon)} ${CUMPLE_TYPES[s.tipo].label} · cambiar</button>` : `<button class="baby-chip" data-act="changebaby">${ic("palette")} Elegir tipo</button>`)
+          : (s.bebe ? `<button class="baby-chip" data-act="changebaby" title="Cambiar colores">${ic(BABY[s.bebe].icon)} ${BABY[s.bebe].label} · cambiar</button>` : `<button class="baby-chip" data-act="changebaby">${ic("palette")} Elegir colores</button>`)}</div>
+        <h1>${eventTitle(state, EV, true)}</h1>
+        ${isCumple() ? (s.sorpresa && s.tipo === "adulto" ? `<p class="muted">${ic("party-popper")} Fiesta sorpresa: shhh, que no se entere</p>` : "") : (parents() ? `<p class="muted">Celebramos con ${esc(parents())} la dulce espera</p>` : "")}
         ${e ? `<p class="muted">${e.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}${s.hora ? " · " + esc(s.hora) + " h" : ""}</p>` : ""}
       </div>
       ${ready ? "" : onboardingView(totalSteps)}
@@ -992,14 +1392,18 @@ a.btn { text-decoration: none; display: inline-block; }
         <summary>${ic("settings-2")} Datos del evento</summary>
         <form id="setup-form" novalidate>
         <div class="setup-grid">
+          ${isCumple() ? `
+          <label class="field">¿Quién cumple?<input type="text" id="s-cnombre" data-sf="cumpleNombre" value="${esc(s.cumpleNombre || "")}" placeholder="Ej: Valentina"></label>
+          <label class="field">¿Cuántos cumple?<input type="number" id="s-edad" data-sf="edad" min="1" value="${esc(s.edad || "")}" placeholder="Ej: 5"></label>` : `
           <label class="field">Nombre del bebé<input type="text" id="s-bebe" data-sf="bebeNombre" value="${esc(s.bebeNombre || "")}" placeholder="${s.bebe === "nena" ? "Ej: Emma" : s.bebe === "nene" ? "Ej: Noah" : "Si ya lo eligieron"}"></label>
           <label class="field">Nombre de la mamá<input type="text" id="s-nombre" data-sf="nombre" value="${esc(s.nombre)}" placeholder="Ej: Caro"></label>
-          <label class="field">Nombre del papá<input type="text" id="s-papa" data-sf="papa" value="${esc(s.papa || "")}" placeholder="Ej: Juan"></label>
+          <label class="field">Nombre del papá<input type="text" id="s-papa" data-sf="papa" value="${esc(s.papa || "")}" placeholder="Ej: Juan"></label>`}
           <label class="field">Fecha<input type="date" id="s-fecha" data-sf="fecha" value="${esc(s.fecha)}"></label>
           <label class="field">Hora de inicio<input type="time" id="s-hora" data-sf="hora" value="${esc(s.hora)}"></label>
           <label class="field">Invitados previstos<input type="number" id="s-inv" data-sf="invitados" min="0" value="${esc(s.invitados)}"></label>
           <label class="field">Presupuesto total ($)<input type="number" id="s-pres" data-sf="presupuesto" min="0" step="1000" value="${esc(s.presupuesto)}"></label>
-          <label class="field">Lugar<input type="text" id="s-lugar" data-sf="lugar" value="${esc(s.lugar)}" placeholder="Ej: casa de la abuela"></label>
+          <label class="field">Lugar<input type="text" id="s-lugar" data-sf="lugar" value="${esc(s.lugar)}" placeholder="${isCumple() ? "Ej: salón, casa, bar" : "Ej: casa de la abuela"}"></label>
+          ${isCumple() && s.tipo === "adulto" ? `<label class="onb-check"><input type="checkbox" id="s-sorp" data-sf="sorpresa" ${s.sorpresa ? "checked" : ""}> Es una fiesta sorpresa</label>` : ""}
         </div>
         <div class="save-row">
           <span class="dirty-msg">${ic("pencil")} Tenés cambios sin guardar</span>
@@ -1027,6 +1431,15 @@ a.btn { text-decoration: none; display: inline-block; }
   function onboardingView(totalSteps) {
     const s = state.setup;
     const who = babyName() ? "de " + esc(babyName()) : "";
+    const tipo = s.tipo;
+    const H = isCumple() ? {
+      intro: "Contanos lo básico de " + esc(titleInSentence()) + ". Con esto calculamos cuántos días faltan, cuánto podés gastar por invitado y el horario del día.",
+      fecha: { infantil: "Un sábado o domingo. Si cae en semana, el fin de semana más cercano.", adulto: "Viernes o sábado a la noche es lo más convocante.", quince: "Los mejores sábados se reservan con hasta un año." }[tipo] || "",
+      hora: { infantil: "Ej: 16 h. El horario de retiro lo ponés en la invitación.", adulto: "Ej: 21 h para una cena o 13 h para un asado.", quince: "Ej: 21:30 h. El salón te dice el horario de cierre." }[tipo] || "",
+      inv: tipo === "infantil" ? "¿Cuántos nenes calculás?" : "¿Cuántos invitados calculás?",
+      invHelp: tipo === "infantil" ? "Los adultos que se quedan los sumás después en la lista." : "Un número aproximado alcanza; después lo ajustás con la lista.",
+      lugarPh: { infantil: "Ej: salón Pelotero Feliz", adulto: "Ej: casa, bar o quincho", quince: "Ej: salón Los Aromos" }[tipo] || ""
+    } : null;
     const q = (id, key, type, label, help, ph, extra, req) => `
       <label class="onb-q" for="${id}">
         <span class="onb-label">${label}${req ? "" : ' <small>(opcional)</small>'}</span>
@@ -1038,24 +1451,27 @@ a.btn { text-decoration: none; display: inline-block; }
         <div class="onb-top">
           <span class="onb-step">${ic("footprints")} Paso 1 de ${totalSteps}</span>
           <h2>¡Genial! Ahora hagamos el primer paso</h2>
-          <p class="muted">Contanos lo básico del baby shower ${who}. Con esto calculamos cuántos días faltan, cuánto podés gastar por invitado y el horario del día.</p>
+          <p class="muted">${H ? H.intro : `Contanos lo básico del baby shower ${who}. Con esto calculamos cuántos días faltan, cuánto podés gastar por invitado y el horario del día.`}</p>
         </div>
         <form id="onb-form" class="onb-form" novalidate>
           <div class="onb-group">
             <p class="onb-gt">${ic("calendar-heart")} ¿Cuándo?</p>
-            ${q("o-fecha", "fecha", "date", "¿Qué día es?", "Lo ideal es entre la semana 28 y 34 de embarazo, un sábado o domingo.", "", "", true)}
-            ${q("o-hora", "hora", "time", "¿A qué hora empieza?", "Brunch 11 h, merienda 16 h, after 19 h.", "", "", true)}
+            ${q("o-fecha", "fecha", "date", "¿Qué día es?", H ? H.fecha : "Lo ideal es entre la semana 28 y 34 de embarazo, un sábado o domingo.", "", "", true)}
+            ${q("o-hora", "hora", "time", "¿A qué hora empieza?", H ? H.hora : "Brunch 11 h, merienda 16 h, after 19 h.", "", "", true)}
           </div>
           <div class="onb-group">
             <p class="onb-gt">${ic("users")} ¿Cuántos y cuánto?</p>
-            ${q("o-inv", "invitados", "number", "¿Cuántos invitados calculás?", "Un número aproximado alcanza; después lo ajustás con la lista.", "Ej: 30", 'min="1" inputmode="numeric"', true)}
+            ${q("o-inv", "invitados", "number", H ? H.inv : "¿Cuántos invitados calculás?", H ? H.invHelp : "Un número aproximado alcanza; después lo ajustás con la lista.", "Ej: 30", 'min="1" inputmode="numeric"', true)}
             ${q("o-pres", "presupuesto", "number", "¿Cuánto querés gastar en total? ($)", "Aunque sea estimado. Te lo repartimos por rubro.", "Ej: 400000", 'min="1" step="1000" inputmode="numeric"', true)}
           </div>
           <div class="onb-group">
+            ${H ? `<p class="onb-gt">${ic("map-pin")} ¿Dónde?</p>
+            ${q("o-lugar", "lugar", "text", "Lugar", "Si todavía no lo tenés, lo cargás después.", H.lugarPh, "", false)}
+            ${tipo === "adulto" ? `<label class="onb-check"><input type="checkbox" id="o-sorp" data-onb="sorpresa" ${s.sorpresa ? "checked" : ""}> <span><b>Es una fiesta sorpresa</b><br><small>Te sumamos los pasos para que no se entere.</small></span></label>` : ""}` : `
             <p class="onb-gt">${ic("heart")} ¿Quiénes y dónde?</p>
             ${q("o-mama", "nombre", "text", "Nombre de la mamá", "", "Ej: Caro", "", false)}
             ${q("o-papa", "papa", "text", "Nombre del papá", "", "Ej: Juan", "", false)}
-            ${q("o-lugar", "lugar", "text", "Lugar", "Si todavía no lo tenés, lo cargás después.", "Ej: casa de la abuela", "", false)}
+            ${q("o-lugar", "lugar", "text", "Lugar", "Si todavía no lo tenés, lo cargás después.", "Ej: casa de la abuela", "", false)}`}
           </div>
           <p class="pick-err" id="onb-err" role="alert" hidden>Completá la fecha, la hora, los invitados y el presupuesto para seguir.</p>
           <button class="btn onb-btn" type="submit">${ic("sparkles")} Guardar y empezar mi ruta</button>
@@ -1172,7 +1588,8 @@ a.btn { text-decoration: none; display: inline-block; }
   // Filtros de la lista de invitados (solo para esta visita)
   const gFilter = { rsvp: "all", side: "all", group: "all", q: "" };
   const DEFAULT_GROUPS = ["Familia", "Amigas", "Amigos", "Trabajo", "Otros"];
-  const groupList = () => state.groups || DEFAULT_GROUPS;
+  const groupList = () => state.groups || (isCumple() ? cpack().groups : DEFAULT_GROUPS);
+  const useSides = () => !isCumple();
   function sideLabel(k) {
     const s = state.setup;
     if (k === "mama") return "De " + (String(s.nombre || "").trim() || "la mamá");
@@ -1196,9 +1613,9 @@ a.btn { text-decoration: none; display: inline-block; }
     return `
       <form class="guest-add2" id="guest-form">
         <input type="text" id="guest-name" placeholder="Nombre del invitado" aria-label="Nombre del invitado" required>
-        <div class="seg" role="radiogroup" aria-label="De parte de">
+        ${useSides() ? `<div class="seg" role="radiogroup" aria-label="De parte de">
           ${["mama", "papa", "ambos"].map(k => `<label class="seg-opt"><input type="radio" name="guest-side" value="${k}" ${(state.lastSide || "ambos") === k ? "checked" : ""}><span>${esc(sideLabel(k))}</span></label>`).join("")}
-        </div>
+        </div>` : ""}
         <select id="guest-group" aria-label="Categoría">${groups.map(x => `<option ${state.lastGroup === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>
         <button class="btn" type="submit">${ic("user-plus")} Agregar</button>
       </form>
@@ -1219,11 +1636,11 @@ a.btn { text-decoration: none; display: inline-block; }
       </div>
       <div class="gtools">
         <label class="gsearch-wrap">${ic("search")}<input type="text" id="guest-q" value="${esc(gFilter.q)}" placeholder="Buscar invitado…" aria-label="Buscar invitado"></label>
-        <label class="pill-select">${ic("heart-handshake")}<select id="f-side" data-gf="side" aria-label="De parte de">
+        ${useSides() ? `        <label class="pill-select">${ic("heart-handshake")}<select id="f-side" data-gf="side" aria-label="De parte de">
           <option value="all">De parte de todos</option>
           ${["mama", "papa", "ambos"].map(k => `<option value="${k}" ${gFilter.side === k ? "selected" : ""}>${esc(sideLabel(k))} (${by("side", k)})</option>`).join("")}
           ${by("side", "") ? `<option value="" ${gFilter.side === "" ? "selected" : ""}>Sin lado (${by("side", "")})</option>` : ""}
-        </select></label>
+        </select></label>` : ""}
         <label class="pill-select">${ic("tags")}<select id="f-group" data-gf="group" aria-label="Categoría">
           <option value="all">Todas las categorías</option>
           ${groups.map(x => `<option ${gFilter.group === x ? "selected" : ""}>${esc(x)}</option>`).join("")}
@@ -1238,7 +1655,7 @@ a.btn { text-decoration: none; display: inline-block; }
           <div class="gl-main">
             <span class="gl-name">${esc(x.name)}</span>
             <span class="gl-tags">
-              <button class="tag side-${x.side || "none"}" data-act="cycleside" data-id="${x.id}" title="Cambiar de parte de quién">${ic(SIDE_ICON[x.side || ""])}${esc(sideLabel(x.side || ""))}</button>
+              ${useSides() ? `              <button class="tag side-${x.side || "none"}" data-act="cycleside" data-id="${x.id}" title="Cambiar de parte de quién">${ic(SIDE_ICON[x.side || ""])}${esc(sideLabel(x.side || ""))}</button>` : ""}
               <select class="tag tag-select" id="gg-${x.id}" data-ggroup="${x.id}" aria-label="Categoría de ${esc(x.name)}">${(groups.includes(x.group) ? groups : groups.concat([x.group])).map(o => `<option ${o === x.group ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>
             </span>
             ${r === "si" ? `<div class="gextra">
@@ -1260,14 +1677,14 @@ a.btn { text-decoration: none; display: inline-block; }
           <button class="x" data-act="delguest" data-id="${x.id}" aria-label="Quitar a ${esc(x.name)}" title="Quitar de la lista">${ic("trash-2")}</button>
         </div>`;
       }).join("")}</div>` : `<div class="empty">No hay invitados con esos filtros. <button class="link-btn" data-act="gclear">Ver todos</button></div>`)
-      : `<div class="empty">Tu lista está vacía. Empezá por las imprescindibles: la familia directa y las amigas más cercanas de la mamá.</div>`}`;
+      : `<div class="empty">${isCumple() ? (state.setup.tipo === "infantil" ? "Tu lista está vacía. Empezá por los compañeros de la sala o el grado y la familia. Los acompañantes adultos los sumás en cada nene." : "Tu lista está vacía. Empezá por la familia y los amigos más cercanos.") : "Tu lista está vacía. Empezá por las imprescindibles: la familia directa y las amigas más cercanas de la mamá."}</div>`}`;
   }
 
 
   function dayView() {
     return `
       <p class="section-intro muted">Cronograma para vos y tus ayudantes, armado a partir de tu hora de inicio (${esc(state.setup.hora)} h). Pasáselo una semana antes. El que ven los invitados está en la pestaña Itinerario.</p>
-      <div class="sched">${DAY.map(([m, t, d, who]) => `
+      <div class="sched">${DAY.filter(x => !x[4] || x[4](state.setup)).map(([m, t, d, who]) => `
         <div class="slot ${m < 0 ? "pre" : ""}">
           <time>${timeAt(m)}</time>
           <div><h3>${t}</h3><p class="muted">${d}</p><p class="who">${who}</p></div>
@@ -1298,7 +1715,37 @@ a.btn { text-decoration: none; display: inline-block; }
   function longDate(d) { return d ? d.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }) : "[fecha]"; }
   function plusDays(n) { const e = eventDate(); if (!e) return null; const d = new Date(e); d.setDate(d.getDate() + n); return d; }
 
+  function cumpleMessages() {
+    const s = state.setup, i = state.inv || {}, P = cpack().inv;
+    const n = partyName() || "[nombre]";
+    const t = titleInSentence();
+    const fecha = longDate(eventDate());
+    const rsvp = longDate(plusDays(P.rsvp));
+    const dir = i.direccion || "[dirección]";
+    const sorp = s.tipo === "adulto" && s.sorpresa;
+    const lines = [sorp ? `¡Fiesta sorpresa para ${n}! 🤫 No se lo cuentes.` : `¡Te invitamos a festejar ${t}! 🎂`, ``, `📅 ${fecha}`];
+    if (s.tipo === "infantil") lines.push(`🕓 Entrada ${s.hora || "[hora]"} h · Retiro ${i.fin || "[hora]"} h`);
+    else if (sorp) lines.push(`🕓 Llegá a las ${s.hora || "[hora]"} h en punto: después llega ${n}`);
+    else lines.push(`🕓 Desde las ${s.hora || "[hora]"} h`);
+    lines.push(`📍 ${dir}`);
+    if (i.regalos) lines.push(`🎁 ${i.regalos}`);
+    if (i.vestimenta) lines.push(`👗 ${i.vestimenta}`);
+    if (s.tipo === "infantil") lines.push(`Si tiene alguna alergia, avisanos.`);
+    lines.push(``, `Confirmá antes del ${rsvp}${i.contacto ? " a " + i.contacto : ""}.`, `¡Te esperamos!`);
+    return [
+      { id: "std", when: offLabel(P.std), title: "Reservá la fecha", to: s.tipo === "quince" ? "Todos los invitados" : "Quienes viajan o tienen agenda complicada",
+        text: `¡Hola! Reservate el ${fecha}: festejamos ${t}${s.lugar ? " en " + s.lugar : ""}.${sorp ? " Es sorpresa, ¡no se lo cuentes!" : ""} En unos días te mando la invitación con todos los detalles.` },
+      { id: "inv", when: offLabel(P.inv), title: "Invitación", to: s.tipo === "infantil" ? "Las familias de los nenes" : "Todos los invitados", text: lines.join("\n") },
+      { id: "pend", when: offLabel(P.rsvp), title: "Recordatorio para confirmar", to: "Quienes no respondieron",
+        text: `¡Hola! Te escribo por ${t} el ${fecha}. ¿Me confirmás si ${s.tipo === "infantil" ? "viene" : "venís"}? Así cerramos la comida. ¡Gracias!` },
+      { id: "prev", when: offLabel(P.prev), title: "Recordatorio final", to: "Quienes confirmaron",
+        text: `¡Ya falta poco! Te esperamos el ${fecha} a las ${s.hora || "[hora]"} h en ${dir}.${sorp ? " Acordate: llegá puntual y en silencio 🤫" : ""} Cualquier cosa, escribime.` },
+      { id: "gracias", when: "La semana siguiente", title: "Agradecimiento", to: "Cada invitado, de a uno",
+        text: s.tipo === "infantil" ? `¡Gracias por venir al cumple de ${n}! La pasó genial y le encantó el regalo 🎉` : `¡Gracias por venir a ${t} y por el regalo! Fue hermoso compartirlo con vos 🎉` }
+    ];
+  }
   function messages() {
+    if (isCumple()) return cumpleMessages();
     const s = state.setup, i = state.inv || {};
     const nombre = partyName() || "[nombre del bebé o de la mamá]";
     const fecha = longDate(eventDate());
@@ -1333,14 +1780,15 @@ a.btn { text-decoration: none; display: inline-block; }
     const i = state.inv || {};
     const g = state.guests;
     const sent = g.filter(x => x.sent).length;
+    const P = isCumple() ? cpack().inv : { std: -56, inv: -35, rsvp: -10, prev: -2 };
     const steps = [
-      ["Reservá la fecha", plusDays(-56), "Solo a quienes viajan"],
-      ["Mandar invitación", plusDays(-35), "A todos"],
-      ["Fecha límite para confirmar", plusDays(-10), "Va escrita en la invitación"],
-      ["Recordatorio final", plusDays(-2), "A los que confirmaron"]
+      ["Reservá la fecha", plusDays(P.std), isCumple() && state.setup.tipo === "quince" ? "A todos" : "Solo a quienes viajan"],
+      ["Mandar invitación", plusDays(P.inv), "A todos"],
+      ["Fecha límite para confirmar", plusDays(P.rsvp), "Va escrita en la invitación"],
+      ["Recordatorio final", plusDays(P.prev), "A los que confirmaron"]
     ];
     return `
-      <p class="section-intro muted">Una planner manda la invitación entre 4 y 6 semanas antes y siempre pone una fecha límite para confirmar. Estas son tus fechas:</p>
+      <p class="section-intro muted">${isCumple() ? `Una planner manda la invitación ${offLabel(P.inv)} y siempre pone una fecha límite para confirmar. Estas son tus fechas:` : "Una planner manda la invitación entre 4 y 6 semanas antes y siempre pone una fecha límite para confirmar. Estas son tus fechas:"}</p>
       <div class="stats">${steps.map(([t, d, n]) => `
         <div class="stat"><span class="eyebrow">${t}</span><span class="big" style="font-size:22px">${d ? fmtDate(d) : "—"}</span><span class="muted">${n}</span></div>`).join("")}</div>
 
@@ -1434,7 +1882,9 @@ a.btn { text-decoration: none; display: inline-block; }
       <div class="sheet">
         <section class="sheet-sec"><h3 class="sheet-title">El evento</h3>
           <div class="sheet-group">
-            ${row("Bebé", babyName() + (s.bebe ? (babyName() ? " · " : "") + BABY[s.bebe].label : ""))}${row("Mamá", s.nombre)}${row("Papá", s.papa || "")}
+            ${isCumple()
+              ? row("Cumpleañero", s.cumpleNombre || "") + row("Cumple", s.tipo === "quince" ? 15 : (s.edad || "")) + row("Tipo", s.tipo ? CUMPLE_TYPES[s.tipo].label + (s.tipo === "adulto" && s.sorpresa ? " · sorpresa" : "") : "")
+              : row("Bebé", babyName() + (s.bebe ? (babyName() ? " · " : "") + BABY[s.bebe].label : "")) + row("Mamá", s.nombre) + row("Papá", s.papa || "")}
             ${row("Fecha", eventDate() ? longDate(eventDate()) : "")}${row("Horario", s.hora + (i.fin ? " a " + i.fin : "") + " h")}
             ${row("Lugar", s.lugar)}${row("Dirección", i.direccion)}${row("Invitados previstos", s.invitados)}${row("Presupuesto", money(s.presupuesto))}
             ${row("Lista de regalos", i.regalos)}${row("Confirmar a", i.contacto)}
@@ -1457,7 +1907,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function itinMeta() {
     const m = state.itinMeta || {};
-    return { titulo: m.titulo || "Baby shower de " + (partyName() || "[nombre]"), pie: m.pie || "¡Gracias por acompañarnos en este momento tan especial!" };
+    return { titulo: m.titulo || (isCumple() ? eventTitle() : "Baby shower de " + (partyName() || "[nombre]")), pie: m.pie || "¡Gracias por acompañarnos en este momento tan especial!" };
   }
   function editItin(fn) { state.itin = itinItems().map(x => Object.assign({}, x)); fn(state.itin); state.itin.sort((a, b) => a.min - b.min); persist(); rerenderKeepScroll(); }
 
@@ -1465,7 +1915,7 @@ a.btn { text-decoration: none; display: inline-block; }
     const m = itinMeta(), i = state.inv || {}, s = state.setup;
     return `
       <div class="itin-card">
-        <span class="icon-bubble" style="margin:0 auto 8px">${ic(state.setup.bebe === "sorpresa" ? "sparkles" : "baby")}</span>
+        <span class="icon-bubble" style="margin:0 auto 8px">${ic(isCumple() ? "cake" : state.setup.bebe === "sorpresa" ? "sparkles" : "baby")}</span>
         <p class="itin-eyebrow">Itinerario</p>
         <h2 class="itin-title">${esc(m.titulo)}</h2>
         <p class="itin-sub">${esc(longDate(eventDate()))}${s.lugar ? " · " + esc(s.lugar) : ""}${i.direccion ? "<br>" + esc(i.direccion) : ""}</p>
@@ -1532,6 +1982,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
   // ---------- Render y eventos ----------
   const app = document.getElementById("app");
   function render() {
+    applyPack();
     app.innerHTML = `
       <div class="topbar">
         <button class="brand" data-act="home"><span class="icon-bubble brand-ico">${ic("heart-handshake")}</span>Yo Organizo</button>
@@ -1540,9 +1991,21 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       ${view === "plan" ? planView() : homeView()}
       ${conflict ? conflictHTML() : authOpen ? authHTML() : picker ? pickerHTML() : ""}`;
     applyBaby();
-    document.title = view === "plan" && partyName() ? "Baby shower de " + partyName() + " · Yo Organizo" : "Yo Organizo";
+    document.title = view === "plan" && partyName() ? eventTitle() + " · Yo Organizo" : "Yo Organizo";
     drawIcons();
     openSet.forEach(id => { const d = document.getElementById(id); if (d) d.open = true; });
+  }
+  // Cambia entre plantillas (cada una guarda su propio planner)
+  function switchEvent(kind) {
+    if (!kind || kind === EV) return;
+    EV = kind;
+    state = loadLocal();
+    tab = "ruta"; confirmReset = false; conflict = null;
+    openSet.clear();
+    gFilter.rsvp = gFilter.side = gFilter.group = "all"; gFilter.q = "";
+    applyPack();
+    const sky = document.getElementById("sky-slot"); if (sky) sky.innerHTML = skyHTML();
+    if (session) pullRemote(); else setSave("");
   }
   // Mantiene abiertos los desplegables y el foco del campo al volver a dibujar
   const openSet = new Set();
@@ -1561,7 +2024,8 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     if (!el) return;
     const act = el.dataset.act, id = el.dataset.id;
     if (act === "open") {
-      if (!state.setup.bebe) { picker = true; render(); setTimeout(() => { const n = document.getElementById("pick-name"); if (n) n.focus(); }, 300); return; }
+      switchEvent(id);
+      if (!chosen()) { picker = true; render(); setTimeout(() => { const n = document.getElementById("pick-name"); if (n) n.focus(); }, 300); return; }
       view = "plan"; rememberView(); render(); window.scrollTo(0, 0);
     }
     else if (act === "gotask") {
@@ -1608,6 +2072,26 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       if (!wasPlan) window.scrollTo(0, 0);
       balloons(b.sw);
       toast(welcome(), b.icon);
+    }
+    else if (act === "pickcumple") {
+      const T = CUMPLE_TYPES[id]; if (!T) return;
+      const nameInput = document.getElementById("pick-name"), ageInput = document.getElementById("pick-age");
+      const typed = nameInput ? nameInput.value.trim() : "";
+      if (!typed) {
+        const err = document.getElementById("pick-err"); if (err) err.hidden = false;
+        if (nameInput) { nameInput.classList.remove("shake"); void nameInput.offsetWidth; nameInput.classList.add("shake"); nameInput.focus(); }
+        return;
+      }
+      state.setup.cumpleNombre = typed;
+      state.setup.edad = id === "quince" ? 15 : (Number(ageInput && ageInput.value) || "");
+      if (id !== "adulto") state.setup.sorpresa = false;
+      if (state.setup.tipo !== id) { state.budget = null; state.itin = null; state.groups = null; }
+      state.setup.tipo = id; picker = false; persist();
+      const wasPlan = view === "plan";
+      view = "plan"; rememberView(); render();
+      if (!wasPlan) window.scrollTo(0, 0);
+      balloons(T.sw);
+      toast(welcome(), T.icon);
     }
     else if (act === "openauth") { authOpen = true; authSent = ""; authErr = ""; render(); setTimeout(() => { const e = document.getElementById("auth-email"); if (e) e.focus(); }, 200); }
     else if (act === "closeauth") { authOpen = false; authSent = ""; authErr = ""; render(); }
@@ -1749,12 +2233,13 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     if (ev.target.id === "setup-form") {
       ev.preventDefault();
       const f = ev.target, vals = {};
-      f.querySelectorAll("[data-sf]").forEach(inp => { vals[inp.dataset.sf] = inp.value.trim(); });
+      f.querySelectorAll("[data-sf]").forEach(inp => { vals[inp.dataset.sf] = inp.type === "checkbox" ? inp.checked : inp.value.trim(); });
       const bad = ["fecha", "hora", "invitados", "presupuesto"].map(k => f.querySelector(`[data-sf="${k}"]`))
         .filter(inp => inp && (!inp.value.trim() || (inp.type === "number" && !(Number(inp.value) > 0))));
       f.querySelectorAll(".shake").forEach(x => x.classList.remove("shake"));
       if (bad.length) { bad.forEach(inp => { void inp.offsetWidth; inp.classList.add("shake"); }); bad[0].focus(); const e = document.getElementById("setup-err"); if (e) e.hidden = false; return; }
-      Object.keys(vals).forEach(k => { state.setup[k] = (k === "invitados" || k === "presupuesto") ? Number(vals[k]) || 0 : vals[k]; });
+      Object.keys(vals).forEach(k => { state.setup[k] = (k === "invitados" || k === "presupuesto" || k === "edad") ? Number(vals[k]) || 0 : vals[k]; });
+      if (isCumple() && !String(state.setup.cumpleNombre || "").trim()) state.setup.cumpleNombre = "Cumpleañero";
       openSet.delete("setup");
       persist(); rerenderKeepScroll();
       toast("Cambios guardados", "check");
@@ -1763,7 +2248,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     if (ev.target.id === "onb-form") {
       ev.preventDefault();
       const vals = {};
-      ev.target.querySelectorAll("[data-onb]").forEach(inp => { vals[inp.dataset.onb] = inp.value.trim(); });
+      ev.target.querySelectorAll("[data-onb]").forEach(inp => { vals[inp.dataset.onb] = inp.type === "checkbox" ? inp.checked : inp.value.trim(); });
       const missing = [...ev.target.querySelectorAll("[data-onb][required]")].filter(inp => !inp.value.trim() || (inp.type === "number" && !(Number(inp.value) > 0)));
       ev.target.querySelectorAll(".shake").forEach(x => x.classList.remove("shake"));
       if (missing.length) {
@@ -1772,7 +2257,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
         const err = document.getElementById("onb-err"); if (err) err.hidden = false;
         return;
       }
-      ["fecha", "hora", "nombre", "papa", "lugar"].forEach(k => { state.setup[k] = vals[k] || ""; });
+      Object.keys(vals).forEach(k => { if (k !== "invitados" && k !== "presupuesto") state.setup[k] = typeof vals[k] === "boolean" ? vals[k] : (vals[k] || ""); });
       state.setup.invitados = Number(vals.invitados) || 0;
       state.setup.presupuesto = Number(vals.presupuesto) || 0;
       persist(); render(); window.scrollTo(0, 0);
@@ -1804,7 +2289,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     const name = document.getElementById("guest-name").value.trim();
     if (!name) return;
     const sideEl = document.querySelector('input[name="guest-side"]:checked');
-    const side = sideEl ? sideEl.value : "ambos", group = document.getElementById("guest-group").value;
+    const side = useSides() ? (sideEl ? sideEl.value : "ambos") : "", group = document.getElementById("guest-group").value;
     state.lastSide = side; state.lastGroup = group;
     state.guests.push({ id: "g" + Date.now().toString(36), name, group, side, rsvp: "pend" });
     persist(); rerenderKeepScroll();
@@ -1816,11 +2301,11 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
   window.addEventListener("keydown", e => {
     if (e.key !== "Escape") return;
     if (authOpen) { authOpen = false; render(); return; }
-    if (picker && state.setup.bebe) { picker = false; rerenderKeepScroll(); }
+    if (picker && chosen()) { picker = false; rerenderKeepScroll(); }
   });
   initAuth();
   // Primera visita: pedir nombre y nene/nena/sorpresa antes de empezar
-  if (!state.setup.bebe) picker = true;
+  if (view === "plan" && !chosen()) picker = true;
   render();
   if (picker) setTimeout(() => { const n = document.getElementById("pick-name"); if (n && !n.disabled) n.focus(); }, 350);
   connect();
