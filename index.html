@@ -549,10 +549,10 @@ a.btn { text-decoration: none; display: inline-block; }
     ["t8","f2",-50,"Decidir la comida: casera, mixta o contratada","La mixta suele ser la mejor relación precio-esfuerzo: salado contratado y dulces hechos por la familia. Para una merienda calculá 10 a 12 bocados salados y 4 a 5 dulces por persona."],
     ["t9","f2",-48,"Pedir presupuestos de torta y mesa dulce","Pedí al menos 3. Las buenas pasteleras se reservan con 4 a 6 semanas. Confirmá sabor, porciones, si incluye el adorno de arriba y cómo es la entrega."],
     ["t10","f2",-45,"Armar la lista de regalos","Una lista online compartida evita regalos repetidos. Sumá opciones de todos los precios y pedí talles de 3 a 6 meses en adelante: los bebés crecen rápido. La 'lluvia de pañales' siempre sirve."],
-    ["t35","f2",-52,"Mandar 'reservá la fecha' a quienes viajan","Un mensaje corto con la fecha y la ciudad, sin más detalles, para quienes tienen que organizarse con tiempo. El texto está listo en la pestaña Invitaciones."],
+    ["t35","f2",-52,"Mandar 'reservá la fecha' a quienes viajan","Un mensaje corto con la fecha y la ciudad, sin más detalles, para quienes tienen que organizarse con tiempo. Por ejemplo: '¡Reservate el sábado 12 de diciembre! En unos días te llega la invitación.'"],
     ["t11","f2",-43,"Definir quién saca las fotos","Si no contratás fotógrafo, designá a alguien que no tenga otra tarea. Pasale las fotos imprescindibles: la mamá con cada grupo, la torta, la deco antes de que llegue la gente."],
-    ["t12","f3",-40,"Diseñar la invitación","Tiene que tener: nombre de la mamá o del bebé, fecha, horario de inicio y fin, dirección, link a la lista de regalos, fecha límite para confirmar y a quién confirmar. Canva tiene plantillas gratis. Completá los datos en la pestaña Invitaciones y te arma el texto."],
-    ["t13","f3",-35,"Enviar las invitaciones","Mandala por WhatsApp de a una persona: imagen + texto con los datos. A las personas mayores, llamalas y después mandales los datos por escrito. Marcá a quién ya se la mandaste en la pestaña Invitaciones."],
+    ["t12","f3",-40,"Diseñar la invitación","Tiene que tener: nombre del bebé, fecha, horario, dirección, lista de regalos y hasta cuándo confirmar. Podés usar la invitación online de Yo Organizo o un diseño propio: en la pestaña Invitaciones elegís cuál mandar."],
+    ["t13","f3",-35,"Enviar las invitaciones","Mandala por WhatsApp de a una persona. Desde la pestaña Invitaciones, el botón Enviar abre WhatsApp con el link personal de cada invitado y después te muestra quién confirmó. A las personas mayores, además, llamalas."],
     ["t14","f3",-32,"Elegir 2 o 3 juegos","Más de 3 juegos cansa. Uno para romper el hielo al principio y uno divertido en el medio. Mirá la pestaña Ideas."],
     ["t15","f3",-30,"Cerrar el menú y las bebidas","Calculá 1 litro de bebida por persona entre aguas, gaseosas y jugos. Sumá opciones sin alcohol ricas (limonada, mocktails) pensando en la embarazada."],
     ["t16","f4",-26,"Comprar o hacer la decoración","Priorizá 3 puntos: la mesa dulce, un fondo para fotos y la entrada. Con globos de tu paleta y una guirnalda ya transformás el espacio."],
@@ -1982,6 +1982,15 @@ a.btn { text-decoration: none; display: inline-block; }
             </div>
             <p class="onb-help">A cada invitado le llega el mismo diseño, con su nombre y su mensaje.</p>`
             : `<p class="onb-help">Usamos la invitación de Yo Organizo, con tus datos y tus colores. A cada invitado le llega con su nombre y su mensaje.</p>`}
+            ${currentDesign() ? "" : `<details class="pz" id="inv-datos" style="margin-top:8px">
+              <summary>${ic("pencil")} Datos que muestra la invitación</summary>
+              <div class="setup-grid">
+                <label class="field">Dirección<input type="text" id="i-dir" data-inv="direccion" value="${esc(i.direccion || "")}" placeholder="Calle, número, ciudad"></label>
+                <label class="field">Hora de fin<input type="time" id="i-fin" data-inv="fin" value="${esc(i.fin || "")}"></label>
+                <label class="field">Lista de regalos<input type="text" id="i-reg" data-inv="regalos" value="${esc(i.regalos || "")}" placeholder="Link o una frase"></label>
+                <label class="field">Vestimenta (opcional)<input type="text" id="i-ves" data-inv="vestimenta" value="${esc(i.vestimenta || "")}" placeholder="Ej: algo en tonos verdes"></label>
+              </div>
+            </details>`}
           </div></div>
           <div class="flow-step"><span class="step-n">2</span><div><b>Personalizá a cada invitado</b> <span class="muted">(opcional)</span><p class="onb-help">En "Personalizar su invitación" ponés cómo aparece su nombre, su WhatsApp y un mensaje personal.</p></div></div>
           <div class="flow-step"><span class="step-n">3</span><div><b>Tocá "Enviar"</b><p class="onb-help">Se abre WhatsApp con un mensaje y el link a <b>su</b> invitación. Lo mandás desde ahí. Con "Ver" podés mirar antes cómo le llega.</p></div></div>
@@ -2012,38 +2021,7 @@ a.btn { text-decoration: none; display: inline-block; }
       <h2 style="margin:28px 0 8px">Tus fechas de envío</h2>
       <p class="section-intro muted">${isCumple() ? `Una planner manda la invitación ${offLabel(P.inv)} y siempre pone una fecha límite para confirmar. Estas son tus fechas:` : "Una planner manda la invitación entre 4 y 6 semanas antes y siempre pone una fecha límite para confirmar. Estas son tus fechas:"}</p>
       <div class="stats">${steps.map(([t, d, n]) => `
-        <div class="stat"><span class="eyebrow">${t}</span><span class="big" style="font-size:22px">${d ? fmtDate(d) : "—"}</span><span class="muted">${n}</span></div>`).join("")}</div>
-
-      <h2 style="margin:28px 0 12px">Cómo hacerla llegar</h2>
-      <div class="ideas">${CHANNELS.map(c => `
-        <div class="idea">
-          <span class="tpl-top"><span class="icon-bubble">${ic(["message-circle-heart","send","phone","gift","mail","clipboard-check"][CHANNELS.indexOf(c)] || "mail")}</span><span class="chip ok">${c.tag}</span></span>
-          <h3><b>${c.name}</b></h3>
-          <p class="muted"><b>Para:</b> ${c.who}</p>
-          <p>${c.how}</p>
-          <p class="muted">${c.avoid}</p>
-        </div>`).join("")}</div>
-
-      <h2 style="margin:28px 0 12px">Datos de la invitación</h2>
-      <div class="setup-grid" style="margin:0 0 20px">
-        <label class="field">Dirección<input type="text" id="i-dir" data-inv="direccion" value="${esc(i.direccion)}" placeholder="Calle, número, timbre"></label>
-        <label class="field">Hora de fin<input type="time" id="i-fin" data-inv="fin" value="${esc(i.fin)}"></label>
-        <label class="field">Link a la lista de regalos<input type="text" id="i-reg" data-inv="regalos" value="${esc(i.regalos)}" placeholder="https://…"></label>
-        <label class="field">Confirmar a<input type="text" id="i-con" data-inv="contacto" value="${esc(i.contacto)}" placeholder="Ej: Sofi al 11 2345 6789"></label>
-        <label class="field">Vestimenta (opcional)<input type="text" id="i-ves" data-inv="vestimenta" value="${esc(i.vestimenta)}" placeholder="Ej: algo en tonos verdes"></label>
-      </div>
-
-      <h2 style="margin:28px 0 4px">Mensajes listos para mandar</h2>
-      <p class="muted" style="margin-bottom:12px">Se completan con tus datos. Copialos y pegalos en WhatsApp o en un mail.</p>
-      <div class="msgs">${messages().map(m => `
-        <div class="msg">
-          <div class="msg-head"><div><span class="eyebrow">${m.when} · ${m.to}</span><h3><b>${m.title}</b></h3></div>
-            <div class="msg-actions">
-              <button class="btn ghost" data-act="copy" data-id="${m.id}">Copiar</button>
-              <a class="btn" href="https://wa.me/?text=${encodeURIComponent(m.text)}" target="_blank" rel="noopener">Abrir en WhatsApp</a>
-            </div></div>
-          <pre id="m-${m.id}">${esc(m.text)}</pre>
-        </div>`).join("")}</div>`;
+        <div class="stat"><span class="eyebrow">${t}</span><span class="big" style="font-size:22px">${d ? fmtDate(d) : "—"}</span><span class="muted">${n}</span></div>`).join("")}</div>`;
   }
 
   // ---------- Datos por tarea ----------
