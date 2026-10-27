@@ -20,6 +20,7 @@ Tu event planner de bolsillo: una guía paso a paso para organizar un evento sin
 - **Ficha**: resumen en renglones de todo lo cargado en cada paso, con acceso directo para editar cada tarea.
 - **Presupuesto**: arranca con el reparto sugerido; los rubros se pueden renombrar, cambiar de monto, agregar y eliminar, con control de lo gastado.
 - **Invitados**: tarjetas de resumen que filtran por respuesta, botones de Viene y No viene, acompañantes y notas para los confirmados, de parte de quién (mamá, papá o los dos), categorías propias y buscador.
+- **Invitación online con confirmación** (requiere cuenta): cada invitado recibe por WhatsApp su propio link, con su nombre y un mensaje personal. Confirma con un toque, suma cuántos van y deja una nota; con "Actualizar confirmaciones" las respuestas llegan a la lista. Se puede usar la invitación de Yo Organizo (`invitacion.html`) o un diseño propio (por ejemplo `invitaciones/noah.html`).
 - **Invitaciones**: fechas de envío, canales para hacerlas llegar, mensajes listos para copiar o abrir en WhatsApp y seguimiento de envíos.
 - **Itinerario**: el programa del evento para los invitados, editable y descargable para imprimir en A4.
 - **Cronograma interno**: horario del día para vos y tus ayudantes.
