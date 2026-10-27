@@ -124,6 +124,11 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .online-head > div { flex: 1 1 320px; display: grid; gap: 4px; }
 .online-head .btn { display: inline-flex; align-items: center; gap: 6px; }
 .online textarea { min-height: 70px; }
+.flow { display: grid; gap: 10px; background: var(--bg); border-radius: 18px; padding: 14px; }
+.flow-step { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.flow-step .step-n { background: var(--accent); color: var(--accent-ink); width: 28px; height: 28px; }
+.flow-step b { font-size: 15px; }
+.flow-seg { margin-top: 8px; }
 .pz { border: 1px solid var(--line); border-radius: 14px; padding: 0 12px; background: var(--bg); }
 .pz summary { cursor: pointer; padding: 10px 0; font-weight: 700; font-size: 13px; color: var(--accent-text); display: flex; align-items: center; gap: 6px; }
 .pz[open] { padding-bottom: 12px; }
@@ -1945,10 +1950,23 @@ a.btn { text-decoration: none; display: inline-block; }
           ${session ? `<button class="btn" data-act="syncrsvp" ${syncing ? "disabled" : ""}>${ic("refresh-cw")} ${syncing ? "Actualizando…" : "Actualizar confirmaciones"}</button>` : ""}
         </div>
         ${authReady() && !session ? `<div class="budget-note">${ic("cloud")} Para mandar invitaciones con confirmación, guardá tu planner en tu cuenta. <button class="link-btn" data-act="openauth">Ingresar</button></div>` : ""}
+        <div class="flow">
+          <div class="flow-step"><span class="step-n">1</span><div>
+            <b>Elegí qué invitación mandás</b>
+            <div class="seg flow-seg" role="radiogroup" aria-label="Qué invitación mandás">
+              <label class="seg-opt"><input type="radio" name="inv-mode" value="propio" ${i.diseno || state.invMode === "propio" ? "checked" : ""}><span>Mi diseño</span></label>
+              <label class="seg-opt"><input type="radio" name="inv-mode" value="yo" ${i.diseno || state.invMode === "propio" ? "" : "checked"}><span>La de Yo Organizo</span></label>
+            </div>
+            ${i.diseno || state.invMode === "propio" ? `<label class="field" style="margin-top:8px">Link de tu diseño publicado<input type="url" id="i-diseno" data-inv="diseno" value="${esc(i.diseno || "")}" placeholder="https://yoorganizo.vercel.app/invitaciones/…"></label>
+            <p class="onb-help">${i.diseno ? "Cada invitado va a recibir este diseño con su nombre y su mensaje." : "Pegá el link de tu diseño. Ej: https://yoorganizo.vercel.app/invitaciones/noah.html"}</p>`
+            : `<p class="onb-help">Una invitación linda con tus datos y tus colores, lista para usar.</p>`}
+          </div></div>
+          <div class="flow-step"><span class="step-n">2</span><div><b>Personalizá a cada invitado</b> <span class="muted">(opcional)</span><p class="onb-help">En "Personalizar su invitación" ponés cómo aparece su nombre, su WhatsApp y un mensaje personal.</p></div></div>
+          <div class="flow-step"><span class="step-n">3</span><div><b>Tocá "Enviar"</b><p class="onb-help">Se abre WhatsApp con un mensaje y el link a <b>su</b> invitación. Lo mandás desde ahí. Con "Ver" podés mirar antes cómo le llega.</p></div></div>
+          <div class="flow-step"><span class="step-n">4</span><div><b>Recibí las respuestas</b><p class="onb-help">Cuando confirme, tocá "Actualizar confirmaciones" y aparece en tu lista con cuántos van y su nota.</p></div></div>
+        </div>
         <details class="pz" id="inv-config">
-          <summary>${ic("settings-2")} Diseño y mensaje de WhatsApp</summary>
-          <label class="field">Link de tu diseño (opcional)<input type="url" id="i-diseno" data-inv="diseno" value="${esc(i.diseno || "")}" placeholder="Vacío = usamos la invitación de Yo Organizo"></label>
-          <p class="onb-help" style="margin:4px 0 12px">Si tenés un diseño propio publicado, pegá su link. A cada invitado le agregamos su código personal.</p>
+          <summary>${ic("message-circle")} Editar el mensaje de WhatsApp</summary>
           <label class="field">Mensaje de WhatsApp<textarea id="i-wa" data-inv="waText" placeholder="${esc(defaultWa())}">${esc(i.waText || "")}</textarea></label>
           <p class="onb-help" style="margin-top:4px">Usá <b>{nombre}</b> para el nombre del invitado y <b>{link}</b> para su invitación. Si lo dejás vacío, usamos el texto de ejemplo.</p>
         </details>
@@ -2391,6 +2409,13 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (el.dataset.bname) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bname); if (c && el.value.trim()) c.name = el.value.trim(); }); return; }
     else if (el.dataset.bplan) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bplan); if (c) c.plan = el.value === "" ? null : Number(el.value) || 0; }); return; }
     else if (el.dataset.gasto) { state.gastos[el.dataset.gasto] = Number(el.value) || 0; }
+    else if (el.name === "inv-mode") {
+      state.invMode = el.value;
+      if (el.value === "yo") state.inv = Object.assign({}, state.inv, { diseno: "" });
+      persist(); rerenderKeepScroll();
+      if (el.value === "propio") setTimeout(() => { const d = document.getElementById("i-diseno"); if (d) d.focus(); }, 60);
+      return;
+    }
     else if (el.name === "pick-moment") { const err = document.getElementById("pick-err"); if (err) err.hidden = true; return; }
     else if (el.id === "pick-noname") {
       const n = document.getElementById("pick-name"); const err = document.getElementById("pick-err");
