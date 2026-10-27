@@ -1,5 +1,5 @@
 # Conecta el diseño exportado de Claude Design (invitación de Noah) con Yo Organizo.
-# Uso: python3 tools/conectar-diseno-noah.py <diseño-exportado.html> invitaciones/noah.html
+# Uso: python3 tools/conectar-diseno-noah.py <diseño-exportado.html> invitaciones/noah-diseno.html
 import json, re, sys
 src, out = sys.argv[1], sys.argv[2]
 s = open(src, encoding='utf-8').read()
@@ -89,7 +89,7 @@ head = '''<title>Baby shower de Noah · Invitación</title>
   <meta name="description" content="Tenés una invitación al baby shower de Noah. Abrila para confirmar si venís.">
   <meta property="og:title" content="Baby shower de Noah 💙">
   <meta property="og:description" content="Tenés una invitación. Abrila para confirmar si venís.">
-  <meta property="og:image" content="https://yoorganizo.vercel.app/invitaciones/noah-og.png">
+  <meta property="og:image" content="https://yoorganizo.vercel.app/invitaciones/noah-og.jpg">
   <meta property="og:type" content="website">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script>
