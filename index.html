@@ -128,7 +128,15 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .flow-step { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
 .flow-step .step-n { background: var(--accent); color: var(--accent-ink); width: 28px; height: 28px; }
 .flow-step b { font-size: 15px; }
-.flow-seg { margin-top: 8px; }
+.design-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 8px; max-width: 560px; }
+.design-card { position: relative; display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: center; background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 8px; cursor: pointer; }
+.design-card.on { border-color: var(--accent-text); box-shadow: 0 6px 16px -10px var(--accent-text); }
+.design-card input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.design-card input:focus-visible + * { outline: 2px solid var(--accent-text); }
+.design-card img, .design-yo { width: 96px; height: 50px; border-radius: 10px; object-fit: cover; }
+.design-yo { display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); font-size: 22px; }
+.design-card b { display: block; font-size: 14px; }
+.design-card small { color: var(--muted); font-size: 12px; }
 .pz { border: 1px solid var(--line); border-radius: 14px; padding: 0 12px; background: var(--bg); }
 .pz summary { cursor: pointer; padding: 10px 0; font-weight: 700; font-size: 13px; color: var(--accent-text); display: flex; align-items: center; gap: 6px; }
 .pz[open] { padding-bottom: 12px; }
@@ -1840,9 +1848,22 @@ a.btn { text-decoration: none; display: inline-block; }
   };
   function newToken() { const a = new Uint8Array(18); crypto.getRandomValues(a); return Array.from(a, b => b.toString(36).padStart(2, "0")).join("").slice(0, 28); }
   const guestPara = g => String(g.para || g.name || "").trim();
+  // Diseños propios publicados en invitaciones/ (el link es siempre el mismo; a cada invitado se le suma su código)
+  const DESIGNS = [
+    { id: "noah", name: "Velero de Noah", file: "invitaciones/noah.html", preview: "invitaciones/noah-og.jpg", kind: "babyshower",
+      match: s => String(s.bebeNombre || "").trim().toLowerCase() === "noah" }
+  ];
+  const siteBase = () => location.origin + location.pathname.replace(/[^/]*$/, "");
+  const availableDesigns = () => DESIGNS.filter(d => d.kind === EV && d.match(state.setup));
+  function currentDesign() {
+    const d = (state.inv || {}).diseno;
+    if (d === "yo") return null;
+    const list = availableDesigns();
+    return list.find(x => x.id === d) || list[0] || null;
+  }
   function inviteBase() {
-    const d = String((state.inv || {}).diseno || "").trim();
-    return d || (location.origin + location.pathname.replace(/[^/]*$/, "") + "invitacion.html");
+    const d = currentDesign();
+    return siteBase() + (d ? d.file : "invitacion.html");
   }
   function inviteLink(g) {
     if (!g.token) return "";
@@ -1953,13 +1974,14 @@ a.btn { text-decoration: none; display: inline-block; }
         <div class="flow">
           <div class="flow-step"><span class="step-n">1</span><div>
             <b>Elegí qué invitación mandás</b>
-            <div class="seg flow-seg" role="radiogroup" aria-label="Qué invitación mandás">
-              <label class="seg-opt"><input type="radio" name="inv-mode" value="propio" ${i.diseno || state.invMode === "propio" ? "checked" : ""}><span>Mi diseño</span></label>
-              <label class="seg-opt"><input type="radio" name="inv-mode" value="yo" ${i.diseno || state.invMode === "propio" ? "" : "checked"}><span>La de Yo Organizo</span></label>
+            ${availableDesigns().length ? `<div class="design-pick" role="radiogroup" aria-label="Qué invitación mandás">
+              ${availableDesigns().map(d => `<label class="design-card${currentDesign() && currentDesign().id === d.id ? " on" : ""}"><input type="radio" name="inv-mode" value="${d.id}" ${currentDesign() && currentDesign().id === d.id ? "checked" : ""}>
+                <img src="${d.preview}" alt="" loading="lazy"><span><b>${esc(d.name)}</b><small>Tu diseño</small></span></label>`).join("")}
+              <label class="design-card${currentDesign() ? "" : " on"}"><input type="radio" name="inv-mode" value="yo" ${currentDesign() ? "" : "checked"}>
+                <span class="design-yo">${ic("mail-open")}</span><span><b>La de Yo Organizo</b><small>Con tus datos y colores</small></span></label>
             </div>
-            ${i.diseno || state.invMode === "propio" ? `<label class="field" style="margin-top:8px">Link de tu diseño publicado<input type="url" id="i-diseno" data-inv="diseno" value="${esc(i.diseno || "")}" placeholder="https://yoorganizo.vercel.app/invitaciones/…"></label>
-            <p class="onb-help">${i.diseno ? "Cada invitado va a recibir este diseño con su nombre y su mensaje." : "Pegá el link de tu diseño. Ej: https://yoorganizo.vercel.app/invitaciones/noah.html"}</p>`
-            : `<p class="onb-help">Una invitación linda con tus datos y tus colores, lista para usar.</p>`}
+            <p class="onb-help">A cada invitado le llega el mismo diseño, con su nombre y su mensaje.</p>`
+            : `<p class="onb-help">Usamos la invitación de Yo Organizo, con tus datos y tus colores. A cada invitado le llega con su nombre y su mensaje.</p>`}
           </div></div>
           <div class="flow-step"><span class="step-n">2</span><div><b>Personalizá a cada invitado</b> <span class="muted">(opcional)</span><p class="onb-help">En "Personalizar su invitación" ponés cómo aparece su nombre, su WhatsApp y un mensaje personal.</p></div></div>
           <div class="flow-step"><span class="step-n">3</span><div><b>Tocá "Enviar"</b><p class="onb-help">Se abre WhatsApp con un mensaje y el link a <b>su</b> invitación. Lo mandás desde ahí. Con "Ver" podés mirar antes cómo le llega.</p></div></div>
@@ -2410,10 +2432,8 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (el.dataset.bplan) { editBudget(l => { const c = l.find(x => x.id === el.dataset.bplan); if (c) c.plan = el.value === "" ? null : Number(el.value) || 0; }); return; }
     else if (el.dataset.gasto) { state.gastos[el.dataset.gasto] = Number(el.value) || 0; }
     else if (el.name === "inv-mode") {
-      state.invMode = el.value;
-      if (el.value === "yo") state.inv = Object.assign({}, state.inv, { diseno: "" });
+      state.inv = Object.assign({}, state.inv, { diseno: el.value });
       persist(); rerenderKeepScroll();
-      if (el.value === "propio") setTimeout(() => { const d = document.getElementById("i-diseno"); if (d) d.focus(); }, 60);
       return;
     }
     else if (el.name === "pick-moment") { const err = document.getElementById("pick-err"); if (err) err.hidden = true; return; }
