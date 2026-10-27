@@ -31,7 +31,6 @@ rep('<div style="font-style:italic;font-size:36px;color:#2f4f73;line-height:1.1;
     '              <div style="font-family:\'Gloock\',serif;font-size:40px;color:#2f4f73;min-width:44px;text-align:center;">{{ total }}</div>\n'
     '              <button sc-camel-on-click="{{ plusOne }}" aria-label="Uno más" style="width:52px;height:52px;border-radius:50%;border:2px solid #a7c4db;background:#ffffff;color:#2f4f73;font-size:28px;line-height:1;cursor:pointer;">+</button>\n'
     '            </div>\n'
-    '            <input ref="{{ noteRef }}" sc-camel-default-value="{{ note }}" maxlength="300" placeholder="¿Algo que tengamos que saber? Alergias, horario…" style="width:100%;box-sizing:border-box;height:56px;border:1.5px solid #c9d9e6;border-radius:14px;padding:0 16px;font-family:\'EB Garamond\',serif;font-size:21px;color:#2f4f73;background:#ffffff;">\n'
     '            <button sc-camel-on-click="{{ saveExtra }}" style="height:56px;padding:0 32px;border:none;border-radius:999px;background:#2f4f73;color:#ffffff;font-family:\'Gloock\',serif;font-size:22px;cursor:pointer;">Guardar</button>\n'
     '            <sc-if value="{{ savedOk }}" hint-placeholder-val="{{ false }}"><div style="font-style:italic;font-size:21px;color:#3f7a5a;">¡Listo, lo anotamos!</div></sc-if>\n'
     '          </div>\n'

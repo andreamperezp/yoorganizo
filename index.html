@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg" id="favicon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&family=EB+Garamond:ital@1&display=swap">
 <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
@@ -1851,6 +1851,7 @@ a.btn { text-decoration: none; display: inline-block; }
   // Diseños propios publicados en invitaciones/ (el link es siempre el mismo; a cada invitado se le suma su código)
   const DESIGNS = [
     { id: "noah", name: "Velero de Noah", file: "invitaciones/noah.html", preview: "invitaciones/noah-og.jpg", kind: "babyshower",
+      card: "invitaciones/noah-card.jpg", cardName: { y: 128, size: 58, color: "#3f5f82", font: "'EB Garamond', Georgia, serif" },
       match: s => String(s.bebeNombre || "").trim().toLowerCase() === "noah" }
   ];
   const siteBase = () => location.origin + location.pathname.replace(/[^/]*$/, "");
@@ -1892,22 +1893,26 @@ a.btn { text-decoration: none; display: inline-block; }
     return (String((state.inv || {}).waText || "").trim() || defaultWa()).replace(/\{nombre\}/g, first).replace(/\{link\}/g, link);
   }
   function waUrl(g, link) { const d = String(g.phone || "").replace(/\D/g, ""); return "https://wa.me/" + d + "?text=" + encodeURIComponent(waText(g, link)); }
+  // Clave secreta del evento: permite crear invitaciones y leer sus respuestas sin cuenta
+  function inviteKey() {
+    if (!state.inviteKey) { const a = new Uint8Array(24); crypto.getRandomValues(a); state.inviteKey = Array.from(a, b => b.toString(36).padStart(2, "0")).join(""); persist(); }
+    return state.inviteKey;
+  }
   async function ensureInvite(g, quiet) {
-    if (!session) { authOpen = true; render(); return null; }
+    if (!sb) { if (!quiet) toast("No pudimos conectarnos. Revisá tu conexión y probá de nuevo.", "cloud-off"); return null; }
     const token = g.token || newToken();
-    const row = { token, kind: EV, guest_id: g.id, para: guestPara(g), nene: String(g.nene || "").trim(), mensaje: String(g.msg || "").trim(), event: eventSnapshot(), updated_at: new Date().toISOString() };
-    const { error } = await sb.from("invites").upsert(row, { onConflict: "token" });
-    if (error) { if (!quiet) toast("No pudimos preparar la invitación. Probá de nuevo en un rato.", "cloud-off"); return null; }
+    const { data, error } = await sb.rpc("upsert_invite", { p_key: inviteKey(), p_token: token, p_kind: EV, p_guest_id: g.id, p_para: guestPara(g), p_nene: String(g.nene || "").trim(), p_mensaje: String(g.msg || "").trim(), p_event: eventSnapshot() });
+    if (error || data !== true) { if (!quiet) toast("No pudimos preparar la invitación. Probá de nuevo en un rato.", "cloud-off"); return null; }
     if (!g.token) { g.token = token; persist(); }
     return inviteLink(g);
   }
   let syncing = false, lastSync = 0;
   async function syncRsvps(manual) {
-    if (!session || syncing) return;
+    if (!sb || syncing || !state.guests.some(g => g.token)) { if (manual && !syncing) toast("Todavía no generaste invitaciones", "info"); return; }
     syncing = true; if (manual) rerenderKeepScroll();
-    const kind = EV;
-    if (manual && state.guests.some(g => g.token)) await sb.from("invites").update({ event: eventSnapshot(), updated_at: new Date().toISOString() }).eq("kind", kind);
-    const { data, error } = await sb.from("invites").select("token, rsvp, plus, note, responded_at").eq("kind", kind);
+    const kind = EV, key = inviteKey();
+    if (manual) await sb.rpc("update_invites_event", { p_key: key, p_kind: kind, p_event: eventSnapshot() });
+    const { data, error } = await sb.rpc("list_invites", { p_key: key, p_kind: kind });
     syncing = false; lastSync = Date.now();
     if (kind !== EV) return;
     if (error) { if (manual) toast("No pudimos traer las confirmaciones. Probá de nuevo.", "cloud-off"); rerenderKeepScroll(); return; }
@@ -1916,13 +1921,47 @@ a.btn { text-decoration: none; display: inline-block; }
     state.guests.forEach(g => {
       const r = g.token && byToken[g.token]; if (!r) return;
       if (r.rsvp === "pend" && !g.fromInvite) return;
-      const next = { rsvp: r.rsvp, plus: Number(r.plus) || 0, note: r.note || g.note || "" };
-      if (g.rsvp !== next.rsvp || (Number(g.plus) || 0) !== next.plus || (r.note && r.note !== g.note)) changes++;
+      const next = { rsvp: r.rsvp, plus: Number(r.plus) || 0 };
+      if (g.rsvp !== next.rsvp || (Number(g.plus) || 0) !== next.plus) changes++;
       Object.assign(g, next, { respondedAt: r.responded_at, fromInvite: true });
     });
     if (changes) persist();
     rerenderKeepScroll();
     if (manual || changes) toast(changes ? (changes === 1 ? "1 respuesta nueva" : changes + " respuestas nuevas") : "Ya está todo al día", changes ? "party-popper" : "check");
+  }
+  // Imagen personalizada de la invitación (para mandar por WhatsApp junto con el link)
+  function loadImg(src) { return new Promise((ok, ko) => { const im = new Image(); im.onload = () => ok(im); im.onerror = ko; im.src = src; }); }
+  function fitText(ctx, text, max, size, font, style) {
+    let s2 = size; ctx.font = (style || "") + " " + s2 + "px " + font;
+    while (ctx.measureText(text).width > max && s2 > 20) { s2 -= 2; ctx.font = (style || "") + " " + s2 + "px " + font; }
+  }
+  async function inviteImage(g) {
+    const d = currentDesign(), c = document.createElement("canvas"), ctx = c.getContext("2d");
+    const para = "Para " + guestPara(g) + (g.nene ? " y " + g.nene : "");
+    try { await document.fonts.load("italic 58px 'EB Garamond'"); await document.fonts.load("600 60px Fredoka"); } catch (e) {}
+    if (d && d.card) {
+      const im = await loadImg(siteBase() + d.card);
+      c.width = im.width; c.height = im.height; ctx.drawImage(im, 0, 0);
+      const n = d.cardName; ctx.fillStyle = n.color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      fitText(ctx, para, c.width - 300, n.size, n.font, "italic"); ctx.fillText(para, c.width / 2, n.y);
+    } else {
+      const e = eventSnapshot(), pal = e.pal || PAL.adulto;
+      c.width = 1080; c.height = 1350;
+      const gr = ctx.createLinearGradient(0, 0, 0, c.height); gr.addColorStop(0, pal.soft); gr.addColorStop(1, pal.bg);
+      ctx.fillStyle = gr; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.strokeStyle = pal.accent; ctx.lineWidth = 6; ctx.strokeRect(36, 36, c.width - 72, c.height - 72);
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = pal.text; fitText(ctx, para, 900, 56, "Fredoka, sans-serif", "500"); ctx.fillText(para, 540, 200);
+      ctx.fillStyle = "#6B7180"; ctx.font = "700 30px Nunito, sans-serif"; ctx.fillText((isCumple() ? "TE INVITAMOS A FESTEJAR" : "TE INVITAMOS AL").split("").join(" "), 540, 330);
+      ctx.fillStyle = pal.ink; fitText(ctx, e.titulo, 940, 110, "Fredoka, sans-serif", "700"); ctx.fillText(e.titulo, 540, 470);
+      ctx.fillStyle = pal.text; ctx.font = "600 52px Fredoka, sans-serif";
+      ctx.fillText(e.fecha ? e.fecha.charAt(0).toUpperCase() + e.fecha.slice(1) : "", 540, 700);
+      ctx.fillStyle = "#2A2F3A"; ctx.font = "600 46px Nunito, sans-serif"; ctx.fillText(e.hora ? e.hora + (e.fin ? " a " + e.fin : "") + " h" : "", 540, 790);
+      ctx.fillStyle = "#6B7180"; fitText(ctx, e.lugar || e.direccion || "", 900, 44, "Nunito, sans-serif", "600"); ctx.fillText(e.lugar || e.direccion || "", 540, 870);
+      ctx.fillStyle = pal.accent; ctx.beginPath(); ctx.roundRect(240, 1080, 600, 100, 50); ctx.fill();
+      ctx.fillStyle = pal.ink; ctx.font = "700 40px Fredoka, sans-serif"; ctx.fillText("Confirmá desde tu link", 540, 1130);
+    }
+    return new Promise(ok => c.toBlob(ok, "image/jpeg", 0.9));
   }
   function sendList() {
     const g = state.guests;
@@ -1945,6 +1984,7 @@ a.btn { text-decoration: none; display: inline-block; }
           </div>
           <div class="send-actions">
             <button class="btn wa-btn" data-act="sendwa" data-id="${x.id}">${ic("message-circle")} ${x.sent ? "Reenviar" : "Enviar"}</button>
+            <button class="btn ghost" data-act="imginv" data-id="${x.id}" title="Imagen de su invitación con su nombre, para mandar por WhatsApp">${ic("image")}<span class="hide-sm"> Imagen</span></button>
             <button class="btn ghost" data-act="copylink" data-id="${x.id}" title="Copiar el link de su invitación">${ic("link")}<span class="hide-sm"> Copiar link</span></button>
             <button class="btn ghost" data-act="viewinv" data-id="${x.id}" title="Ver su invitación">${ic("eye")}<span class="hide-sm"> Ver</span></button>
           </div>
@@ -1968,9 +2008,9 @@ a.btn { text-decoration: none; display: inline-block; }
           <div><p class="eyebrow">Invitación online con confirmación</p>
           <h2>Mandá la invitación y recibí las respuestas</h2>
           <p class="muted">Cada invitado recibe su propio link: abre la invitación, toca "Sí, voy" o "No puedo ir", y su respuesta llega sola a tu lista.</p></div>
-          ${session ? `<button class="btn" data-act="syncrsvp" ${syncing ? "disabled" : ""}>${ic("refresh-cw")} ${syncing ? "Actualizando…" : "Actualizar confirmaciones"}</button>` : ""}
+          <button class="btn" data-act="syncrsvp" ${syncing ? "disabled" : ""}>${ic("refresh-cw")} ${syncing ? "Actualizando…" : "Actualizar confirmaciones"}</button>
         </div>
-        ${authReady() && !session ? `<div class="budget-note">${ic("cloud")} Para mandar invitaciones con confirmación, guardá tu planner en tu cuenta. <button class="link-btn" data-act="openauth">Ingresar</button></div>` : ""}
+        ${authReady() && !session && state.guests.some(g => g.token) ? `<p class="onb-help">${ic("info")} Las respuestas se guardan en este navegador. Para verlas también desde otro dispositivo, <button class="link-btn" data-act="openauth">guardá tu planner en tu cuenta</button>.</p>` : ""}
         <div class="flow">
           <div class="flow-step"><span class="step-n">1</span><div>
             <b>Elegí qué invitación mandás</b>
@@ -1993,7 +2033,7 @@ a.btn { text-decoration: none; display: inline-block; }
             </details>`}
           </div></div>
           <div class="flow-step"><span class="step-n">2</span><div><b>Personalizá a cada invitado</b> <span class="muted">(opcional)</span><p class="onb-help">En "Personalizar su invitación" ponés cómo aparece su nombre, su WhatsApp y un mensaje personal.</p></div></div>
-          <div class="flow-step"><span class="step-n">3</span><div><b>Tocá "Enviar"</b><p class="onb-help">Se abre WhatsApp con un mensaje y el link a <b>su</b> invitación. Lo mandás desde ahí. Con "Ver" podés mirar antes cómo le llega.</p></div></div>
+          <div class="flow-step"><span class="step-n">3</span><div><b>Mandásela</b><p class="onb-help"><b>Enviar</b> abre WhatsApp con un mensaje y el link a <b>su</b> invitación. <b>Imagen</b> arma la invitación con su nombre para mandarla como foto, junto al mensaje con su link. Con <b>Ver</b> mirás cómo le llega.</p></div></div>
           <div class="flow-step"><span class="step-n">4</span><div><b>Recibí las respuestas</b><p class="onb-help">Cuando confirme, tocá "Actualizar confirmaciones" y aparece en tu lista con cuántos van y su nota.</p></div></div>
         </div>
         <details class="pz" id="inv-config">
@@ -2231,7 +2271,6 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (act === "resetbudget") { state.budget = null; persist(); rerenderKeepScroll(); toast("Volviste al reparto sugerido", "rotate-ccw"); }
     else if (act === "sendwa" || act === "viewinv") {
       const g = state.guests.find(x => x.id === id); if (!g) return;
-      if (!session) { authOpen = true; render(); return; }
       const w = window.open("", "_blank");
       ensureInvite(g).then(link => {
         if (!link) { if (w) w.close(); return; }
@@ -2244,9 +2283,29 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       const g = state.guests.find(x => x.id === id); if (!g) return;
       ensureInvite(g).then(link => {
         if (!link) return;
-        const done = () => { g.sent = true; persist(); rerenderKeepScroll(); toast("Link copiado. Pegalo donde quieras.", "link"); };
-        try { navigator.clipboard.writeText(link).then(done, () => toast("Tu link: " + link, "link")); } catch (e) { toast("Tu link: " + link, "link"); }
+        const done = () => { g.sent = true; persist(); rerenderKeepScroll(); toast("Link copiado. Pegalo en WhatsApp.", "link"); };
+        try { navigator.clipboard.writeText(link).then(done, () => toast("Su link: " + link, "link")); } catch (e) { toast("Su link: " + link, "link"); }
       });
+    }
+    else if (act === "imginv") {
+      const g = state.guests.find(x => x.id === id); if (!g) return;
+      el.disabled = true; const label = el.innerHTML; el.textContent = "Preparando…";
+      ensureInvite(g).then(async link => {
+        if (!link) return;
+        const blob = await inviteImage(g);
+        const name = "Invitacion " + guestPara(g).replace(/[^\wáéíóúñü ]/gi, "").trim() + ".jpg";
+        const file = new File([blob], name, { type: "image/jpeg" });
+        const text = waText(g, link);
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try { await navigator.share({ files: [file], text }); g.sent = true; persist(); return; } catch (e) { if (e && e.name === "AbortError") return; }
+        }
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        try { await navigator.clipboard.writeText(text); toast("Imagen descargada y mensaje con su link copiado. Pegalo en WhatsApp junto a la imagen.", "image"); }
+        catch (e) { toast("Imagen descargada. Su link: " + link, "image"); }
+        g.sent = true; persist();
+      }).catch(() => toast("No pudimos armar la imagen. Probá de nuevo.", "cloud-off"))
+        .finally(() => { el.disabled = false; el.innerHTML = label; rerenderKeepScroll(); });
     }
     else if (act === "syncrsvp") { syncRsvps(true); }
     else if (act === "hidetask") {
@@ -2332,7 +2391,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (act === "home") { view = "home"; rememberView(); render(); }
     else if (act === "tab") {
       tab = id; rememberView(); rerenderKeepScroll();
-      if ((id === "invitaciones" || id === "invitados") && session && Date.now() - lastSync > 30000) syncRsvps(false);
+      if ((id === "invitaciones" || id === "invitados") && Date.now() - lastSync > 30000) syncRsvps(false);
     }
     else if (act === "copy") {
       const pre = document.getElementById("m-" + id);
@@ -2387,9 +2446,9 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       state.groups = left; if (gFilter.group === v) gFilter.group = "all";
       persist(); rerenderKeepScroll(); toast("Categoría quitada: " + v + ". Los invitados la conservan.", "tags");
     }
-    else if (act === "delguest" && (state.guests.find(x => x.id === id) || {}).token && session) {
+    else if (act === "delguest" && (state.guests.find(x => x.id === id) || {}).token && sb && state.inviteKey) {
       const tk = state.guests.find(x => x.id === id).token;
-      sb.from("invites").delete().eq("token", tk).then(() => {});
+      sb.rpc("delete_invite", { p_key: state.inviteKey, p_token: tk }).then(() => {});
       state.guests = state.guests.filter(g => g.id !== id); persist(); rerenderKeepScroll();
     }
     else if (act === "delguest") { state.guests = state.guests.filter(g => g.id !== id); persist(); rerenderKeepScroll(); }
@@ -2426,7 +2485,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (el.dataset.gp) {
       const [gid, k] = el.dataset.gp.split("|"); const g = state.guests.find(x => x.id === gid); if (!g) return;
       g[k] = el.value.trim(); persist();
-      if (g.token && session && k !== "phone") ensureInvite(g, true);
+      if (g.token && k !== "phone") ensureInvite(g, true);
       return;
     }
     else if (el.dataset.ggroup) { const g = state.guests.find(x => x.id === el.dataset.ggroup); if (g) g.group = el.value; }
@@ -2551,6 +2610,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
   render();
   if (picker) setTimeout(() => { const n = document.getElementById("pick-name"); if (n && !n.disabled) n.focus(); }, 350);
   connect();
+  setTimeout(() => { if (view === "plan" && (tab === "invitaciones" || tab === "invitados")) syncRsvps(false); }, 1200);
 })();
 </script>
 </body>

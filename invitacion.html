@@ -146,7 +146,6 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
     return '<div class="answer"><h2>¡Te esperamos!</h2>' +
       '<div class="extra"><span>¿Cuántos van en total?</span>' +
       '<div class="stepper"><button class="step" data-act="minus" aria-label="Uno menos">−</button><span class="count" aria-live="polite">' + total + '</span><button class="step" data-act="plus" aria-label="Uno más">+</button></div>' +
-      '<input type="text" id="note" maxlength="300" placeholder="¿Algo que tengamos que saber? Alergias, horario…" value="' + esc(note) + '">' +
       '<button class="save" data-act="save">Guardar</button>' +
       (saved ? '<span class="ok">¡Listo, lo anotamos!</span>' : "") + (err ? '<span class="err">' + esc(err) + "</span>" : "") +
       "</div>" +
