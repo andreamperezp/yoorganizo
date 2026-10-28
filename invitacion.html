@@ -136,8 +136,7 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
 
   function askHTML(pl, e) {
     if (rsvp === "pend") {
-      return "<p>" + (e.confirmar ? "Contanos si " + (pl ? "vienen" : "venís") + " antes del " + esc(e.confirmar) + "." : "Contanos si " + (pl ? "vienen" : "venís") + ".") + "</p>" +
-        '<div class="btns"><button class="btn yes" data-act="si">' + (pl ? "Sí, vamos" : "Sí, voy") + '</button><button class="btn no" data-act="no">' + (pl ? "No podemos ir" : "No puedo ir") + "</button></div>" +
+      return '<div class="btns"><button class="btn yes" data-act="si">' + (pl ? "Sí, vamos" : "Sí, voy") + '</button><button class="btn no" data-act="no">' + (pl ? "No podemos ir" : "No puedo ir") + "</button></div>" +
         (err ? '<p class="err">' + esc(err) + "</p>" : "");
     }
     if (rsvp === "no") {

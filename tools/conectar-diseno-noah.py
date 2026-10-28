@@ -25,6 +25,12 @@ rep('<div style="font-style:italic;font-size:36px;color:#2f4f73;line-height:1.1;
     '<div style="font-style:italic;font-size:36px;color:#2f4f73;line-height:1.1;">{{ replyTitle }}</div>\n'
     '        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div style="font-size:20px;color:#a2482a;max-width:440px;">{{ err }}</div></sc-if>')
 
+# Textos que no van en la invitación
+rep('<div style="font-size:23px;font-style:italic;line-height:1.25;color:#3f5f82;">Es en una quinta: ¡vengan cómodos!</div>', '')
+rep('<div style="font-size:21px;font-style:italic;line-height:1.3;color:#52667d;margin-top:-6px;">*El horario de la invitación es el establecido.</div>', '')
+rep('<div style="font-size:24px;line-height:1.4;color:#3f5f82;text-wrap:balance;max-width:500px;">Nos encantaría saber si nos {{ acompanas }}. Si podés, contanos antes del miércoles 2 de diciembre.</div>', '')
+rep('De 12:00 a 16:00 h*</div>', 'De 12:00 a 16:00 h</div>')
+
 # Lógica: estado, carga por token, guardado
 rep("state = { rsvp: null, sealed: true, zoom: Math.min(1, window.innerWidth / 600) };",
     "state = { rsvp: null, sealed: true, zoom: Math.min(1, window.innerWidth / 600), para: '', nene: '', msg: '', total: 0, note: '', saved: false, err: '' };")
