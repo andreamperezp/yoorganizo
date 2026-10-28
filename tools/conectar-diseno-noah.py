@@ -31,6 +31,26 @@ rep('<div style="font-size:21px;font-style:italic;line-height:1.3;color:#52667d;
 rep('<div style="font-size:24px;line-height:1.4;color:#3f5f82;text-wrap:balance;max-width:500px;">Nos encantaría saber si nos {{ acompanas }}. Si podés, contanos antes del miércoles 2 de diciembre.</div>', '')
 rep('De 12:00 a 16:00 h*</div>', 'De 12:00 a 16:00 h</div>')
 
+# La carta del sobre muestra la invitación real (copia en miniatura de la tarjeta)
+rep("""padding-top:9%;box-sizing:border-box;">
+      <div style="font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:#85652f;">Baby shower</div>
+      <div style="font-family:'Gloock',serif;font-size:46px;line-height:1.1;color:#2f4f73;">Noah</div>
+    </div>""", """box-sizing:border-box;overflow:hidden;"></div>""")
+rep("  componentWillUnmount() {",
+    "  fillLetter() {\n"
+    "    const L = this.letterRef.current, C = this.cardRef.current;\n"
+    "    if (!L || !C || !this.state.sealed || this.opening) return;\n"
+    "    const k = C.cloneNode(true);\n"
+    "    Object.assign(k.style, { zoom: 1, margin: 0, position: 'absolute', left: 0, top: 0, transformOrigin: '0 0', transform: 'scale(' + (L.clientWidth / 600) + ')', boxShadow: 'none', pointerEvents: 'none' });\n"
+    "    k.setAttribute('aria-hidden', 'true');\n"
+    "    L.replaceChildren(k);\n"
+    "  }\n"
+    "  componentDidUpdate() { this.fillLetter(); }\n"
+    "  componentWillUnmount() {")
+rep("    this.fit(); window.addEventListener('resize', this.onResize);\n",
+    "    this.fit(); window.addEventListener('resize', this.onResize); this.fillLetter();\n"
+    "    window.addEventListener('resize', () => this.fillLetter()); document.fonts?.ready.then(() => this.fillLetter());\n")
+
 # Lógica: estado, carga por token, guardado
 rep("state = { rsvp: null, sealed: true, zoom: Math.min(1, window.innerWidth / 600) };",
     "state = { rsvp: null, sealed: true, zoom: Math.min(1, window.innerWidth / 600), para: '', nene: '', msg: '', total: 0, note: '', saved: false, err: '' };")
