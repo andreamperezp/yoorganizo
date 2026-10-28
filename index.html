@@ -1948,6 +1948,13 @@ a.btn { text-decoration: none; display: inline-block; }
     return inviteLink(g);
   }
   let syncing = false, lastSync = 0;
+  // Un cambio hecho a mano en la lista también se guarda en la invitación, así no se pisa al actualizar
+  async function pushRsvp(g) {
+    if (!sb || !g.token) return;
+    const { data, error } = await sb.rpc("set_invite_rsvp", { p_key: inviteKey(), p_token: g.token, p_rsvp: g.rsvp || "pend", p_plus: Number(g.plus) || 0 });
+    if (error || data !== true) toast("No pudimos guardar el cambio de " + g.name + ". Revisá tu conexión.", "cloud-off");
+    else { g.fromInvite = true; persist(); }
+  }
   async function syncRsvps(manual) {
     if (!sb || syncing || !state.guests.some(g => g.token)) { if (manual && !syncing) toast("Todavía no generaste invitaciones", "info"); return; }
     syncing = true; if (manual) rerenderKeepScroll();
@@ -2400,12 +2407,12 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       const g = state.guests.find(x => x.id === id); if (!g) return;
       const v = el.dataset.v; g.rsvp = g.rsvp === v ? "pend" : v;
       if (g.rsvp === "si") { const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2); }
-      persist(); rerenderKeepScroll();
+      persist(); rerenderKeepScroll(); pushRsvp(g);
     }
     else if (act === "plus") {
       const g = state.guests.find(x => x.id === id); if (!g) return;
       g.plus = Math.max(0, Math.min(20, (Number(g.plus) || 0) + Number(el.dataset.d)));
-      persist(); rerenderKeepScroll();
+      persist(); rerenderKeepScroll(); pushRsvp(g);
     }
     else if (act === "cycleside") {
       const g = state.guests.find(x => x.id === id); if (!g) return;
