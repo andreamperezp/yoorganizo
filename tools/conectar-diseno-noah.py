@@ -20,21 +20,9 @@ rep('<div style="font-style:italic;font-size:31px;line-height:1.25;color:#2f4f73
     '<sc-if value="{{ hasMsg }}" hint-placeholder-val="{{ false }}"><div style="max-width:470px;padding:18px 26px;border-radius:18px;background:rgba(234,242,248,.8);border:1px solid #d6e4ef;font-style:italic;font-size:25px;line-height:1.4;color:#2f4f73;text-wrap:balance;">“{{ msg }}”</div></sc-if>\n'
     '    <div style="font-style:italic;font-size:31px;line-height:1.25;color:#2f4f73;text-wrap:balance;max-width:470px;">Acompañanos a celebrar esta dulce espera.</div>')
 
-# Después de "Sí": cuántos van y una nota
+# Aviso si no se pudo guardar la respuesta
 rep('<div style="font-style:italic;font-size:36px;color:#2f4f73;line-height:1.1;">{{ replyTitle }}</div>',
     '<div style="font-style:italic;font-size:36px;color:#2f4f73;line-height:1.1;">{{ replyTitle }}</div>\n'
-    '        <sc-if value="{{ yesAnswered }}" hint-placeholder-val="{{ false }}">\n'
-    '          <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin:10px 0 4px;padding:18px 22px;border:1px solid #e6dccf;border-radius:18px;background:#fbfdff;width:440px;max-width:100%;box-sizing:border-box;">\n'
-    '            <div style="font-size:23px;color:#3f5f82;">¿Cuántos van en total?</div>\n'
-    '            <div style="display:flex;align-items:center;gap:18px;">\n'
-    '              <button sc-camel-on-click="{{ minus }}" aria-label="Uno menos" style="width:52px;height:52px;border-radius:50%;border:2px solid #a7c4db;background:#ffffff;color:#2f4f73;font-size:28px;line-height:1;cursor:pointer;">−</button>\n'
-    '              <div style="font-family:\'Gloock\',serif;font-size:40px;color:#2f4f73;min-width:44px;text-align:center;">{{ total }}</div>\n'
-    '              <button sc-camel-on-click="{{ plusOne }}" aria-label="Uno más" style="width:52px;height:52px;border-radius:50%;border:2px solid #a7c4db;background:#ffffff;color:#2f4f73;font-size:28px;line-height:1;cursor:pointer;">+</button>\n'
-    '            </div>\n'
-    '            <button sc-camel-on-click="{{ saveExtra }}" style="height:56px;padding:0 32px;border:none;border-radius:999px;background:#2f4f73;color:#ffffff;font-family:\'Gloock\',serif;font-size:22px;cursor:pointer;">Guardar</button>\n'
-    '            <sc-if value="{{ savedOk }}" hint-placeholder-val="{{ false }}"><div style="font-style:italic;font-size:21px;color:#3f7a5a;">¡Listo, lo anotamos!</div></sc-if>\n'
-    '          </div>\n'
-    '        </sc-if>\n'
     '        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div style="font-size:20px;color:#a2482a;max-width:440px;">{{ err }}</div></sc-if>')
 
 # Lógica: estado, carga por token, guardado

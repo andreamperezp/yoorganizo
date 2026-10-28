@@ -124,6 +124,23 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .online-head > div { flex: 1 1 320px; display: grid; gap: 4px; }
 .online-head .btn { display: inline-flex; align-items: center; gap: 6px; }
 .online textarea { min-height: 70px; }
+.g-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.g-head > div { flex: 1 1 320px; display: grid; gap: 4px; }
+.g-head .btn { display: inline-flex; align-items: center; gap: 6px; }
+.guest-add2.guest-add3 { display: flex; flex-wrap: wrap; align-items: center; }
+.guest-add3 .seg { flex: 0 0 auto; }
+.guest-add3 #guest-name { flex: 2 1 260px; }
+.guest-add3 #guest-phone { flex: 1 1 200px; }
+.guest-add3 select { flex: 0 1 170px; }
+.guest-add3 .btn { flex: 0 0 auto; }
+.gl-row .inv-line, .gl-row .pz { grid-column: 1 / -1; }
+.inv-line { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.inv-line .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; font-size: 13px; }
+.inv-line .btn:disabled { opacity: .5; cursor: wait; }
+.inv-line .chip { display: inline-flex; align-items: center; gap: 4px; }
+.link-field { flex: 1 1 260px; min-width: 0; font-size: 13px !important; padding: 7px 12px !important; border-radius: 999px !important; background: var(--bg) !important; color: var(--accent-text) !important; }
+.gl-phone { font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+@media (max-width: 560px) { .guest-add3 .seg { flex: 1 1 100%; } .guest-add3 select { flex: 1 1 140px; } }
 .flow { display: grid; gap: 10px; background: var(--bg); border-radius: 18px; padding: 14px; }
 .flow-step { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
 .flow-step .step-n { background: var(--accent); color: var(--accent-ink); width: 28px; height: 28px; }
@@ -268,7 +285,7 @@ button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 .btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 9px 18px; font-weight: 600; }
 .btn.ghost { background: transparent; color: var(--accent-text); border: 1px solid var(--line); }
-input[type=text], input[type=number], input[type=date], input[type=time], select, textarea {
+input[type=text], input[type=tel], input[type=email], input[type=url], input[type=number], input[type=date], input[type=time], select, textarea {
   background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0;
 }
 textarea { resize: vertical; min-height: 64px; }
@@ -1480,7 +1497,7 @@ a.btn { text-decoration: none; display: inline-block; }
       </details>
 
       <div class="tabs" role="tablist">
-        ${[["invitaciones","Invitaciones","mail"],["ruta","Ruta","footprints"],["ficha","Ficha","clipboard-list"],["presupuesto","Presupuesto","piggy-bank"],["invitados","Invitados","users"],["itinerario","Itinerario","scroll-text"],["dia","Cronograma","clock"],["ideas","Ideas","lightbulb"]].map(([id, l, i]) =>
+        ${[["invitados","Invitados","users"],["ruta","Ruta","footprints"],["ficha","Ficha","clipboard-list"],["presupuesto","Presupuesto","piggy-bank"],["itinerario","Itinerario","scroll-text"],["dia","Cronograma","clock"],["ideas","Ideas","lightbulb"]].map(([id, l, i]) =>
           `<button class="tab" role="tab" aria-selected="${tab === id}" data-act="tab" data-id="${id}">${ic(i)} ${l}</button>`).join("")}
       </div>
       <div id="panel">${panel()}</div>` : ""}`;
@@ -1546,7 +1563,7 @@ a.btn { text-decoration: none; display: inline-block; }
     if (tab === "invitados") return guestsView();
     if (tab === "dia") return dayView();
     if (tab === "ideas") return ideasView();
-    if (tab === "invitaciones") return invitesView();
+    if (tab === "invitaciones") return guestsView();
     if (tab === "ficha") return fichaView();
     if (tab === "itinerario") return itinView();
     return routeView();
@@ -1671,9 +1688,25 @@ a.btn { text-decoration: none; display: inline-block; }
       (!gFilter.q || x.name.toLowerCase().includes(gFilter.q.toLowerCase())));
     const people = g.filter(x => x.rsvp === "si").reduce((a, x) => a + 1 + (Number(x.plus) || 0), 0);
     const fchip = (k, v, label, n, icon) => `<button class="fchip${gFilter[k] === v ? " on" : ""}" data-act="gfilter" data-k="${k}" data-v="${esc(v)}">${icon ? ic(icon) : ""}${label}${n != null ? ` <b>${n}</b>` : ""}</button>`;
+    ensureMissingInvites();
     return `
-      <form class="guest-add2" id="guest-form">
-        <input type="text" id="guest-name" placeholder="Nombre del invitado" aria-label="Nombre del invitado" required>
+      <div class="g-head">
+        <div><h2>Invitados e invitaciones</h2>
+        <p class="muted">Cada invitado que agregás ya tiene su invitación lista: si tiene WhatsApp la mandás con un toque, y si no, copiás su link.</p></div>
+        <button class="btn" data-act="syncrsvp" ${syncing ? "disabled" : ""}>${ic("refresh-cw")} ${syncing ? "Actualizando…" : "Actualizar confirmaciones"}</button>
+      </div>
+      <div class="rtiles" role="group" aria-label="Filtrar por respuesta">
+        ${[["all", "Todos", "users", g.length, g.length === 1 ? "invitado" : "invitados"],
+           ["si", "Vienen", "circle-check", by("rsvp", "si"), people + (people === 1 ? " persona" : " personas")],
+           ["pend", "Sin responder", "hourglass", by("rsvp", "pend"), "faltan confirmar"],
+           ["no", "No vienen", "circle-x", by("rsvp", "no"), "no pueden ir"]].map(([v, l, icon, n, sub]) => `
+          <button class="rtile t-${v}${gFilter.rsvp === v ? " on" : ""}" data-act="gfilter" data-k="rsvp" data-v="${v}" aria-pressed="${gFilter.rsvp === v}">
+            <span class="rt-ico">${ic(icon)}</span><span class="rt-n">${n}</span><span class="rt-l">${l}</span><span class="rt-sub">${sub}</span>
+          </button>`).join("")}
+      </div>
+      <form class="guest-add2 guest-add3" id="guest-form">
+        <input type="text" id="guest-name" placeholder="Nombre como aparece en la invitación" aria-label="Nombre del invitado" required>
+        <input type="tel" id="guest-phone" placeholder="WhatsApp (opcional) ej: 5492215551234" aria-label="WhatsApp del invitado">
         ${useSides() ? `<div class="seg" role="radiogroup" aria-label="De parte de">
           ${["mama", "papa", "ambos"].map(k => `<label class="seg-opt"><input type="radio" name="guest-side" value="${k}" ${(state.lastSide || "ambos") === k ? "checked" : ""}><span>${esc(sideLabel(k))}</span></label>`).join("")}
         </div>` : ""}
@@ -1686,15 +1719,6 @@ a.btn { text-decoration: none; display: inline-block; }
         <form id="group-form" class="cat-add"><input type="text" id="new-group" placeholder="Nueva categoría, ej: Vecinos" aria-label="Nueva categoría"><button class="btn ghost" type="submit">${ic("plus")} Crear</button></form>
       </details>
 
-      <div class="rtiles" role="group" aria-label="Filtrar por respuesta">
-        ${[["all", "Todos", "users", g.length, g.length === 1 ? "invitado" : "invitados"],
-           ["si", "Vienen", "circle-check", by("rsvp", "si"), people + (people === 1 ? " persona" : " personas")],
-           ["pend", "Sin responder", "hourglass", by("rsvp", "pend"), "faltan confirmar"],
-           ["no", "No vienen", "circle-x", by("rsvp", "no"), "no pueden ir"]].map(([v, l, icon, n, sub]) => `
-          <button class="rtile t-${v}${gFilter.rsvp === v ? " on" : ""}" data-act="gfilter" data-k="rsvp" data-v="${v}" aria-pressed="${gFilter.rsvp === v}">
-            <span class="rt-ico">${ic(icon)}</span><span class="rt-n">${n}</span><span class="rt-l">${l}</span><span class="rt-sub">${sub}</span>
-          </button>`).join("")}
-      </div>
       <div class="gtools">
         <label class="gsearch-wrap">${ic("search")}<input type="text" id="guest-q" value="${esc(gFilter.q)}" placeholder="Buscar invitado…" aria-label="Buscar invitado"></label>
         ${useSides() ? `        <label class="pill-select">${ic("heart-handshake")}<select id="f-side" data-gf="side" aria-label="De parte de">
@@ -1719,14 +1743,7 @@ a.btn { text-decoration: none; display: inline-block; }
               ${useSides() ? `              <button class="tag side-${x.side || "none"}" data-act="cycleside" data-id="${x.id}" title="Cambiar de parte de quién">${ic(SIDE_ICON[x.side || ""])}${esc(sideLabel(x.side || ""))}</button>` : ""}
               <select class="tag tag-select" id="gg-${x.id}" data-ggroup="${x.id}" aria-label="Categoría de ${esc(x.name)}">${(groups.includes(x.group) ? groups : groups.concat([x.group])).map(o => `<option ${o === x.group ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>
             </span>
-            ${r === "si" ? `<div class="gextra">
-              <span class="stepper" aria-label="Acompañantes de ${esc(x.name)}">
-                <button data-act="plus" data-id="${x.id}" data-d="-1" aria-label="Quitar acompañante" ${(Number(x.plus) || 0) <= 0 ? "disabled" : ""}>${ic("minus")}</button>
-                <span><b>${Number(x.plus) || 0}</b> ${(Number(x.plus) || 0) === 1 ? "acompañante" : "acompañantes"}</span>
-                <button data-act="plus" data-id="${x.id}" data-d="1" aria-label="Sumar acompañante">${ic("plus")}</button>
-              </span>
-              <label class="gnote">${ic("sticky-note")}<input type="text" id="gn-${x.id}" data-gnote="${x.id}" value="${esc(x.note || "")}" placeholder="Nota: celíaca, llega tarde, trae a los nenes…" aria-label="Nota sobre ${esc(x.name)}"></label>
-            </div>` : ""}
+            ${x.phone ? `<span class="muted gl-phone">${ic("phone")} ${esc(x.phone)}</span>` : ""}
           </div>
           ${r === "pend" ? `<div class="rsvp" role="group" aria-label="Respuesta de ${esc(x.name)}">
             <button class="rbtn yes" data-act="rsvp" data-id="${x.id}" data-v="si" title="Viene">${ic("check")}<span>Viene</span></button>
@@ -1736,9 +1753,33 @@ a.btn { text-decoration: none; display: inline-block; }
             <button class="link-btn" data-act="rsvp" data-id="${x.id}" data-v="pend">Cambiar</button>
           </div>`}
           <button class="x" data-act="delguest" data-id="${x.id}" aria-label="Quitar a ${esc(x.name)}" title="Quitar de la lista">${ic("trash-2")}</button>
+          <div class="inv-line">
+            ${x.phone
+              ? `<button class="btn wa-btn" data-act="sendwa" data-id="${x.id}" ${x.token ? "" : "disabled"}>${ic("message-circle")} ${x.sent ? "Reenviar por WhatsApp" : "Enviar por WhatsApp"}</button>`
+              : `<input type="text" class="link-field" id="lk-${x.id}" readonly value="${x.token ? esc(inviteLink(x)) : "Generando su invitación…"}" aria-label="Link de la invitación de ${esc(x.name)}">`}
+            <button class="btn ghost" data-act="copylink" data-id="${x.id}" ${x.token ? "" : "disabled"}>${ic("link")} Copiar link</button>
+            <button class="btn ghost" data-act="imginv" data-id="${x.id}" ${x.token ? "" : "disabled"} title="Imagen de su invitación con su nombre">${ic("image")}<span class="hide-sm"> Imagen</span></button>
+            <button class="btn ghost" data-act="viewinv" data-id="${x.id}" ${x.token ? "" : "disabled"} title="Ver su invitación">${ic("eye")}<span class="hide-sm"> Ver</span></button>
+            ${x.sent && r === "pend" ? `<span class="chip soon">${ic("send")} Enviada</span>` : ""}
+          </div>
+          <details class="pz" id="pz-${x.id}">
+            <summary>${ic("pencil")} Personalizar su invitación${x.msg ? " · tiene mensaje" : ""}</summary>
+            <div class="setup-grid">
+              <label class="field">Cómo aparece en la invitación<input type="text" id="gp-para-${x.id}" data-gp="${x.id}|para" value="${esc(x.para || "")}" placeholder="${esc(x.name)}"></label>
+              <label class="field">${isCumple() ? "Hijo/a que también va (opcional)" : "Nene o nena que también va (opcional)"}<input type="text" id="gp-nene-${x.id}" data-gp="${x.id}|nene" value="${esc(x.nene || "")}" placeholder="Ej: Tomi"></label>
+              <label class="field">WhatsApp (con código de país)<input type="tel" id="gp-phone-${x.id}" data-gp="${x.id}|phone" value="${esc(x.phone || "")}" placeholder="Ej: 5492215551234"></label>
+            </div>
+            <label class="field" style="margin-top:10px">Mensaje personal (aparece en su invitación)<textarea id="gp-msg-${x.id}" data-gp="${x.id}|msg" maxlength="300" placeholder="Ej: Tía Marta, no puedo imaginar este día sin vos 💙">${esc(x.msg || "")}</textarea></label>
+          </details>
         </div>`;
       }).join("")}</div>` : `<div class="empty">No hay invitados con esos filtros. <button class="link-btn" data-act="gclear">Ver todos</button></div>`)
-      : `<div class="empty">${isCumple() ? (state.setup.tipo === "infantil" ? "Tu lista está vacía. Empezá por los compañeros de la sala o el grado y la familia. Los acompañantes adultos los sumás en cada nene." : "Tu lista está vacía. Empezá por la familia y los amigos más cercanos.") : "Tu lista está vacía. Empezá por las imprescindibles: la familia directa y las amigas más cercanas de la mamá."}</div>`}`;
+      : `<div class="empty">${isCumple() ? (state.setup.tipo === "infantil" ? "Tu lista está vacía. Empezá por los compañeros de la sala o el grado y la familia." : "Tu lista está vacía. Empezá por la familia y los amigos más cercanos.") : "Tu lista está vacía. Empezá por las imprescindibles: la familia directa y las amigas más cercanas de la mamá."}</div>`}
+      <details class="pz" id="inv-config" style="margin-top:14px">
+        <summary>${ic("message-circle")} Editar el mensaje de WhatsApp</summary>
+        <label class="field">Mensaje de WhatsApp<textarea id="i-wa" data-inv="waText" placeholder="${esc(defaultWa())}">${esc((state.inv || {}).waText || "")}</textarea></label>
+        <p class="onb-help" style="margin-top:4px">Usá <b>{nombre}</b> para el nombre del invitado y <b>{link}</b> para su invitación. Si lo dejás vacío, usamos el texto de ejemplo.</p>
+      </details>
+      ${sendDates()}`;
   }
 
 
@@ -1963,106 +2004,39 @@ a.btn { text-decoration: none; display: inline-block; }
     }
     return new Promise(ok => c.toBlob(ok, "image/jpeg", 0.9));
   }
-  function sendList() {
-    const g = state.guests;
-    const people = g.filter(x => x.rsvp === "si").reduce((a, x) => a + 1 + (Number(x.plus) || 0), 0);
-    const status = x => x.rsvp === "si" ? `<span class="chip ok">${ic("circle-check")} Viene${x.plus ? " · " + (1 + Number(x.plus)) : ""}</span>`
-      : x.rsvp === "no" ? `<span class="chip late">${ic("circle-x")} No viene</span>`
-      : x.sent ? `<span class="chip soon">${ic("send")} Enviada</span>` : `<span class="chip">Sin enviar</span>`;
-    return `
-      <div class="send-sum">
-        <span><b>${g.filter(x => x.sent).length}</b> de ${g.length} enviadas</span>
-        <span><b>${g.filter(x => x.rsvp === "si" || x.rsvp === "no").length}</b> respondieron</span>
-        <span><b>${people}</b> ${people === 1 ? "persona confirmada" : "personas confirmadas"}</span>
-      </div>
-      ${g.length ? `<div class="table-wrap send-list">${g.map(x => `
-        <div class="send-row">
-          <div class="send-main">
-            <span class="gl-name">${esc(guestPara(x))}</span>
-            <span class="send-meta">${status(x)}${x.phone ? `<span class="muted">${ic("phone")} ${esc(x.phone)}</span>` : ""}</span>
-            ${x.note ? `<span class="send-note">${ic("sticky-note")} ${esc(x.note)}</span>` : ""}
-          </div>
-          <div class="send-actions">
-            <button class="btn wa-btn" data-act="sendwa" data-id="${x.id}">${ic("message-circle")} ${x.sent ? "Reenviar" : "Enviar"}</button>
-            <button class="btn ghost" data-act="imginv" data-id="${x.id}" title="Imagen de su invitación con su nombre, para mandar por WhatsApp">${ic("image")}<span class="hide-sm"> Imagen</span></button>
-            <button class="btn ghost" data-act="copylink" data-id="${x.id}" title="Copiar el link de su invitación">${ic("link")}<span class="hide-sm"> Copiar link</span></button>
-            <button class="btn ghost" data-act="viewinv" data-id="${x.id}" title="Ver su invitación">${ic("eye")}<span class="hide-sm"> Ver</span></button>
-          </div>
-          <details class="pz" id="pz-${x.id}">
-            <summary>${ic("pencil")} Personalizar su invitación${x.msg ? " · tiene mensaje" : ""}</summary>
-            <div class="setup-grid">
-              <label class="field">Cómo aparece en la invitación<input type="text" id="gp-para-${x.id}" data-gp="${x.id}|para" value="${esc(x.para || "")}" placeholder="${esc(x.name)}"></label>
-              <label class="field">${isCumple() ? "Hijo/a que también va (opcional)" : "Nene o nena que también va (opcional)"}<input type="text" id="gp-nene-${x.id}" data-gp="${x.id}|nene" value="${esc(x.nene || "")}" placeholder="Ej: Tomi"></label>
-              <label class="field">WhatsApp (con código de país)<input type="tel" id="gp-phone-${x.id}" data-gp="${x.id}|phone" value="${esc(x.phone || "")}" placeholder="Ej: 5492215551234"></label>
-            </div>
-            <label class="field" style="margin-top:10px">Mensaje personal (aparece en su invitación)<textarea id="gp-msg-${x.id}" data-gp="${x.id}|msg" maxlength="300" placeholder="Ej: Tía Marta, no puedo imaginar este día sin vos 💙">${esc(x.msg || "")}</textarea></label>
-          </details>
-        </div>`).join("")}</div>`
-      : `<div class="empty">Primero cargá tus invitados en la pestaña Invitados. Después, desde acá le mandás a cada uno su invitación.</div>`}`;
+  // Generar en segundo plano las invitaciones de los invitados que todavía no la tienen
+  const invQueue = new Set();
+  let invWorking = false;
+  function ensureMissingInvites() {
+    if (!sb) return;
+    state.guests.forEach(g => { if (!g.token) invQueue.add(g.id); });
+    if (invWorking || !invQueue.size) return;
+    invWorking = true;
+    setTimeout(async () => {
+      for (const id of Array.from(invQueue)) {
+        invQueue.delete(id);
+        const g = state.guests.find(x => x.id === id);
+        if (g && !g.token) await ensureInvite(g, true);
+      }
+      invWorking = false;
+      if (tab === "invitados" && view === "plan") rerenderKeepScroll();
+    }, 50);
   }
-  function onlineSection() {
-    const i = state.inv || {};
-    return `
-      <section class="online">
-        <div class="online-head">
-          <div><p class="eyebrow">Invitación online con confirmación</p>
-          <h2>Mandá la invitación y recibí las respuestas</h2>
-          <p class="muted">Cada invitado recibe su propio link: abre la invitación, toca "Sí, voy" o "No puedo ir", y su respuesta llega sola a tu lista.</p></div>
-          <button class="btn" data-act="syncrsvp" ${syncing ? "disabled" : ""}>${ic("refresh-cw")} ${syncing ? "Actualizando…" : "Actualizar confirmaciones"}</button>
-        </div>
-        ${authReady() && !session && state.guests.some(g => g.token) ? `<p class="onb-help">${ic("info")} Las respuestas se guardan en este navegador. Para verlas también desde otro dispositivo, <button class="link-btn" data-act="openauth">guardá tu planner en tu cuenta</button>.</p>` : ""}
-        <div class="flow">
-          <div class="flow-step"><span class="step-n">1</span><div>
-            <b>Elegí qué invitación mandás</b>
-            ${availableDesigns().length ? `<div class="design-pick" role="radiogroup" aria-label="Qué invitación mandás">
-              ${availableDesigns().map(d => `<label class="design-card${currentDesign() && currentDesign().id === d.id ? " on" : ""}"><input type="radio" name="inv-mode" value="${d.id}" ${currentDesign() && currentDesign().id === d.id ? "checked" : ""}>
-                <img src="${d.preview}" alt="" loading="lazy"><span><b>${esc(d.name)}</b><small>Tu diseño</small></span></label>`).join("")}
-              <label class="design-card${currentDesign() ? "" : " on"}"><input type="radio" name="inv-mode" value="yo" ${currentDesign() ? "" : "checked"}>
-                <span class="design-yo">${ic("mail-open")}</span><span><b>La de Yo Organizo</b><small>Con tus datos y colores</small></span></label>
-            </div>
-            <p class="onb-help">A cada invitado le llega el mismo diseño, con su nombre y su mensaje.</p>`
-            : `<p class="onb-help">Usamos la invitación de Yo Organizo, con tus datos y tus colores. A cada invitado le llega con su nombre y su mensaje.</p>`}
-            ${currentDesign() ? "" : `<details class="pz" id="inv-datos" style="margin-top:8px">
-              <summary>${ic("pencil")} Datos que muestra la invitación</summary>
-              <div class="setup-grid">
-                <label class="field">Dirección<input type="text" id="i-dir" data-inv="direccion" value="${esc(i.direccion || "")}" placeholder="Calle, número, ciudad"></label>
-                <label class="field">Hora de fin<input type="time" id="i-fin" data-inv="fin" value="${esc(i.fin || "")}"></label>
-                <label class="field">Lista de regalos<input type="text" id="i-reg" data-inv="regalos" value="${esc(i.regalos || "")}" placeholder="Link o una frase"></label>
-                <label class="field">Vestimenta (opcional)<input type="text" id="i-ves" data-inv="vestimenta" value="${esc(i.vestimenta || "")}" placeholder="Ej: algo en tonos verdes"></label>
-              </div>
-            </details>`}
-          </div></div>
-          <div class="flow-step"><span class="step-n">2</span><div><b>Personalizá a cada invitado</b> <span class="muted">(opcional)</span><p class="onb-help">En "Personalizar su invitación" ponés cómo aparece su nombre, su WhatsApp y un mensaje personal.</p></div></div>
-          <div class="flow-step"><span class="step-n">3</span><div><b>Mandásela</b><p class="onb-help"><b>Enviar</b> abre WhatsApp con un mensaje y el link a <b>su</b> invitación. <b>Imagen</b> arma la invitación con su nombre para mandarla como foto, junto al mensaje con su link. Con <b>Ver</b> mirás cómo le llega.</p></div></div>
-          <div class="flow-step"><span class="step-n">4</span><div><b>Recibí las respuestas</b><p class="onb-help">Cuando confirme, tocá "Actualizar confirmaciones" y aparece en tu lista con cuántos van y su nota.</p></div></div>
-        </div>
-        <details class="pz" id="inv-config">
-          <summary>${ic("message-circle")} Editar el mensaje de WhatsApp</summary>
-          <label class="field">Mensaje de WhatsApp<textarea id="i-wa" data-inv="waText" placeholder="${esc(defaultWa())}">${esc(i.waText || "")}</textarea></label>
-          <p class="onb-help" style="margin-top:4px">Usá <b>{nombre}</b> para el nombre del invitado y <b>{link}</b> para su invitación. Si lo dejás vacío, usamos el texto de ejemplo.</p>
-        </details>
-        ${sendList()}
-      </section>`;
-  }
-
-  function invitesView() {
-    const i = state.inv || {};
-    const g = state.guests;
-    const sent = g.filter(x => x.sent).length;
+  function sendDates() {
     const P = isCumple() ? cpack().inv : { std: -56, inv: -35, rsvp: -10, prev: -2 };
     const steps = [
       ["Reservá la fecha", plusDays(P.std), isCumple() && state.setup.tipo === "quince" ? "A todos" : "Solo a quienes viajan"],
-      ["Mandar invitación", plusDays(P.inv), "A todos"],
+      ["Mandar la invitación", plusDays(P.inv), "A todos"],
       ["Fecha límite para confirmar", plusDays(P.rsvp), "Va escrita en la invitación"],
       ["Recordatorio final", plusDays(P.prev), "A los que confirmaron"]
     ];
-    return `
-      ${onlineSection()}
-      <h2 style="margin:28px 0 8px">Tus fechas de envío</h2>
-      <p class="section-intro muted">${isCumple() ? `Una planner manda la invitación ${offLabel(P.inv)} y siempre pone una fecha límite para confirmar. Estas son tus fechas:` : "Una planner manda la invitación entre 4 y 6 semanas antes y siempre pone una fecha límite para confirmar. Estas son tus fechas:"}</p>
-      <div class="stats">${steps.map(([t, d, n]) => `
-        <div class="stat"><span class="eyebrow">${t}</span><span class="big" style="font-size:22px">${d ? fmtDate(d) : "—"}</span><span class="muted">${n}</span></div>`).join("")}</div>`;
+    return `<details class="pz" id="inv-fechas" style="margin-top:10px">
+        <summary>${ic("calendar-heart")} Fechas sugeridas para mandar la invitación</summary>
+        <div class="stats" style="margin:4px 0 0">${steps.map(([t, d, n]) => `
+          <div class="stat"><span class="eyebrow">${t}</span><span class="big" style="font-size:22px">${d ? fmtDate(d) : "—"}</span><span class="muted">${n}</span></div>`).join("")}</div>
+      </details>`;
   }
+
 
   // ---------- Datos por tarea ----------
   function fget(tid, f) {
@@ -2391,7 +2365,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (act === "home") { view = "home"; rememberView(); render(); }
     else if (act === "tab") {
       tab = id; rememberView(); rerenderKeepScroll();
-      if ((id === "invitaciones" || id === "invitados") && Date.now() - lastSync > 30000) syncRsvps(false);
+      if (id === "invitados" && Date.now() - lastSync > 30000) syncRsvps(false);
     }
     else if (act === "copy") {
       const pre = document.getElementById("m-" + id);
@@ -2504,6 +2478,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else return;
     persist(); rerenderKeepScroll();
   });
+  app.addEventListener("focusin", ev => { if (ev.target.classList && ev.target.classList.contains("link-field")) setTimeout(() => ev.target.select(), 0); });
   let qTimer = null;
   app.addEventListener("input", ev => {
     if (ev.target.dataset && ev.target.dataset.sf) { const f = document.getElementById("setup-form"); if (f) f.classList.add("dirty"); return; }
@@ -2592,7 +2567,9 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     const sideEl = document.querySelector('input[name="guest-side"]:checked');
     const side = useSides() ? (sideEl ? sideEl.value : "ambos") : "", group = document.getElementById("guest-group").value;
     state.lastSide = side; state.lastGroup = group;
-    state.guests.push({ id: "g" + Date.now().toString(36), name, group, side, rsvp: "pend" });
+    const phone = (document.getElementById("guest-phone") || {}).value || "";
+    const ng = { id: "g" + Date.now().toString(36), name, group, side, rsvp: "pend", phone: phone.trim() };
+    state.guests.push(ng);
     persist(); rerenderKeepScroll();
     const inp = document.getElementById("guest-name"); if (inp) inp.focus();
   });
@@ -2610,7 +2587,8 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
   render();
   if (picker) setTimeout(() => { const n = document.getElementById("pick-name"); if (n && !n.disabled) n.focus(); }, 350);
   connect();
-  setTimeout(() => { if (view === "plan" && (tab === "invitaciones" || tab === "invitados")) syncRsvps(false); }, 1200);
+  if (tab === "invitaciones") tab = "invitados";
+  setTimeout(() => { if (view === "plan" && tab === "invitados") syncRsvps(false); }, 1200);
 })();
 </script>
 </body>
