@@ -51,6 +51,10 @@ rep("    this.fit(); window.addEventListener('resize', this.onResize);\n",
     "    this.fit(); window.addEventListener('resize', this.onResize); this.fillLetter();\n"
     "    window.addEventListener('resize', () => this.fillLetter()); document.fonts?.ready.then(() => this.fillLetter());\n")
 
+# La carta sube sin dejar hueco abajo: crece hacia arriba con la base escondida en el sobre
+rep("letter.animate([{transform:'translateY(0)'},{transform:'translateY(-64%)'}]",
+    "letter.animate([{top:'5%',height:'88%'},{top:'-51%',height:'144%'}]")
+
 # Lógica: estado, carga por token, guardado
 rep("state = { rsvp: null, sealed: true, zoom: Math.min(1, window.innerWidth / 600) };",
     "state = { rsvp: null, sealed: true, zoom: Math.min(1, window.innerWidth / 600), para: '', nene: '', msg: '', total: 0, note: '', saved: false, err: '' };")
