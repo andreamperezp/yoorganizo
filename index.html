@@ -1769,7 +1769,7 @@ a.btn { text-decoration: none; display: inline-block; }
               <label class="field">${isCumple() ? "Hijo/a que también va (opcional)" : "Nene o nena que también va (opcional)"}<input type="text" id="gp-nene-${x.id}" data-gp="${x.id}|nene" value="${esc(x.nene || "")}" placeholder="Ej: Tomi"></label>
               <label class="field">WhatsApp (con código de país)<input type="tel" id="gp-phone-${x.id}" data-gp="${x.id}|phone" value="${esc(x.phone || "")}" placeholder="Ej: 5492215551234"></label>
             </div>
-            <label class="field" style="margin-top:10px">Mensaje personal (aparece en su invitación)<textarea id="gp-msg-${x.id}" data-gp="${x.id}|msg" maxlength="300" placeholder="Ej: Tía Marta, no puedo imaginar este día sin vos 💙">${esc(x.msg || "")}</textarea></label>
+            <label class="field" style="margin-top:10px">Mensaje personal (aparece en su invitación)<textarea id="gp-msg-${x.id}" data-gp="${x.id}|msg" maxlength="300" placeholder="Ej: Tía Marta, no puedo imaginar este día sin vos 🩵">${esc(x.msg || "")}</textarea></label>
           </details>
         </div>`;
       }).join("")}</div>` : `<div class="empty">No hay invitados con esos filtros. <button class="link-btn" data-act="gclear">Ver todos</button></div>`)
@@ -1927,7 +1927,7 @@ a.btn { text-decoration: none; display: inline-block; }
   function defaultWa() {
     return isCumple()
       ? "¡Hola {nombre}! 🎉 Te invito a " + titleInSentence() + ". Abrí la invitación y contame si venís: {link}"
-      : "¡Hola {nombre}! 💙 Te mando la invitación al baby shower de " + (partyName() || "nuestro bebé") + ". Abrila y contame si venís: {link}";
+      : "¡Hola {nombre}! 🩵 Te mando la invitación al baby shower de " + (partyName() || "nuestro bebé") + ". Abrila y contame si venís: {link}";
   }
   function waText(g, link) {
     const first = guestPara(g);
