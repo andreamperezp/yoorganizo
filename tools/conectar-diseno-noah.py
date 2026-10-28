@@ -99,5 +99,36 @@ head = '''<title>Baby shower de Noah · Invitación</title>
   </script>'''
 assert s.count('<title>Bundled Page</title>') == 1
 s = s.replace('<title>Bundled Page</title>', head)
+# Pantalla de carga amigable (en vez del sobre genérico del exportador)
+thumb = re.search(r'<div id="__bundler_thumbnail">.*?</div>', s, re.S)
+assert thumb
+loader = """<div id="__bundler_thumbnail"><div class="yo-load">
+    <svg class="yo-boat" viewBox="0 0 120 100" aria-hidden="true">
+      <path d="M58 12 L58 70" stroke="#8a6a4a" stroke-width="2.5"/>
+      <path d="M60 16 C80 30 88 50 90 66 L60 66 Z" fill="#fff" stroke="#9fb9d1" stroke-width="2"/>
+      <path d="M60 30 L86 42 M60 44 L89 54 M60 57 L90 63" stroke="#7d9fc0" stroke-width="5" opacity=".75"/>
+      <path d="M56 22 C42 36 36 52 34 66 L56 66 Z" fill="#fff" stroke="#9fb9d1" stroke-width="2"/>
+      <path d="M26 70 L96 70 L88 82 L34 82 Z" fill="#b98a5e"/>
+    </svg>
+    <svg class="yo-waves" viewBox="0 0 240 24" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 12 Q15 2 30 12 T60 12 T90 12 T120 12 T150 12 T180 12 T210 12 T240 12 V24 H0Z" fill="#a9c8e2"/>
+    </svg>
+    <p>Preparando tu invitación…</p>
+  </div></div>"""
+s = s[:thumb.start()] + loader + s[thumb.end():]
+css_old = '#__bundler_thumbnail svg { width: 100%; height: 100%; object-fit: contain; }'
+assert s.count(css_old) == 1
+s = s.replace(css_old, """#__bundler_loading { display: none !important; }
+    #__bundler_thumbnail { background: linear-gradient(180deg, #f4f9fd 0%, #e3eff8 100%); }
+    .yo-load { display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .yo-boat { width: 120px; height: 100px; animation: yo-bob 2.4s ease-in-out infinite; transform-origin: 50% 80%; }
+    .yo-waves { width: 160px; height: 16px; margin-top: -14px; animation: yo-wave 2.4s linear infinite; }
+    .yo-load p { margin-top: 22px; font: italic 20px/1.3 Georgia, "Times New Roman", serif; color: #3f5f82; animation: yo-fade 1.8s ease-in-out infinite; }
+    @keyframes yo-bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(3deg); } }
+    @keyframes yo-wave { from { transform: translateX(-10px); } 50% { transform: translateX(10px); } to { transform: translateX(-10px); } }
+    @keyframes yo-fade { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .yo-boat, .yo-waves, .yo-load p { animation: none; } }""")
+
+s = s.replace('This page requires JavaScript to display.', 'Para ver la invitación, activá JavaScript en tu navegador.')
 open(out, 'w', encoding='utf-8').write(s)
 print('ok', len(s))
