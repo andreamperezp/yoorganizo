@@ -461,6 +461,18 @@ td input[type=number] { max-width: 130px; text-align: right; margin-left: auto; 
 .gl-row.no .gl-name { color: var(--muted); text-decoration: line-through; }
 .gl-main { display: grid; gap: 4px; min-width: 0; }
 .gl-name { font-weight: 700; word-break: break-word; }
+.pcount { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--soft, #EEF5FB); font-size: 12px; font-weight: 700; vertical-align: middle; }
+.pcount svg { width: 13px; height: 13px; }
+.ppl { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 2px 0; }
+.pchip { display: inline-flex; align-items: center; gap: 2px; padding: 2px 4px 2px 10px; border-radius: 999px; background: #fff; border: 1px solid #E3E8EF; font-size: 13px; }
+.pchip:not(:has(.x)) { padding-right: 10px; }
+.pchip .x { width: 22px; height: 22px; padding: 0; display: inline-grid; place-items: center; }
+.pchip .x svg { width: 13px; height: 13px; }
+input.padd { width: 150px; padding: 4px 10px; border-radius: 999px; font-size: 13px; border: 1px dashed #C9D3DF; background: transparent; min-height: 0; }
+.g-help { margin: -4px 0 10px; display: flex; align-items: center; gap: 6px; }
+.g-help svg { width: 15px; height: 15px; flex: none; }
+.g-danger { margin-top: 18px; text-align: center; }
+.g-danger .link-btn { color: #B4532A; }
 .gl-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .tag { display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; background: var(--accent-soft); color: var(--accent-text); }
 .tag.side-mama { background: #FDE7EF; color: #B04872; }
@@ -1437,7 +1449,7 @@ a.btn { text-decoration: none; display: inline-block; }
     const pct = Math.round(doneN / totalSteps * 100);
     const spent = spentTotal();
     const budgetPct = s.presupuesto ? Math.round(spent / s.presupuesto * 100) : 0;
-    const confirmed = state.guests.filter(g => g.rsvp === "si").reduce((a, g) => a + 1 + (Number(g.plus) || 0), 0);
+    const confirmed = countPeople(state.guests.filter(g => g.rsvp === "si"));
     const next = tasks.filter(t => !state.done[t.id]).sort((a, b) => a.off - b.off)[0];
     const leftLabel = left == null ? "Sin fecha" : left > 0 ? left : left === 0 ? "¡Hoy!" : "Ya pasó";
 
@@ -1680,13 +1692,14 @@ a.btn { text-decoration: none; display: inline-block; }
   function guestsView() {
     const g = state.guests;
     const groups = groupList();
-    const by = (k, v) => g.filter(x => (k === "side" ? (x.side || "") : k === "rsvp" ? (x.rsvp || "pend") : x.group) === v).length;
+    const of = (k, v) => g.filter(x => (k === "side" ? (x.side || "") : k === "rsvp" ? (x.rsvp || "pend") : x.group) === v);
+    const by = (k, v) => of(k, v).length;
+    const invN = n => n + (n === 1 ? " invitación" : " invitaciones");
     const shown = g.filter(x =>
       (gFilter.rsvp === "all" || (x.rsvp || "pend") === gFilter.rsvp) &&
       (gFilter.side === "all" || (x.side || "") === gFilter.side) &&
       (gFilter.group === "all" || x.group === gFilter.group) &&
       (!gFilter.q || x.name.toLowerCase().includes(gFilter.q.toLowerCase())));
-    const people = g.filter(x => x.rsvp === "si").reduce((a, x) => a + 1 + (Number(x.plus) || 0), 0);
     const fchip = (k, v, label, n, icon) => `<button class="fchip${gFilter[k] === v ? " on" : ""}" data-act="gfilter" data-k="${k}" data-v="${esc(v)}">${icon ? ic(icon) : ""}${label}${n != null ? ` <b>${n}</b>` : ""}</button>`;
     ensureMissingInvites();
     return `
@@ -1696,16 +1709,16 @@ a.btn { text-decoration: none; display: inline-block; }
         <button class="btn" data-act="syncrsvp" ${syncing ? "disabled" : ""}>${ic("refresh-cw")} ${syncing ? "Actualizando…" : "Actualizar confirmaciones"}</button>
       </div>
       <div class="rtiles" role="group" aria-label="Filtrar por respuesta">
-        ${[["all", "Todos", "users", g.length, g.length === 1 ? "invitado" : "invitados"],
-           ["si", "Vienen", "circle-check", by("rsvp", "si"), people + (people === 1 ? " persona" : " personas")],
-           ["pend", "Sin responder", "hourglass", by("rsvp", "pend"), "faltan confirmar"],
-           ["no", "No vienen", "circle-x", by("rsvp", "no"), "no pueden ir"]].map(([v, l, icon, n, sub]) => `
+        ${[["all", "Todos", "users", countPeople(g), invN(g.length)],
+           ["si", "Vienen", "circle-check", countPeople(of("rsvp", "si")), invN(by("rsvp", "si"))],
+           ["pend", "Sin responder", "hourglass", countPeople(of("rsvp", "pend")), invN(by("rsvp", "pend"))],
+           ["no", "No vienen", "circle-x", countPeople(of("rsvp", "no")), invN(by("rsvp", "no"))]].map(([v, l, icon, n, sub]) => `
           <button class="rtile t-${v}${gFilter.rsvp === v ? " on" : ""}" data-act="gfilter" data-k="rsvp" data-v="${v}" aria-pressed="${gFilter.rsvp === v}">
             <span class="rt-ico">${ic(icon)}</span><span class="rt-n">${n}</span><span class="rt-l">${l}</span><span class="rt-sub">${sub}</span>
           </button>`).join("")}
       </div>
       <form class="guest-add2 guest-add3" id="guest-form">
-        <input type="text" id="guest-name" placeholder="Nombre como aparece en la invitación" aria-label="Nombre del invitado" required>
+        <input type="text" id="guest-name" placeholder="Para quién es: Ana, Juan y Pedro" aria-label="Personas de esta invitación (separalas con coma)" required>
         <input type="tel" id="guest-phone" placeholder="WhatsApp (opcional) ej: 5492215551234" aria-label="WhatsApp del invitado">
         ${useSides() ? `<div class="seg" role="radiogroup" aria-label="De parte de">
           ${["mama", "papa", "ambos"].map(k => `<label class="seg-opt"><input type="radio" name="guest-side" value="${k}" ${(state.lastSide || "ambos") === k ? "checked" : ""}><span>${esc(sideLabel(k))}</span></label>`).join("")}
@@ -1713,6 +1726,7 @@ a.btn { text-decoration: none; display: inline-block; }
         <select id="guest-group" aria-label="Categoría">${groups.map(x => `<option ${state.lastGroup === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>
         <button class="btn" type="submit">${ic("user-plus")} Agregar</button>
       </form>
+      <p class="onb-help g-help">${ic("users")} Si la invitación es para varias personas, separalas con coma o con "y". Cada una suma en el contador.</p>
       <details class="cat-edit" id="cat-edit">
         <summary>${ic("tags")} Categorías: ${groups.map(esc).join(", ")}</summary>
         <div class="cat-list">${groups.map(x => `<span class="cat-pill">${esc(x)}<button type="button" class="x" data-act="delgroup" data-v="${esc(x)}" aria-label="Quitar categoría ${esc(x)}">${ic("x")}</button></span>`).join("")}</div>
@@ -1738,7 +1752,8 @@ a.btn { text-decoration: none; display: inline-block; }
         return `
         <div class="gl-row ${r}">
           <div class="gl-main">
-            <span class="gl-name">${esc(x.name)}</span>
+            <span class="gl-name">${esc(x.name)}${headcount(x) > 1 ? ` <span class="pcount" title="Personas en esta invitación">${ic("users")} ${headcount(x)}</span>` : ""}</span>
+            <span class="ppl">${peopleOf(x).map((n, i, a) => `<span class="pchip">${esc(n)}${a.length > 1 ? `<button type="button" class="x" data-act="delperson" data-id="${x.id}" data-i="${i}" aria-label="Quitar a ${esc(n)} de esta invitación" title="Quitar de esta invitación">${ic("x")}</button>` : ""}</span>`).join("")}<input type="text" class="padd" data-padd="${x.id}" placeholder="+ Sumar persona" aria-label="Sumar una persona a esta invitación"></span>
             <span class="gl-tags">
               ${useSides() ? `              <button class="tag side-${x.side || "none"}" data-act="cycleside" data-id="${x.id}" title="Cambiar de parte de quién">${ic(SIDE_ICON[x.side || ""])}${esc(sideLabel(x.side || ""))}</button>` : ""}
               <select class="tag tag-select" id="gg-${x.id}" data-ggroup="${x.id}" aria-label="Categoría de ${esc(x.name)}">${(groups.includes(x.group) ? groups : groups.concat([x.group])).map(o => `<option ${o === x.group ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>
@@ -1779,7 +1794,8 @@ a.btn { text-decoration: none; display: inline-block; }
         <label class="field">Mensaje de WhatsApp<textarea id="i-wa" data-inv="waText" placeholder="${esc(defaultWa())}">${esc((state.inv || {}).waText || "")}</textarea></label>
         <p class="onb-help" style="margin-top:4px">Usá <b>{nombre}</b> para el nombre del invitado y <b>{link}</b> para su invitación. Si lo dejás vacío, usamos el texto de ejemplo.</p>
       </details>
-      ${sendDates()}`;
+      ${sendDates()}
+      ${g.length ? `<div class="g-danger"><button class="link-btn" data-act="delall">${ic("trash-2")} Borrar todos los invitados</button></div>` : ""}`;
   }
 
 
@@ -1889,6 +1905,16 @@ a.btn { text-decoration: none; display: inline-block; }
   };
   function newToken() { const a = new Uint8Array(18); crypto.getRandomValues(a); return Array.from(a, b => b.toString(36).padStart(2, "0")).join("").slice(0, 28); }
   const guestPara = g => String(g.para || g.name || "").trim();
+  // Una invitación puede ser para varias personas: "Ana, Juan y Pedro"
+  const splitNames = v => String(v || "").split(/\s*,\s*|\s+y\s+|\s*&\s*|\n/).map(x => x.trim()).filter(Boolean);
+  const joinNames = a => a.length < 2 ? (a[0] || "") : a.slice(0, -1).join(", ") + " y " + a[a.length - 1];
+  const peopleOf = g => (g.people && g.people.length) ? g.people : splitNames(g.name);
+  const headcount = g => Math.max(1, peopleOf(g).length) + (g.nene ? 1 : 0);
+  const countPeople = list => list.reduce((a, g) => a + headcount(g), 0);
+  function setPeople(g, arr) {
+    g.people = arr; g.name = joinNames(arr); persist();
+    if (g.token) ensureInvite(g, true);
+  }
   // Diseños propios publicados en invitaciones/ (el link es siempre el mismo; a cada invitado se le suma su código)
   const DESIGNS = [
     { id: "noah", name: "Velero de Noah", file: "invitaciones/noah.html", preview: "invitaciones/noah-og.jpg", kind: "babyshower",
@@ -1951,7 +1977,7 @@ a.btn { text-decoration: none; display: inline-block; }
   // Un cambio hecho a mano en la lista también se guarda en la invitación, así no se pisa al actualizar
   async function pushRsvp(g) {
     if (!sb || !g.token) return;
-    const { data, error } = await sb.rpc("set_invite_rsvp", { p_key: inviteKey(), p_token: g.token, p_rsvp: g.rsvp || "pend", p_plus: Number(g.plus) || 0 });
+    const { data, error } = await sb.rpc("set_invite_rsvp", { p_key: inviteKey(), p_token: g.token, p_rsvp: g.rsvp || "pend", p_plus: headcount(g) - 1 });
     if (error || data !== true) toast("No pudimos guardar el cambio de " + g.name + ". Revisá tu conexión.", "cloud-off");
     else { g.fromInvite = true; persist(); }
   }
@@ -2433,6 +2459,18 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       state.guests = state.guests.filter(g => g.id !== id); persist(); rerenderKeepScroll();
     }
     else if (act === "delguest") { state.guests = state.guests.filter(g => g.id !== id); persist(); rerenderKeepScroll(); }
+    else if (act === "delperson") {
+      const g = state.guests.find(x => x.id === id); if (!g) return;
+      const a = peopleOf(g).slice(); a.splice(Number(el.dataset.i), 1);
+      if (a.length) { setPeople(g, a); rerenderKeepScroll(); }
+    }
+    else if (act === "delall") {
+      const n = state.guests.length;
+      if (!confirm("¿Borrar los " + n + " invitados y sus invitaciones? Los links que ya mandaste dejan de funcionar. No se puede deshacer.")) return;
+      if (sb && state.inviteKey) state.guests.filter(g => g.token).forEach(g => sb.rpc("delete_invite", { p_key: state.inviteKey, p_token: g.token }).then(() => {}));
+      state.guests = []; invQueue.clear(); persist(); rerenderKeepScroll();
+      toast("Listo, borramos los " + n + " invitados", "trash-2");
+    }
   });
   app.addEventListener("change", ev => {
     const el = ev.target;
@@ -2463,6 +2501,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     }
     else if (el.dataset.gf) { gFilter[el.dataset.gf] = el.value; rerenderKeepScroll(); return; }
     else if (el.dataset.gnote) { const g = state.guests.find(x => x.id === el.dataset.gnote); if (g) g.note = el.value.trim(); persist(); return; }
+    else if (el.dataset.padd) { addPerson(el); return; }
     else if (el.dataset.gp) {
       const [gid, k] = el.dataset.gp.split("|"); const g = state.guests.find(x => x.id === gid); if (!g) return;
       g[k] = el.value.trim(); persist();
@@ -2575,7 +2614,8 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     const side = useSides() ? (sideEl ? sideEl.value : "ambos") : "", group = document.getElementById("guest-group").value;
     state.lastSide = side; state.lastGroup = group;
     const phone = (document.getElementById("guest-phone") || {}).value || "";
-    const ng = { id: "g" + Date.now().toString(36), name, group, side, rsvp: "pend", phone: phone.trim() };
+    const people = splitNames(name);
+    const ng = { id: "g" + Date.now().toString(36), name: joinNames(people) || name, people, group, side, rsvp: "pend", phone: phone.trim() };
     state.guests.push(ng);
     persist(); rerenderKeepScroll();
     const inp = document.getElementById("guest-name"); if (inp) inp.focus();
@@ -2583,6 +2623,13 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
 
   if (saveMode === "local") saveMsg = "";
   document.getElementById("sky-slot").innerHTML = skyHTML();
+  function addPerson(el) {
+    const g = state.guests.find(x => x.id === el.dataset.padd), add = splitNames(el.value);
+    if (!g || !add.length) return;
+    el.value = ""; setPeople(g, peopleOf(g).concat(add)); rerenderKeepScroll();
+    setTimeout(() => { const again = document.querySelector('[data-padd="' + g.id + '"]'); if (again) again.focus({ preventScroll: true }); }, 60);
+  }
+  app.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.dataset && e.target.dataset.padd) { e.preventDefault(); addPerson(e.target); } });
   window.addEventListener("keydown", e => {
     if (e.key !== "Escape") return;
     if (authOpen) { authOpen = false; render(); return; }
