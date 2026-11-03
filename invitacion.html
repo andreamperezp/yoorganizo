@@ -45,6 +45,17 @@ h1 .name { color: var(--accent-text); }
 .ask { margin: 26px 0 0; }
 .ask p { margin: 0 0 12px; color: var(--muted); }
 .btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.who-t { margin: 0 0 4px; }
+.who { margin: 6px 0 16px; text-align: left; }
+.who-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 2px; border-top: 1px solid var(--line); }
+.who-row:last-child { border-bottom: 1px solid var(--line); }
+.who-n { font-family: var(--font-display); font-weight: 600; font-size: 18px; min-width: 0; overflow-wrap: anywhere; }
+.who-b { display: flex; gap: 6px; flex: none; }
+.who .pill { border: 1.5px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: 9px 16px; font: 600 15px var(--font-display); cursor: pointer; }
+.who .pill.on-si { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.who .pill.on-no { background: #C2562A; color: #fff; border-color: transparent; }
+.btn[disabled] { opacity: .5; cursor: default; }
+.small { font-size: 14px; margin-top: 8px; }
 button { font: inherit; cursor: pointer; }
 .btn { border: 0; border-radius: 999px; padding: 14px 24px; font-family: var(--font-display); font-weight: 600; font-size: 18px; min-width: 150px; }
 .btn.yes { background: var(--accent); color: var(--accent-ink); box-shadow: 0 10px 20px -12px var(--accent-text); }
@@ -82,7 +93,9 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
   var app = document.getElementById("app");
   var token = new URLSearchParams(location.search).get("t") || "";
   var sb = window.supabase ? window.supabase.createClient(URL, KEY, { auth: { persistSession: false } }) : null;
-  var inv = null, rsvp = "pend", total = 1, note = "", saved = false, err = "";
+  var inv = null, rsvp = "pend", total = 1, note = "", saved = false, err = "", people = [], sel = {};
+  function many() { return people.length > 1; }
+  function joinN(a) { return a.length < 2 ? (a[0] || "") : a.slice(0, -1).join(", ") + " y " + a[a.length - 1]; }
 
   var ICONS = {
     cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
@@ -135,6 +148,21 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
   }
 
   function askHTML(pl, e) {
+    if (rsvp === "pend" && many()) {
+      var ready = people.every(function (p) { return sel[p.n] === "si" || sel[p.n] === "no"; });
+      return '<h2 class="who-t">¿Quiénes vienen?</h2><p>Contanos por cada uno, así preparamos todo a medida.</p><div class="who">' +
+        people.map(function (p, i) {
+          return '<div class="who-row"><span class="who-n">' + esc(p.n) + '</span><span class="who-b">' +
+            '<button class="pill' + (sel[p.n] === "si" ? " on-si" : "") + '" data-act="pick" data-i="' + i + '" data-v="si" aria-pressed="' + (sel[p.n] === "si") + '">' + (sel[p.n] === "si" ? "✓ " : "") + 'Va</button>' +
+            '<button class="pill' + (sel[p.n] === "no" ? " on-no" : "") + '" data-act="pick" data-i="' + i + '" data-v="no" aria-pressed="' + (sel[p.n] === "no") + '">' + (sel[p.n] === "no" ? "✕ " : "") + 'No va</button></span></div>';
+        }).join("") + '</div><button class="btn yes" data-act="sendpeople"' + (ready ? "" : " disabled") + '>Enviar respuesta</button>' +
+        (ready ? "" : '<p class="small">Marcá a cada uno para poder enviar</p>') + (err ? '<p class="err">' + esc(err) + "</p>" : "");
+    }
+    if (many()) {
+      var si = people.filter(function (p) { return p.r === "si"; }).map(function (p) { return p.n; }), no = people.filter(function (p) { return p.r === "no"; }).map(function (p) { return p.n; });
+      var sum = [si.length ? (si.length > 1 ? "Vienen " : "Viene ") + joinN(si) + "." : "", no.length ? (no.length > 1 ? "No pueden " : "No puede ") + joinN(no) + "." : ""].filter(Boolean).join(" ");
+      return '<div class="answer"><h2>' + (si.length ? "¡Los esperamos!" : "Gracias por avisarnos") + "</h2><p>" + esc(sum) + "</p>" + (err ? '<p class="err">' + esc(err) + "</p>" : "") + '<button class="change" data-act="reset">Cambiar mi respuesta</button></div>';
+    }
     if (rsvp === "pend") {
       return '<div class="btns"><button class="btn yes" data-act="si">' + (pl ? "Sí, vamos" : "Sí, voy") + '</button><button class="btn no" data-act="no">' + (pl ? "No podemos ir" : "No puedo ir") + "</button></div>" +
         (err ? '<p class="err">' + esc(err) + "</p>" : "");
@@ -163,6 +191,14 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
     else if (a === "reset") { rsvp = "pend"; saved = false; err = ""; render(); }
     else if (a === "minus" || a === "plus") { var n = document.getElementById("note"); if (n) note = n.value; total = Math.max(1, Math.min(21, total + (a === "plus" ? 1 : -1))); saved = false; render(); }
     else if (a === "save") { send("si", true); }
+    else if (a === "pick") { sel[people[Number(b.dataset.i)].n] = b.dataset.v; render(); }
+    else if (a === "sendpeople") {
+      people = people.map(function (p) { return { n: p.n, r: sel[p.n] || "pend" }; });
+      rsvp = people.some(function (p) { return p.r === "si"; }) ? "si" : "no"; err = ""; render();
+      sb.rpc("respond_people", { p_token: token, p_answers: people })
+        .then(function (x) { if (x.error || x.data !== true) throw new Error("no"); })
+        .catch(function () { err = "No pudimos guardar tu respuesta. Revisá tu conexión y probá de nuevo."; render(); });
+    }
   });
 
   if (!token || !sb) { app.innerHTML = '<p class="center">Este link de invitación no es válido. Pedile a quien te invitó que te lo mande de nuevo.</p>'; return; }
@@ -172,6 +208,9 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
     applyColors(inv.event);
     if (inv.event && inv.event.titulo) document.title = inv.event.titulo + " · Invitación";
     rsvp = inv.rsvp || "pend";
+    people = (Array.isArray(inv.people) ? inv.people : []).filter(function (p) { return p && p.n; });
+    people.forEach(function (p) { if (p.r === "si" || p.r === "no") sel[p.n] = p.r; });
+    if (many() && !people.every(function (p) { return p.r === "si" || p.r === "no"; })) rsvp = "pend";
     note = inv.note || "";
     total = rsvp === "si" ? (Number(inv.plus) || 0) + 1 : countNames(inv.para + (inv.nene ? ", " + inv.nene : ""));
     render();

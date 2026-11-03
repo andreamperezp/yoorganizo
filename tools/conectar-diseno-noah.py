@@ -82,6 +82,46 @@ rep('<div style="font-size:26px;line-height:1.4;color:#2f4f73;text-wrap:balance;
     + rows + '</div></div>\n    '
     '<div style="font-size:26px;line-height:1.4;color:#2f4f73;text-wrap:balance;max-width:500px;">{{ estes }} con nosotros')
 
+# Confirmación persona por persona cuando la invitación es para varios
+PENDING_ONE = '<sc-if value="{{ pending }}" hint-placeholder-val="{{ true }}">\n      <div style="display:flex;align-items:center;gap:16px;">'
+rep(PENDING_ONE, '<sc-if value="{{ pendingMany }}" hint-placeholder-val="{{ false }}"><div ref="{{ peopleRef }}" style="width:100%;max-width:480px;"></div></sc-if>\n    '
+    '<sc-if value="{{ pendingOne }}" hint-placeholder-val="{{ true }}">\n      <div style="display:flex;align-items:center;gap:16px;">')
+rep('<div style="font-style:italic;font-size:36px;color:#2f4f73;line-height:1.1;">{{ replyTitle }}</div>',
+    '<div style="font-style:italic;font-size:36px;color:#2f4f73;line-height:1.1;">{{ replyTitle }}</div>\n'
+    '        <sc-if value="{{ hasSummary }}" hint-placeholder-val="{{ false }}"><div style="font-size:22px;line-height:1.45;color:#3f5f82;max-width:460px;text-wrap:balance;">{{ summary }}</div></sc-if>')
+rep("letterRef = React.createRef();", "letterRef = React.createRef(); peopleRef = React.createRef(); sel = {};")
+rep("  componentDidUpdate() { this.fillLetter(); }",
+    "  componentDidUpdate() { this.fillLetter(); this.fillPeople(); }\n"
+    "  many() { return (this.state.people || []).length > 1; }\n"
+    "  joinN(a) { return a.length < 2 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1]; }\n"
+    "  fillPeople() {\n"
+    "    const box = this.peopleRef.current; if (!box) return;\n"
+    "    const ppl = this.state.people || [], sel = this.sel;\n"
+    "    const btn = (n, v, label) => { const on = sel[n] === v;\n"
+    "      return '<button type=\"button\" data-n=\"' + encodeURIComponent(n) + '\" data-v=\"' + v + '\" aria-pressed=\"' + on + '\" style=\"min-width:104px;height:50px;padding:0 18px;border-radius:999px;cursor:pointer;font-family:Gloock,serif;font-size:20px;' +\n"
+    "        (on ? (v === 'si' ? 'border:2px solid #2f4f73;background:#2f4f73;color:#fff;' : 'border:2px solid #a2482a;background:#a2482a;color:#fff;') : 'border:2px solid #a7c4db;background:#fff;color:#2f4f73;') + '\">' + (on ? (v === 'si' ? '✓ ' : '✕ ') : '') + label + '</button>'; };\n"
+    "    const esc = x => String(x).replace(/[&<>\"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;' })[c]);\n"
+    "    const ready = ppl.every(p => sel[p.n] === 'si' || sel[p.n] === 'no');\n"
+    "    box.innerHTML = '<div style=\"font-family:Gloock,serif;font-size:30px;color:#2f4f73;\">¿Quiénes vienen?</div>' +\n"
+    "      '<div style=\"font-style:italic;font-size:21px;color:#3f5f82;margin:4px 0 14px;\">Contanos por cada uno, así preparamos todo a medida</div>' +\n"
+    "      ppl.map(p => '<div style=\"display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 4px;border-top:1px solid #e6dccf;text-align:left;\"><div style=\"font-family:Gloock,serif;font-size:24px;color:#2f4f73;min-width:0;overflow-wrap:anywhere;\">' + esc(p.n) + '</div><div style=\"display:flex;gap:8px;flex:none;\">' + btn(p.n, 'si', 'Va') + btn(p.n, 'no', 'No va') + '</div></div>').join('') +\n"
+    "      '<div style=\"border-top:1px solid #e6dccf;padding-top:18px;\"><button type=\"button\" data-send=\"1\" ' + (ready ? '' : 'disabled ') + 'style=\"width:300px;max-width:100%;height:64px;border:none;border-radius:999px;font-family:Gloock,serif;font-size:24px;color:#fff;cursor:' + (ready ? 'pointer' : 'default') + ';background:' + (ready ? '#2f4f73' : '#a9bccd') + ';box-shadow:0 6px 16px rgba(47,79,115,.2);\">Enviar respuesta</button>' +\n"
+    "      (ready ? '' : '<div style=\"font-size:18px;color:#52667d;margin-top:8px;\">Marcá a cada uno para poder enviar</div>') + '</div>';\n"
+    "    if (!box.dataset.wired) { box.dataset.wired = '1'; box.addEventListener('click', e => {\n"
+    "      const b = e.target.closest('button'); if (!b || b.disabled) return;\n"
+    "      if (b.dataset.send) return this.sendPeople();\n"
+    "      const n = decodeURIComponent(b.dataset.n); this.sel[n] = b.dataset.v; this.fillPeople();\n"
+    "    }); }\n"
+    "  }\n"
+    "  sendPeople() {\n"
+    "    const people = (this.state.people || []).map(p => ({ n: p.n, r: this.sel[p.n] || 'pend' }));\n"
+    "    const any = people.some(p => p.r === 'si');\n"
+    "    this.setState({ people, rsvp: any ? 'si' : 'no', err: '' });\n"
+    "    const t = this.token(); if (!t || !window.YO_INVITE) return;\n"
+    "    window.YO_INVITE.respondPeople(t, people).then(ok => { if (!ok) throw new Error('no'); })\n"
+    "      .catch(() => this.setState({ err: 'No pudimos guardar tu respuesta. Revisá tu conexión y probá de nuevo.' }));\n"
+    "  }")
+
 # Lógica: estado, carga por token, guardado
 rep("state = { rsvp: null, sealed: true, zoom: Math.min(1, window.innerWidth / 600) };",
     "state = { rsvp: null, sealed: true, zoom: Math.min(1, window.innerWidth / 600), para: '', nene: '', msg: '', total: 0, note: '', saved: false, err: '' };")
@@ -102,8 +142,10 @@ rep("  componentDidMount() {\n",
     "    const tk = this.token();\n"
     "    if (tk && window.YO_INVITE) window.YO_INVITE.load(tk).then(d => {\n"
     "      if (!d) return;\n"
-    "      const answered = d.rsvp === 'si' || d.rsvp === 'no';\n"
-    "      this.setState({ para: d.para || '', nene: d.nene || '', msg: d.mensaje || '', rsvp: answered ? d.rsvp : null, note: d.note || '',\n"
+    "      const people = Array.isArray(d.people) ? d.people.filter(p => p && p.n) : [];\n"
+    "      people.forEach(p => { if (p.r === 'si' || p.r === 'no') this.sel[p.n] = p.r; });\n"
+    "      const answered = people.length > 1 ? people.every(p => p.r === 'si' || p.r === 'no') : (d.rsvp === 'si' || d.rsvp === 'no');\n"
+    "      this.setState({ people, para: d.para || '', nene: d.nene || '', msg: d.mensaje || '', rsvp: answered ? (people.length > 1 ? (people.some(p => p.r === 'si') ? 'si' : 'no') : d.rsvp) : null, note: d.note || '',\n"
     "        total: d.rsvp === 'si' ? (Number(d.plus) || 0) + 1 : this.countNames(d.para, d.nene) });\n"
     "    }).catch(() => {});\n")
 rep("const para = (q.get('para') || this.props.para || '').trim();",
@@ -111,7 +153,10 @@ rep("const para = (q.get('para') || this.props.para || '').trim();",
 rep("const nene = (q.get('nene') || this.props.nene || '').trim();",
     "const nene = (this.state.nene || q.get('nene') || (own ? '' : this.props.nene) || '').trim();")
 rep("pending: r === null, answered: r !== null,",
-    "pending: r === null, answered: r !== null, yesAnswered: r === 'si',\n"
+    "pending: r === null, answered: r !== null, yesAnswered: r === 'si', peopleRef: this.peopleRef,\n"
+    "      pendingMany: r === null && this.many(), pendingOne: r === null && !this.many(),\n"
+    "      hasSummary: r !== null && this.many(), summary: this.many() ? (() => { const P = this.state.people || [], si = P.filter(p => p.r === 'si').map(p => p.n), no = P.filter(p => p.r === 'no').map(p => p.n);\n"
+    "        return [si.length ? (si.length > 1 ? 'Vienen ' : 'Viene ') + this.joinN(si) + '.' : '', no.length ? (no.length > 1 ? 'No pueden ' : 'No puede ') + this.joinN(no) + '.' : ''].filter(Boolean).join(' '); })() : '',\n"
     "      hasMsg: !!this.state.msg, msg: this.state.msg, noteRef: this.noteRef, note: this.state.note,\n"
     "      total: this.state.total || this.countNames(para, nene), savedOk: this.state.saved, hasErr: !!this.state.err, err: this.state.err,\n"
     "      minus: () => this.setState(st => ({ total: Math.max(1, (st.total || this.countNames(para, nene)) - 1), saved: false })),\n"
@@ -122,6 +167,7 @@ rep("yes: () => { this.setState({ rsvp: 'si' }); this.props.onRsvp?.('si', who);
 rep("no: () => { this.setState({ rsvp: 'no' }); this.props.onRsvp?.('no', who); },",
     "no: () => { this.setState({ rsvp: 'no', saved: false }); this.send('no'); this.props.onRsvp?.('no', who); },")
 rep("reset: () => this.setState({ rsvp: null })", "reset: () => this.setState({ rsvp: null, saved: false })")
+rep("replyTitle: r === 'si' ? '¡Te guardamos un lugar a bordo!'", "replyTitle: r === 'si' ? (this.many() ? '¡Les guardamos un lugar a bordo!' : '¡Te guardamos un lugar a bordo!')")
 
 enc = json.dumps(t, ensure_ascii=False).replace('</', '<\\u002F')
 s = s[:m.start(2)] + enc + s[m.end(2):]
@@ -144,6 +190,7 @@ head = '''<title>Baby shower de Noah · Invitación</title>
     function client() { if (!sb && window.supabase) sb = window.supabase.createClient(URL, KEY, { auth: { persistSession: false } }); return sb; }
     window.YO_INVITE = {
       load: function (t) { var c = client(); if (!c) return Promise.resolve(null); return c.rpc("get_invite", { p_token: t }).then(function (r) { return r.error ? null : r.data; }); },
+      respondPeople: function (t, ans) { var c = client(); if (!c) return Promise.resolve(false); return c.rpc("respond_people", { p_token: t, p_answers: ans }).then(function (x) { return !x.error && x.data === true; }); },
       respond: function (t, r, plus, note) { var c = client(); if (!c) return Promise.resolve(false); return c.rpc("respond_invite", { p_token: t, p_rsvp: r, p_plus: plus || 0, p_note: note || "" }).then(function (x) { return !x.error && x.data === true; }); }
     };
   })();
