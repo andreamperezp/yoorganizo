@@ -181,6 +181,11 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .share-row span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .share-how { display: flex; gap: 10px; text-align: left; font-size: 13.5px; line-height: 1.45; padding: 12px 14px; border-radius: 14px; background: #FFF8E6; }
 .share-how b { overflow-wrap: anywhere; }
+.share-link { display: grid; gap: 8px; text-align: left; padding: 14px; border-radius: 16px; border: 1.5px solid var(--accent-soft); }
+.share-link h3 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 6px; }
+.share-link p { margin: 0; font-size: 13.5px; }
+.share-btns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.share-btns .btn { text-decoration: none; }
 .share-how svg { flex: none; margin-top: 2px; }
 .auth-card { max-width: 440px; }
 .google-btn { justify-self: center; width: 100%; max-width: 320px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: #FFFFFF; color: #2A2F3A; border: 1.5px solid #E3E5EA; box-shadow: 0 2px 6px rgba(0,0,0,.06); padding: 11px 18px; }
@@ -1251,7 +1256,7 @@ a.btn { text-decoration: none; display: inline-block; }
   let saveTimer = null;
   function persist() {
     try { localStorage.setItem(lsKey(), JSON.stringify(state)); } catch (e) {}
-    if (session) { queuePush(); return; }
+    if (session || linkMode()) { queuePush(); return; }
     if (!docRef) { setSave(saveMode === "local" ? "Guardado en este navegador" : ""); return; }
     clearTimeout(saveTimer);
     setSave("Guardando…");
@@ -1272,6 +1277,31 @@ a.btn { text-decoration: none; display: inline-block; }
   let planOwner = null, sharedBy = "", shareOpen = false, shares = [], shareErr = "", lastRemoteAt = "", pendingPush = false;
   const myMail = () => String((session && session.user.email) || "").toLowerCase();
   const isShared = () => !!(session && planOwner && planOwner !== session.user.id);
+  // Link de acceso: abre el planner de la dueña en cualquier dispositivo, sin mail (se recuerda en este navegador)
+  let accessTok = "", linkOwnerMail = "", myLink = "";
+  try {
+    const u = new URL(location.href), t = u.searchParams.get("acceso");
+    if (t) { localStorage.setItem("yo-acceso", t); u.searchParams.delete("acceso"); history.replaceState(null, "", u.pathname + u.search + u.hash); }
+    accessTok = localStorage.getItem("yo-acceso") || "";
+  } catch (e) {}
+  const linkMode = () => !!accessTok;
+  const accessUrl = t => location.origin + location.pathname + "?acceso=" + t;
+  async function pullLink() {
+    setSave("Abriendo el planner…");
+    const { data, error } = await sb.rpc("get_plan_by_link", { p_token: accessTok });
+    if (error) { setSave("No pudimos conectar"); toast("No pudimos abrir el planner. Revisá tu conexión y probá de nuevo.", "cloud-off"); return; }
+    if (!data) { leaveLink(true); toast("Este link de acceso ya no funciona. Pedile uno nuevo a quien te lo mandó.", "link-2-off"); return; }
+    linkOwnerMail = data.owner_email || ""; lastRemoteAt = data.updated_at;
+    if (data.kind && data.kind !== EV) EV = data.kind;
+    useRemote(Object.assign(freshState(), data.data || {}));
+  }
+  function leaveLink(quiet) {
+    accessTok = ""; linkOwnerMail = "";
+    try { localStorage.removeItem("yo-acceso"); localStorage.removeItem(lsKey()); } catch (e) {}
+    state = freshState(); applyPack(); picker = true; view = "plan"; setSave(""); render();
+    if (!quiet) toast("Saliste del planner compartido en este dispositivo", "log-out");
+    if (session) pullRemote();
+  }
   const authReady = () => !!sb;
   let googleOn = false; // Solo mostramos "Continuar con Google" si está activado en Supabase
   function initAuth() {
@@ -1288,6 +1318,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function hasLocalData() { return !!(state.setup && chosen()); }
   async function pullRemote() {
+    if (linkMode()) return pullLink();
     setSave("Buscando tus datos…");
     const kind = EV;
     const sh = await sb.from("plan_shares").select("owner, owner_email").eq("email", myMail()).eq("kind", kind).neq("owner", session.user.id).limit(1);
@@ -1324,6 +1355,13 @@ a.btn { text-decoration: none; display: inline-block; }
     pushTimer = setTimeout(pushNow, 800);
   }
   function pushNow() {
+    if (linkMode()) {
+      const snapshot = JSON.parse(JSON.stringify(state));
+      pushing = pushing.then(() => sb.rpc("save_plan_by_link", { p_token: accessTok, p_data: snapshot }))
+        .then(r => { pendingPush = false; const ok = r && !r.error && r.data; if (ok) lastRemoteAt = r.data; setSave(ok ? "Guardado" : "No se pudo guardar"); },
+              () => { pendingPush = false; setSave("No se pudo guardar"); });
+      return pushing;
+    }
     if (!session) return Promise.resolve();
     const snapshot = JSON.parse(JSON.stringify(state));
     const kind = EV;
@@ -1353,6 +1391,7 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   function accountChip() {
     if (!authReady()) return "";
+    if (linkMode()) return `<span class="acct">${ic("link")}<span class="acct-mail">Planner de ${esc(linkOwnerMail || "…")}</span><button class="link-btn" data-act="leavelink">Salir</button></span>`;
     if (session) {
       const mail = session.user.email || "Tu cuenta";
       return `${isShared() ? `<span class="shared-by" title="Lo ven y lo editan las dos cuentas">${ic("users")} Compartido por ${esc(sharedBy)}</span>` : `<button class="acct-btn" data-act="openshare">${ic("user-plus")} Compartir</button>`}<span class="acct">${ic("cloud")}<span class="acct-mail">${esc(mail)}</span><button class="link-btn" data-act="logout">Salir</button></span>`;
@@ -1361,7 +1400,10 @@ a.btn { text-decoration: none; display: inline-block; }
   }
   async function loadShares() {
     const { data } = await sb.from("plan_shares").select("email").eq("owner", session.user.id).eq("kind", EV).order("created_at");
-    shares = (data || []).map(x => x.email); if (shareOpen) render();
+    shares = (data || []).map(x => x.email);
+    const lk = await sb.from("plan_links").select("token").eq("owner", session.user.id).eq("kind", EV).order("created_at", { ascending: false }).limit(1);
+    myLink = (lk.data && lk.data[0] && lk.data[0].token) || "";
+    if (shareOpen) render();
   }
   async function addShare(email) {
     shareErr = "";
@@ -1390,15 +1432,22 @@ a.btn { text-decoration: none; display: inline-block; }
         </form>
         ${shareErr ? `<p class="pick-err">${esc(shareErr)}</p>` : ""}
         ${shares.length ? `<div class="share-list">${shares.map(e => `<div class="share-row">${ic("user-check")}<span>${esc(e)}</span><button class="link-btn" data-act="delshare" data-v="${esc(e)}">Quitar</button></div>`).join("")}</div>` : ""}
-        <div class="share-how">${ic("info")}<div><b>¿Y después?</b> Mandale este link: <b>${esc(link)}</b>. Entra con "Guardar en mi cuenta" usando <b>ese mismo email</b> y le aparece tu evento.</div></div>
+        <div class="share-link">
+          <h3>${ic("link")} Link de acceso, sin mail</h3>
+          <p class="muted">Abre este evento en cualquier celu o compu, sin cuenta ni contraseña. Usalo para tus otros dispositivos o mandáselo a quien te ayuda. Quien lo tenga puede ver y editar todo: compartilo solo con gente de confianza.</p>
+          ${myLink ? `<input type="text" class="link-field" readonly value="${esc(accessUrl(myLink))}" aria-label="Link de acceso">
+          <div class="share-btns"><button class="btn" data-act="cplink">${ic("copy")} Copiar</button><a class="btn ghost" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Te paso el link para organizar juntos el evento en Yo Organizo: " + accessUrl(myLink))}">${ic("message-circle")} WhatsApp</a><button class="link-btn" data-act="rmlink">Desactivar</button></div>`
+          : `<button class="btn" data-act="mklink">${ic("link")} Crear link de acceso</button>`}
+        </div>
+        <div class="share-how">${ic("info")}<div><b>¿Prefiere entrar con su mail?</b> Mandale este link: <b>${esc(link)}</b>. Entra con "Guardar en mi cuenta" usando <b>ese mismo email</b> y le aparece tu evento.</div></div>
         <button class="btn ghost" data-act="closeshare" style="justify-self:center">Listo</button>
       </div></div>`;
   }
   // Si la otra persona cambió algo, al volver a la pestaña se trae lo último
   document.addEventListener("visibilitychange", async () => {
-    if (document.visibilityState !== "visible" || !session || !planOwner || pendingPush || conflict) return;
+    if (document.visibilityState !== "visible" || !(linkMode() || (session && planOwner)) || pendingPush || conflict) return;
     const kind = EV;
-    const { data } = await sb.from("plans").select("data, updated_at").eq("user_id", planOwner).eq("kind", kind).maybeSingle();
+    const { data } = linkMode() ? await sb.rpc("get_plan_by_link", { p_token: accessTok }) : await sb.from("plans").select("data, updated_at").eq("user_id", planOwner).eq("kind", kind).maybeSingle();
     if (!data || kind !== EV || pendingPush || !lastRemoteAt || data.updated_at <= lastRemoteAt) return;
     lastRemoteAt = data.updated_at;
     state = Object.assign(freshState(), data.data || {});
@@ -2485,6 +2534,21 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (act === "openauth") { authOpen = true; authSent = ""; authErr = ""; render(); setTimeout(() => { const e = document.getElementById("auth-email"); if (e) e.focus(); }, 200); }
     else if (act === "openshare") { shareOpen = true; shareErr = ""; render(); loadShares(); setTimeout(() => { const e = document.getElementById("share-email"); if (e) e.focus(); }, 200); }
     else if (act === "closeshare") { shareOpen = false; render(); }
+    else if (act === "leavelink") { if (confirm("¿Salir de este planner en este dispositivo? El planner sigue guardado; para volver vas a necesitar el link de nuevo.")) leaveLink(); }
+    else if (act === "mklink") {
+      (async () => {
+        await pushNow();
+        const a = new Uint8Array(24); crypto.getRandomValues(a);
+        const tok = Array.from(a, x => "abcdefghijkmnpqrstuvwxyz23456789"[x % 32]).join("");
+        const { error } = await sb.from("plan_links").insert({ token: tok, owner: session.user.id, kind: EV });
+        if (error) { shareErr = "No pudimos crear el link. Probá de nuevo."; render(); return; }
+        myLink = tok; render(); toast("Link creado", "link");
+      })();
+    }
+    else if (act === "cplink") { navigator.clipboard.writeText(accessUrl(myLink)).then(() => toast("Link copiado", "copy"), () => toast("Mantené apretado el link para copiarlo", "info")); }
+    else if (act === "rmlink") {
+      if (confirm("¿Desactivar el link? Quien lo use ya no va a poder entrar.")) sb.from("plan_links").delete().eq("owner", session.user.id).eq("kind", EV).then(() => { myLink = ""; render(); toast("Link desactivado", "link-2-off"); });
+    }
     else if (act === "delshare") { if (confirm("¿Dejar de compartir con " + el.dataset.v + "? Ya no va a poder ver ni editar el evento.")) delShare(el.dataset.v); }
     else if (act === "closeauth") { authOpen = false; authSent = ""; authErr = ""; render(); }
     else if (act === "google") { googleLogin(); }
@@ -2753,6 +2817,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     if (picker && chosen()) { picker = false; rerenderKeepScroll(); }
   });
   initAuth();
+  if (linkMode() && sb) pullLink();
   // Primera visita: pedir nombre y nene/nena/sorpresa antes de empezar
   if (view === "plan" && !chosen()) picker = true;
   render();
