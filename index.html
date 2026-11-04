@@ -594,6 +594,12 @@ a.btn { text-decoration: none; display: inline-block; }
 @media (max-width: 760px) { .add-task.gift-add { grid-template-columns: 1fr 90px; } .add-task.gift-add #ng-name, .add-task.gift-add #ng-det, .add-task.gift-add button { grid-column: 1 / -1; } }
 .gift-row .pz { background: none; border: 0; padding: 0; margin: 0; }
 .gift-row .pz[open] { border-top: 1px dashed var(--line); padding-top: 4px; }
+.gs-list { display: grid; }
+.gs-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+.gs-n { font-weight: 700; min-width: 0; display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.gs-b { display: flex; gap: 6px; flex-wrap: wrap; }
+.gs-b .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 14px; }
+.gift-send { margin-bottom: 14px; background: var(--surface); }
 .gl-gifts { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); }
 </style>
 </head>
@@ -2032,9 +2038,34 @@ a.btn { text-decoration: none; display: inline-block; }
       cats.map(c => "\n" + c + "\n" + free.filter(x => (x.cat || "Otros") === c).map(x => "• " + x.name + (x.detail ? " (" + x.detail + ")" : "") + (x.grp ? " — regalo grupal" : "")).join("\n")).join("\n") +
       "\n\nPara que no se repitan, elegí tu regalo desde tu invitación con tu nombre 💛";
   }
+  const giftLink = g => g.token ? siteBase() + "regalos.html?t=" + g.token : "";
+  const defaultGiftWa = () => "¡Hola {nombre}! 🎁 Te paso la lista de regalos para " + (partyName() || "el bebé") + ". Elegí lo que quieras regalar y dejá tu nombre, así no se repiten: {link}";
+  const giftWaText = (g, link) => (String((state.inv || {}).giftWa || "").trim() || defaultGiftWa()).replace(/\{nombre\}/g, guestPara(g)).replace(/\{link\}/g, link);
+  function giftSendHTML() {
+    const order = { si: 0, pend: 1, no: 2 };
+    const gs = state.guests.slice().sort((a, b) => (order[summaryR(a)] ?? 1) - (order[summaryR(b)] ?? 1));
+    const sent = gs.filter(g => g.giftSent).length;
+    return `
+      <details class="pz gift-send" id="gift-send" open>
+        <summary>${ic("send")} Mandá el link de regalos a cada invitado · ${sent} de ${gs.length} enviados</summary>
+        <p class="muted" style="margin:0 0 8px">Es un link aparte de la invitación y personal: cuando elige, ya sabés quién es. Arrancamos por los que confirmaron.</p>
+        ${gs.length ? `<div class="gs-list">${gs.map(g => {
+          const r = summaryR(g);
+          return `<div class="gs-row">
+            <span class="gs-n">${esc(g.name)} <span class="chip ${r === "si" ? "ok" : r === "no" ? "" : "soon"}">${r === "si" ? "Viene" : r === "no" ? "No viene" : "Sin responder"}</span>${g.giftSent ? ` <span class="chip ok">${ic("check")} Enviado</span>` : ""}</span>
+            <span class="gs-b">${g.phone ? `<button class="btn ${g.giftSent ? "ghost" : ""}" data-act="giftwa" data-id="${g.id}">${ic("message-circle")} ${g.giftSent ? "Reenviar" : "WhatsApp"}</button>` : ""}
+            <button class="btn ghost" data-act="giftcopy" data-id="${g.id}">${ic("link")} Copiar link</button></span>
+          </div>`; }).join("")}</div>` : `<p class="muted">Todavía no cargaste invitados.</p>`}
+        <details class="pz" id="gift-wa-edit" style="margin-top:10px">
+          <summary>${ic("pencil")} Editar el mensaje</summary>
+          <label class="field">Mensaje de WhatsApp<textarea id="i-giftwa" data-inv="giftWa" placeholder="${esc(defaultGiftWa())}">${esc((state.inv || {}).giftWa || "")}</textarea></label>
+          <p class="onb-help" style="margin-top:4px">Usá <b>{nombre}</b> para el nombre y <b>{link}</b> para su link de regalos.</p>
+        </details>
+      </details>`;
+  }
   function giftClaimLine(c) {
     const g = guestByToken(c.token);
-    const from = g ? (g.name !== c.name ? "invitación de " + g.name : "desde su invitación") : (c.token ? "desde su invitación" : "anotado por vos");
+    const from = g ? (g.name !== c.name ? "de " + g.name : "") : (c.token ? "" : "anotado por vos");
     return `<span class="gclaim">${ic("user-round")} <b>${esc(c.name)}</b> <small>${esc(from)}</small><button type="button" class="x" data-act="delclaim" data-id="${esc(c.id)}" aria-label="Quitar a ${esc(c.name)} de este regalo" title="Quitar">${ic("x")}</button></span>`;
   }
   function giftsView() {
@@ -2046,14 +2077,15 @@ a.btn { text-decoration: none; display: inline-block; }
     return `
       <div class="g-head">
         <div><h2>Lista de regalos</h2>
-        <p class="muted">Cada invitado ve esta lista en su invitación, elige qué regala y deja su nombre. Lo que ya eligieron deja de estar disponible para los demás, y acá ves quién regala qué.</p></div>
+        <p class="muted">Mandale a cada invitado su link de regalos: elige qué regala y deja su nombre. Lo que ya eligieron deja de estar disponible para los demás, y acá ves quién regala qué.</p></div>
         <button class="btn" data-act="syncgifts" ${gRemote.loading ? "disabled" : ""}>${ic("refresh-cw")} ${gRemote.loading ? "Actualizando…" : "Actualizar regalos"}</button>
       </div>
+      ${giftSendHTML()}
       <div class="gift-pub ${on ? "on" : ""}">
         <span class="icon-bubble">${ic(on ? "eye" : "eye-off")}</span>
-        <div><b>${on ? "La lista se ve en las invitaciones" : "La lista todavía no se ve en las invitaciones"}</b>
-        <span class="muted">${on ? "Tus invitados pueden elegir su regalo desde el link que les mandaste. No hace falta reenviarlo." : "Revisala, sacá lo que no necesites y sumá lo tuyo. Cuando esté lista, mostrala."}</span></div>
-        <button class="btn ${on ? "ghost" : ""}" data-act="giftson" data-v="${on ? "0" : "1"}">${on ? "Ocultar" : ic("send") + " Mostrar en las invitaciones"}</button>
+        <div><b>${on ? "También aparece dentro de la invitación" : "Dentro de la invitación no aparece"}</b>
+        <span class="muted">${on ? "Quien abra su invitación ve el botón de regalos." : "Opcional: sumá el botón de regalos a la invitación, para los que todavía no la abrieron."}</span></div>
+        <button class="btn ghost" data-act="giftson" data-v="${on ? "0" : "1"}">${on ? "Sacar de la invitación" : "Sumar a la invitación"}</button>
       </div>
       <div class="rtiles gtiles" role="group" aria-label="Filtrar regalos">
         ${[["all", "En la lista", "gift", list.length, "regalos"],
@@ -2777,6 +2809,20 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
         if (r.error || r.data !== true) { toast("No pudimos quitarlo. Probá de nuevo.", "cloud-off"); el.disabled = false; return; }
         Object.keys(gRemote.byId).forEach(k => { gRemote.byId[k] = gRemote.byId[k].filter(c => c.id !== id); });
         rerenderKeepScroll(); toast("Listo, ese regalo vuelve a estar disponible", "check");
+      });
+    }
+    else if (act === "giftwa" || act === "giftcopy") {
+      const g = state.guests.find(x => x.id === id); if (!g) return;
+      const w = act === "giftwa" ? window.open("", "_blank") : null;
+      (g.token ? Promise.resolve(true) : ensureInvite(g)).then(ok => {
+        if (!ok || !g.token) { if (w) w.close(); return; }
+        const doSend = () => {
+          const link = giftLink(g);
+          if (act === "giftwa") { const url = "https://wa.me/" + String(g.phone || "").replace(/\D/g, "") + "?text=" + encodeURIComponent(giftWaText(g, link)); if (w) w.location.href = url; else location.href = url; g.giftSent = true; persist(); rerenderKeepScroll(); return; }
+          const done = () => { g.giftSent = true; persist(); rerenderKeepScroll(); toast("Link de regalos de " + guestPara(g) + " copiado", "link"); };
+          try { navigator.clipboard.writeText(giftWaText(g, link)).then(done, () => toast("Su link: " + link, "link")); } catch (e) { toast("Su link: " + link, "link"); }
+        };
+        (state.giftsSig ? Promise.resolve(true) : pushGifts()).then(doSend);
       });
     }
     else if (act === "copygifts") {

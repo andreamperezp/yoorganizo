@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lista de regalos · Yo Organizo</title>
+<meta name="description" content="Elegí qué querés regalar y dejá tu nombre, así no se repiten los regalos.">
+<meta property="og:title" content="Lista de regalos 🎁">
+<meta property="og:description" content="Elegí qué querés regalar y dejá tu nombre, así no se repiten.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+/* Lista de regalos (link aparte de la invitación): misma tarjeta y colores del evento. */
+
+/* Invitación online genérica: tarjeta centrada; los colores llegan con la invitación (según el evento). */
+:root {
+  color-scheme: light;
+  --bg: #F6F4FB; --card: #FFFFFF; --ink: #2A2F3A; --muted: #6B7180; --line: #ECE7F2;
+  --accent: #B3A6F0; --accent-soft: #ECE8FC; --accent-text: #6650C9; --accent-ink: #261C57;
+  --ok: #2E8B57; --warn: #C2562A;
+  --font-display: "Fredoka", "Avenir Next Rounded", "Segoe UI", sans-serif;
+  --font-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; overflow-x: hidden; }
+body { background: radial-gradient(circle at 50% 0%, var(--accent-soft), var(--bg) 60%); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.5; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.wrap { max-width: 520px; margin: 0 auto; padding-block: 28px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.card { position: relative; background: var(--card); border-radius: 32px; padding: 34px 26px 30px; box-shadow: 0 30px 60px -36px var(--accent-text); border: 1px solid var(--line); text-align: center; overflow: hidden; }
+.card::before { content: ""; position: absolute; inset: 10px; border: 1.5px dashed var(--accent); border-radius: 24px; opacity: .55; pointer-events: none; }
+.para { font-family: var(--font-display); font-weight: 500; font-size: 20px; color: var(--accent-text); margin: 0 0 6px; text-wrap: balance; }
+.eyebrow { text-transform: uppercase; letter-spacing: .2em; font-size: 12px; font-weight: 700; color: var(--muted); margin: 14px 0 4px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(32px, 9vw, 44px); line-height: 1.05; margin: 0; text-wrap: balance; }
+h1 .name { color: var(--accent-text); }
+.sub { color: var(--muted); margin: 8px 0 0; }
+.msg { margin: 20px auto 0; max-width: 400px; background: var(--accent-soft); border-radius: 18px; padding: 14px 18px; font-style: italic; color: var(--accent-ink); }
+.details { margin: 22px 0 0; display: grid; gap: 0; text-align: left; border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.row .ico { width: 40px; height: 40px; border-radius: 14px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
+.row svg { width: 20px; height: 20px; }
+.row b { display: block; font-family: var(--font-display); font-weight: 600; font-size: 17px; }
+.row span { color: var(--muted); font-size: 14px; }
+.links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--accent); color: var(--accent-text); background: #fff; border-radius: 999px; padding: 8px 16px; font-weight: 700; font-size: 14px; text-decoration: none; }
+.ask { margin: 26px 0 0; }
+.ask p { margin: 0 0 12px; color: var(--muted); }
+.btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.who-t { margin: 0 0 4px; }
+.who { margin: 6px 0 16px; text-align: left; }
+.who-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 2px; border-top: 1px solid var(--line); }
+.who-row:last-child { border-bottom: 1px solid var(--line); }
+.who-n { font-family: var(--font-display); font-weight: 600; font-size: 18px; min-width: 0; overflow-wrap: anywhere; }
+.who-b { display: flex; gap: 6px; flex: none; }
+.who .pill { border: 1.5px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: 9px 16px; font: 600 15px var(--font-display); cursor: pointer; }
+.who .pill.on-si { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.who .pill.on-no { background: #C2562A; color: #fff; border-color: transparent; }
+.btn[disabled] { opacity: .5; cursor: default; }
+.small { font-size: 14px; margin-top: 8px; }
+button { font: inherit; cursor: pointer; }
+.btn { border: 0; border-radius: 999px; padding: 14px 24px; font-family: var(--font-display); font-weight: 600; font-size: 18px; min-width: 150px; }
+.btn.yes { background: var(--accent); color: var(--accent-ink); box-shadow: 0 10px 20px -12px var(--accent-text); }
+.btn.no { background: #fff; color: var(--ink); border: 1.5px solid var(--line); }
+.btn:focus-visible, .step:focus-visible, .pill:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
+.answer h2 { font-family: var(--font-display); font-weight: 700; font-size: 26px; margin: 0 0 4px; }
+.extra { margin: 14px auto 0; max-width: 360px; display: grid; gap: 12px; background: #FBFAFE; border: 1px solid var(--line); border-radius: 20px; padding: 16px; }
+.stepper { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.step { width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid var(--accent); background: #fff; color: var(--accent-text); font-size: 24px; line-height: 1; }
+.count { font-family: var(--font-display); font-weight: 700; font-size: 32px; min-width: 40px; }
+input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; font: inherit; color: var(--ink); background: #fff; }
+.save { background: var(--accent-text); color: #fff; border: 0; border-radius: 999px; padding: 12px 20px; font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+.ok { color: var(--ok); font-weight: 700; }
+.err { color: var(--warn); font-weight: 600; }
+.change { background: none; border: 0; color: var(--muted); text-decoration: underline; margin-top: 12px; }
+.foot { text-align: center; color: var(--muted); font-size: 12px; margin-top: 18px; }
+.foot a { color: inherit; }
+.center { text-align: center; padding: 60px 10px; color: var(--muted); }
+/* Lista de regalos */
+.gifts { margin: 28px 0 0; padding-top: 22px; border-top: 1px solid var(--line); text-align: left; }
+.gifts h2 { font-family: var(--font-display); font-weight: 700; font-size: 24px; margin: 0 0 4px; text-align: center; }
+.gifts > p { margin: 0 0 10px; color: var(--muted); text-align: center; }
+.gcat { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-text); margin: 18px 0 4px; }
+.gi { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 11px 2px; border-bottom: 1px solid var(--line); }
+.gi-n { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.gi-d { grid-column: 1; font-size: 14px; color: var(--muted); }
+.gi-s { grid-column: 1; font-size: 13px; color: var(--accent-text); font-weight: 700; }
+.gi .act { grid-column: 2; grid-row: 1 / span 3; }
+.gi.gone .gi-n { color: var(--muted); text-decoration: line-through; }
+.gi.mine { background: var(--accent-soft); border-radius: 14px; padding: 11px 12px; border-bottom-color: transparent; margin: 4px 0; }
+.gbtn { border: 1.5px solid var(--accent); background: #fff; color: var(--accent-text); border-radius: 999px; padding: 8px 14px; font: 600 14px var(--font-display); white-space: nowrap; }
+.gbtn.solid { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.gtag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; background: var(--accent-soft); color: var(--accent-text); border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: 2px; }
+.gform { grid-column: 1 / -1; display: grid; gap: 8px; margin-top: 6px; }
+.gform .row2 { display: flex; gap: 8px; flex-wrap: wrap; }
+.gform input { flex: 1 1 180px; }
+.gok { color: var(--ok); font-weight: 700; }
+.mine-sum { background: var(--accent-soft); border-radius: 16px; padding: 12px 14px; margin: 0 0 8px; color: var(--accent-ink); }
+.float { position: fixed; pointer-events: none; color: var(--accent); opacity: .5; animation: drift 9s ease-in-out infinite; z-index: 0; }
+.wrap { position: relative; z-index: 1; }
+@keyframes drift { 50% { transform: translateY(-14px) rotate(6deg); } }
+@media (prefers-reduced-motion: reduce) { .float { animation: none; } }
+.card { text-align: left; }
+.card > .para, .card > .eyebrow, .card > h1, .card > .sub { text-align: center; }
+.gifts { margin-top: 18px; padding-top: 0; border-top: 0; }
+.empty-g { text-align: center; color: var(--muted); padding: 20px 0; }
+</style>
+</head>
+<body>
+<span class="float" style="left:6%;top:12%;font-size:28px">★</span>
+<span class="float" style="right:8%;top:30%;font-size:22px;animation-delay:-3s">♥</span>
+<main class="wrap" id="app"><p class="center">Abriendo la lista de regalos…</p></main>
+<script>
+(function () {
+  "use strict";
+  var URL = "https://kxcjvqskrsjefmqfbhpa.supabase.co";
+  var KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4Y2p2cXNrcnNqZWZtcWZiaHBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MjI2MDEsImV4cCI6MjEwODA5ODYwMX0.4JJpwNF2pwqecmMsM2QgF9qsHJlruwYyy-JRhpzpmyI";
+  var app = document.getElementById("app");
+  var token = new URLSearchParams(location.search).get("t") || "";
+  var sb = window.supabase ? window.supabase.createClient(URL, KEY, { auth: { persistSession: false } }) : null;
+  var inv = null, gifts = null, gOpen = "", gName = "", gErr = "", gBusy = false, lost = "";
+  var GCATS = ["Pañales e higiene", "Ropa", "Sueño", "Baño", "Paseo", "Alimentación", "Salud", "Otros"];
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function applyColors(e) {
+    var p = (e && e.pal) || null; if (!p) return;
+    var r = document.documentElement.style;
+    if (p.accent) r.setProperty("--accent", p.accent);
+    if (p.soft) r.setProperty("--accent-soft", p.soft);
+    if (p.text) r.setProperty("--accent-text", p.text);
+    if (p.ink) r.setProperty("--accent-ink", p.ink);
+    if (p.bg) r.setProperty("--bg", p.bg);
+  }
+  function gLeft(g) { return g.grp ? null : Math.max(0, (Number(g.qty) || 1) - (Number(g.taken) || 0)); }
+  function giftRow(g) {
+    var isMine = g.mine && g.mine.length, left = gLeft(g), gone = !isMine && !g.grp && left === 0;
+    var st = isMine ? '<span class="gok">✓ Lo regalás vos</span>' : g.grp ? (g.taken ? "Regalo grupal · ya se sumaron " + g.taken : "Regalo grupal · podés sumarte") : gone ? "Ya lo eligieron" : (Number(g.qty) > 1 ? "Quedan " + left + " de " + g.qty : "Disponible");
+    var act = isMine ? '<button class="gbtn" data-act="gunclaim" data-id="' + esc(g.mine[0].id) + '"' + (gBusy ? " disabled" : "") + ">Cancelar</button>"
+      : gone ? "" : '<button class="gbtn' + (gOpen === g.id ? " solid" : "") + '" data-act="gopen" data-id="' + esc(g.id) + '">' + (g.grp ? "Me sumo" : "Lo regalo yo") + "</button>";
+    var form = gOpen === g.id && !isMine ? '<form class="gform" data-gid="' + esc(g.id) + '"><label for="gname">Tu nombre</label><div class="row2">' +
+      '<input type="text" id="gname" maxlength="80" autocomplete="name" value="' + esc(gName) + '" placeholder="Ej: Tía Marta">' +
+      '<button class="save" type="submit"' + (gBusy ? " disabled" : "") + ">" + (gBusy ? "Guardando…" : "Confirmar") + "</button></div>" +
+      (gErr ? '<p class="err">' + esc(gErr) + "</p>" : "") + "</form>" : "";
+    return '<div class="gi' + (gone ? " gone" : "") + (isMine ? " mine" : "") + '"><span class="gi-n">' + esc(g.name) + (g.grp ? '<span class="gtag">Grupal</span>' : "") + "</span>" +
+      (act ? '<span class="act">' + act + "</span>" : "") +
+      (g.detail ? '<span class="gi-d">' + esc(g.detail) + "</span>" : "") + '<span class="gi-s">' + st + "</span>" + form + "</div>";
+  }
+  function render() {
+    var e = inv.event || {};
+    var mine = gifts.filter(function (g) { return g.mine && g.mine.length; });
+    var cats = GCATS.filter(function (c) { return gifts.some(function (g) { return (g.cat || "Otros") === c; }); });
+    app.innerHTML = '<article class="card">' +
+      '<p class="para">Hola, ' + esc(gName || inv.para) + "</p>" +
+      '<p class="eyebrow">Lista de regalos</p>' +
+      "<h1>" + (e.nombre ? 'Para <span class="name">' + esc(e.nombre) + "</span>" : "Lista de regalos") + "</h1>" +
+      '<p class="sub">Elegí qué querés regalar y dejá tu nombre. Así no se repiten y sabemos a quién agradecerle.</p>' +
+      '<section class="gifts" aria-live="polite">' +
+      (lost ? '<p class="err" style="text-align:center">' + esc(lost) + "</p>" : "") +
+      (mine.length ? '<p class="mine-sum">Vas a regalar: <b>' + mine.map(function (g) { return esc(g.name); }).join(", ") + "</b>. ¡Gracias!</p>" : "") +
+      (gifts.length ? cats.map(function (c) {
+        return '<p class="gcat">' + esc(c) + "</p>" + gifts.filter(function (g) { return (g.cat || "Otros") === c; }).map(giftRow).join("");
+      }).join("") : '<p class="empty-g">Todavía no hay regalos en la lista. Volvé a abrir este link en unos días.</p>') +
+      "</section></article>" +
+      '<p class="foot">Hecho con <a href="https://yoorganizo.vercel.app" target="_blank" rel="noopener">Yo Organizo</a></p>';
+  }
+  function loadGifts() {
+    return sb.rpc("get_invite_gifts", { p_token: token }).then(function (r) { if (!r.error) gifts = Array.isArray(r.data) ? r.data : []; render(); });
+  }
+  app.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-act]"); if (!b) return;
+    if (b.dataset.act === "gopen") { gOpen = gOpen === b.dataset.id ? "" : b.dataset.id; gErr = ""; lost = ""; render(); var gi = document.getElementById("gname"); if (gi) gi.focus(); }
+    else if (b.dataset.act === "gunclaim") {
+      gBusy = true; render();
+      sb.rpc("unclaim_gift", { p_token: token, p_claim_id: b.dataset.id }).then(function () { gBusy = false; loadGifts(); }, function () { gBusy = false; render(); });
+    }
+  });
+  app.addEventListener("input", function (ev) { if (ev.target.id === "gname") gName = ev.target.value; });
+  app.addEventListener("submit", function (ev) {
+    var f = ev.target; if (!f.classList.contains("gform")) return;
+    ev.preventDefault();
+    var inp = document.getElementById("gname"); gName = inp ? inp.value.trim() : "";
+    if (!gName) { gErr = "Escribí tu nombre para que sepan quién lo regala."; render(); return; }
+    gBusy = true; gErr = ""; render();
+    sb.rpc("claim_gift", { p_token: token, p_gift_id: f.dataset.gid, p_name: gName }).then(function (r) {
+      gBusy = false;
+      var res = r.error ? "error" : r.data;
+      if (res === "ok" || res === "ya_elegido") { gOpen = ""; return loadGifts(); }
+      if (res === "agotado") { gOpen = ""; lost = "Justo lo eligió otra persona. Elegí otro regalo de la lista."; return loadGifts(); }
+      gErr = "No pudimos guardarlo. Revisá tu conexión y probá de nuevo."; render();
+    }, function () { gBusy = false; gErr = "No pudimos guardarlo. Revisá tu conexión y probá de nuevo."; render(); });
+  });
+  if (!token || !sb) { app.innerHTML = '<p class="center">Este link no es válido. Pedile a quien te lo mandó que te lo envíe de nuevo.</p>'; return; }
+  sb.rpc("get_invite", { p_token: token }).then(function (r) {
+    if (r.error || !r.data) { app.innerHTML = '<p class="center">No encontramos este link. Pedile a quien te lo mandó que te lo envíe de nuevo.</p>'; return; }
+    inv = r.data; applyColors(inv.event);
+    if (inv.event && inv.event.nombre) document.title = "Lista de regalos para " + inv.event.nombre;
+    var ppl = (Array.isArray(inv.people) ? inv.people : []).filter(function (p) { return p && p.n; });
+    gName = ppl.length ? ppl[0].n : String(inv.para || "").split(/,|\s+y\s+/)[0].trim();
+    return loadGifts();
+  }).catch(function () { app.innerHTML = '<p class="center">No pudimos abrir la lista. Revisá tu conexión y probá de nuevo.</p>'; });
+})();
+</script>
+</body>
+</html>
