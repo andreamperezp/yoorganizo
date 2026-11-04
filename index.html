@@ -175,6 +175,13 @@ svg.lucide { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; 
 .acct-btn:hover { background: var(--accent-soft); }
 .acct { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-text); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 13px; font-weight: 600; max-width: 100%; }
 .acct-mail { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shared-by { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--accent-text); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.share-list { display: grid; gap: 6px; text-align: left; }
+.share-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: var(--accent-soft); font-weight: 600; font-size: 14px; }
+.share-row span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.share-how { display: flex; gap: 10px; text-align: left; font-size: 13.5px; line-height: 1.45; padding: 12px 14px; border-radius: 14px; background: #FFF8E6; }
+.share-how b { overflow-wrap: anywhere; }
+.share-how svg { flex: none; margin-top: 2px; }
 .auth-card { max-width: 440px; }
 .google-btn { justify-self: center; width: 100%; max-width: 320px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: #FFFFFF; color: #2A2F3A; border: 1.5px solid #E3E5EA; box-shadow: 0 2px 6px rgba(0,0,0,.06); padding: 11px 18px; }
 .google-btn:hover { border-color: #C9CDD6; }
@@ -1261,6 +1268,10 @@ a.btn { text-decoration: none; display: inline-block; }
   const SUPABASE_URL = "https://kxcjvqskrsjefmqfbhpa.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4Y2p2cXNrcnNqZWZtcWZiaHBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MjI2MDEsImV4cCI6MjEwODA5ODYwMX0.4JJpwNF2pwqecmMsM2QgF9qsHJlruwYyy-JRhpzpmyI";
   let sb = null, session = null, authOpen = false, authSent = "", authErr = "", conflict = null, pushTimer = null, pushing = Promise.resolve();
+  // Planner compartido: planOwner es de quién es el planner que se está viendo (el propio o el que te compartieron)
+  let planOwner = null, sharedBy = "", shareOpen = false, shares = [], shareErr = "", lastRemoteAt = "", pendingPush = false;
+  const myMail = () => String((session && session.user.email) || "").toLowerCase();
+  const isShared = () => !!(session && planOwner && planOwner !== session.user.id);
   const authReady = () => !!sb;
   let googleOn = false; // Solo mostramos "Continuar con Google" si está activado en Supabase
   function initAuth() {
@@ -1279,9 +1290,18 @@ a.btn { text-decoration: none; display: inline-block; }
   async function pullRemote() {
     setSave("Buscando tus datos…");
     const kind = EV;
-    const { data, error } = await sb.from("plans").select("data, updated_at").eq("user_id", session.user.id).eq("kind", kind).maybeSingle();
+    const sh = await sb.from("plan_shares").select("owner, owner_email").eq("email", myMail()).eq("kind", kind).neq("owner", session.user.id).limit(1);
+    const got = !sh.error && sh.data && sh.data[0];
+    planOwner = got ? got.owner : session.user.id; sharedBy = got ? (got.owner_email || "otra persona") : "";
+    const { data, error } = await sb.from("plans").select("data, updated_at").eq("user_id", planOwner).eq("kind", kind).maybeSingle();
     if (kind !== EV) return;
     if (error) { setSave("No pudimos leer tu cuenta"); toast("No pudimos conectar con tu cuenta. Probá de nuevo en un rato.", "cloud-off"); return; }
+    if (data) lastRemoteAt = data.updated_at;
+    if (isShared()) {
+      if (!data) { setSave(""); toast(sharedBy + " todavía no cargó este evento", "info"); render(); return; }
+      useRemote(Object.assign(freshState(), data.data || {}));
+      toast("Estás viendo el planner que te compartió " + sharedBy, "users"); return;
+    }
     if (!data) {
       if (!hasLocalData()) { setSave(""); render(); return; }
       await pushNow();
@@ -1300,15 +1320,19 @@ a.btn { text-decoration: none; display: inline-block; }
     setSave("Guardado en tu cuenta"); render();
   }
   function queuePush() {
-    clearTimeout(pushTimer); setSave("Guardando en tu cuenta…");
+    clearTimeout(pushTimer); setSave("Guardando en tu cuenta…"); pendingPush = true;
     pushTimer = setTimeout(pushNow, 800);
   }
   function pushNow() {
     if (!session) return Promise.resolve();
     const snapshot = JSON.parse(JSON.stringify(state));
     const kind = EV;
-    pushing = pushing.then(() => sb.from("plans").upsert({ user_id: session.user.id, kind, data: snapshot, updated_at: new Date().toISOString() }, { onConflict: "user_id,kind" }))
-      .then(r => setSave(r && r.error ? "No se pudo guardar en tu cuenta" : "Guardado en tu cuenta"), () => setSave("No se pudo guardar en tu cuenta"));
+    const at = new Date().toISOString(), owner = planOwner || session.user.id;
+    pushing = pushing.then(() => owner !== session.user.id
+        ? sb.from("plans").update({ data: snapshot, updated_at: at }).eq("user_id", owner).eq("kind", kind)
+        : sb.from("plans").upsert({ user_id: owner, kind, data: snapshot, updated_at: at }, { onConflict: "user_id,kind" }))
+      .then(r => { pendingPush = false; if (!(r && r.error)) lastRemoteAt = at; setSave(r && r.error ? "No se pudo guardar en tu cuenta" : "Guardado en tu cuenta"); },
+            () => { pendingPush = false; setSave("No se pudo guardar en tu cuenta"); });
     return pushing;
   }
   async function sendMagicLink(email) {
@@ -1325,16 +1349,62 @@ a.btn { text-decoration: none; display: inline-block; }
   async function logout() {
     await pushing; await sb.auth.signOut();
     state = freshState(); try { localStorage.removeItem(lsKey()); } catch (e) {}
-    session = null; picker = true; view = "plan"; render(); toast("Saliste de tu cuenta. Tus datos quedan guardados en ella.", "log-out");
+    session = null; planOwner = null; sharedBy = ""; shares = []; shareOpen = false; picker = true; view = "plan"; render(); toast("Saliste de tu cuenta. Tus datos quedan guardados en ella.", "log-out");
   }
   function accountChip() {
     if (!authReady()) return "";
     if (session) {
       const mail = session.user.email || "Tu cuenta";
-      return `<span class="acct">${ic("cloud")}<span class="acct-mail">${esc(mail)}</span><button class="link-btn" data-act="logout">Salir</button></span>`;
+      return `${isShared() ? `<span class="shared-by" title="Lo ven y lo editan las dos cuentas">${ic("users")} Compartido por ${esc(sharedBy)}</span>` : `<button class="acct-btn" data-act="openshare">${ic("user-plus")} Compartir</button>`}<span class="acct">${ic("cloud")}<span class="acct-mail">${esc(mail)}</span><button class="link-btn" data-act="logout">Salir</button></span>`;
     }
     return `<button class="acct-btn" data-act="openauth">${ic("cloud-upload")} Guardar en mi cuenta</button>`;
   }
+  async function loadShares() {
+    const { data } = await sb.from("plan_shares").select("email").eq("owner", session.user.id).eq("kind", EV).order("created_at");
+    shares = (data || []).map(x => x.email); if (shareOpen) render();
+  }
+  async function addShare(email) {
+    shareErr = "";
+    const em = email.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { shareErr = "Escribí un email válido."; render(); return; }
+    if (em === myMail()) { shareErr = "Ese es tu propio email."; render(); return; }
+    await pushNow();
+    const { error } = await sb.from("plan_shares").insert({ owner: session.user.id, kind: EV, email: em, owner_email: myMail() });
+    if (error && !/duplicate/i.test(error.message)) { shareErr = "No pudimos compartirlo. Probá de nuevo."; render(); return; }
+    toast("Listo: " + em + " ya puede entrar", "user-plus"); loadShares();
+  }
+  async function delShare(email) {
+    await sb.from("plan_shares").delete().eq("owner", session.user.id).eq("kind", EV).eq("email", email);
+    toast("Dejaste de compartir con " + email, "user-minus"); loadShares();
+  }
+  function shareHTML() {
+    const link = location.origin + location.pathname;
+    return `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="share-title">
+      <div class="modal-card auth-card">
+        <div class="modal-hero" aria-hidden="true"><span>${ic("heart")}</span><span>${ic("users")}</span><span>${ic("star")}</span></div>
+        <div><h2 id="share-title">Organizalo de a dos</h2>
+        <p class="muted">Sumá el email de quien te ayuda. Va a ver y editar este mismo evento desde su celu o compu: invitados, presupuesto, todo. Lo que cambie uno lo ve el otro.</p></div>
+        <form id="share-form" class="auth-form">
+          <input type="email" id="share-email" placeholder="email de la otra persona" autocomplete="off" required aria-label="Email de la otra persona">
+          <button class="btn" type="submit">${ic("user-plus")} Compartir</button>
+        </form>
+        ${shareErr ? `<p class="pick-err">${esc(shareErr)}</p>` : ""}
+        ${shares.length ? `<div class="share-list">${shares.map(e => `<div class="share-row">${ic("user-check")}<span>${esc(e)}</span><button class="link-btn" data-act="delshare" data-v="${esc(e)}">Quitar</button></div>`).join("")}</div>` : ""}
+        <div class="share-how">${ic("info")}<div><b>¿Y después?</b> Mandale este link: <b>${esc(link)}</b>. Entra con "Guardar en mi cuenta" usando <b>ese mismo email</b> y le aparece tu evento.</div></div>
+        <button class="btn ghost" data-act="closeshare" style="justify-self:center">Listo</button>
+      </div></div>`;
+  }
+  // Si la otra persona cambió algo, al volver a la pestaña se trae lo último
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState !== "visible" || !session || !planOwner || pendingPush || conflict) return;
+    const kind = EV;
+    const { data } = await sb.from("plans").select("data, updated_at").eq("user_id", planOwner).eq("kind", kind).maybeSingle();
+    if (!data || kind !== EV || pendingPush || !lastRemoteAt || data.updated_at <= lastRemoteAt) return;
+    lastRemoteAt = data.updated_at;
+    state = Object.assign(freshState(), data.data || {});
+    try { localStorage.setItem(lsKey(), JSON.stringify(state)); } catch (e) {}
+    applyPack(); rerenderKeepScroll(); toast("Actualizamos con los últimos cambios", "refresh-cw");
+  });
   function authHTML() {
     return `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
       <div class="modal-card auth-card">
@@ -2257,7 +2327,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
         <span class="top-right">${view === "plan" ? `<span class="save" id="save">${esc(saveMsg)}</span>` : ""}${accountChip()}</span>
       </div>
       ${view === "plan" ? planView() : homeView()}
-      ${conflict ? conflictHTML() : authOpen ? authHTML() : picker ? pickerHTML() : ""}`;
+      ${conflict ? conflictHTML() : authOpen ? authHTML() : shareOpen && session ? shareHTML() : picker ? pickerHTML() : ""}`;
     applyBaby();
     document.title = view === "plan" && partyName() ? eventTitle() + " · Yo Organizo" : "Yo Organizo";
     drawIcons();
@@ -2413,6 +2483,9 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       toast(welcome(), T.icon);
     }
     else if (act === "openauth") { authOpen = true; authSent = ""; authErr = ""; render(); setTimeout(() => { const e = document.getElementById("auth-email"); if (e) e.focus(); }, 200); }
+    else if (act === "openshare") { shareOpen = true; shareErr = ""; render(); loadShares(); setTimeout(() => { const e = document.getElementById("share-email"); if (e) e.focus(); }, 200); }
+    else if (act === "closeshare") { shareOpen = false; render(); }
+    else if (act === "delshare") { if (confirm("¿Dejar de compartir con " + el.dataset.v + "? Ya no va a poder ver ni editar el evento.")) delShare(el.dataset.v); }
     else if (act === "closeauth") { authOpen = false; authSent = ""; authErr = ""; render(); }
     else if (act === "google") { googleLogin(); }
     else if (act === "logout") { logout(); }
@@ -2584,6 +2657,9 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       persist(); rerenderKeepScroll(); toast("Tarea agregada", "plus");
       setTimeout(() => { const inp = document.getElementById("add-" + ph); if (inp) inp.focus(); }, 30);
       return;
+    }
+    if (ev.target.id === "share-form") {
+      ev.preventDefault(); addShare(document.getElementById("share-email").value); return;
     }
     if (ev.target.id === "auth-form") {
       ev.preventDefault();
