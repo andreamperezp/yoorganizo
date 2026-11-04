@@ -23,6 +23,111 @@
     };
   })();
   </script>
+  <script>
+  // Lista de regalos de Yo Organizo sobre el diseño de Noah: botón flotante y hoja con la lista.
+  // El diseño reemplaza el documento al abrirse, así que el botón y sus estilos se vuelven a poner si faltan.
+  (function () {
+    var token = new URLSearchParams(location.search).get("t") || "";
+    if (!token) return;
+    var CATS = ["Pañales e higiene", "Ropa", "Sueño", "Baño", "Paseo", "Alimentación", "Salud", "Otros"];
+    var gifts = null, open = false, pick = "", name = "", err = "", busy = false, nombre = "";
+    var CSS = "#yo-g-btn{position:fixed;z-index:9998;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:12px 20px;background:#2f4f73;color:#fff;font:italic 18px/1.1 'EB Garamond',Georgia,serif;box-shadow:0 12px 26px -12px rgba(47,79,115,.7);cursor:pointer}" +
+      "#yo-g-btn svg{width:20px;height:20px}#yo-g-btn:focus-visible,#yo-g button:focus-visible,#yo-g input:focus-visible{outline:3px solid #7d9fc0;outline-offset:2px}" +
+      "#yo-g{position:fixed;inset:0;z-index:9999;background:rgba(31,52,77,.45);display:flex;align-items:flex-end;justify-content:center}" +
+      "#yo-g .sh{background:linear-gradient(180deg,#f9fcfe,#eef5fb);color:#2f4f73;width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:26px 26px 0 0;padding:24px max(20px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));font:17px/1.45 'EB Garamond',Georgia,serif}" +
+      "@media(min-width:620px){#yo-g{align-items:center}#yo-g .sh{border-radius:26px}}" +
+      "#yo-g h2{font:400 34px/1.1 'Gloock',Georgia,serif;margin:0 0 6px;text-align:center;color:#2f4f73}" +
+      "#yo-g .in{font-style:italic;text-align:center;margin:0 0 14px;color:#52667d}" +
+      "#yo-g .x{position:absolute;right:14px;top:12px;border:0;background:none;color:#52667d;font-size:28px;line-height:1;cursor:pointer;padding:6px}" +
+      "#yo-g .sh{position:relative}#yo-g .ct{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#85652f;margin:18px 0 4px}" +
+      "#yo-g .it{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;padding:11px 0;border-bottom:1px solid #d6e4ef}" +
+      "#yo-g .n{font-weight:600;font-size:18px;min-width:0;overflow-wrap:anywhere}#yo-g .d{grid-column:1;font-size:15px;font-style:italic;color:#52667d}" +
+      "#yo-g .s{grid-column:1;font-size:14px;color:#3f6f9c}#yo-g .a{grid-column:2;grid-row:1/span 3}" +
+      "#yo-g .it.gone .n{text-decoration:line-through;color:#8aa0b5}#yo-g .it.mine{background:#e3eff8;border-radius:14px;padding:11px 12px;border-bottom-color:transparent;margin:4px 0}" +
+      "#yo-g .b{border:1.5px solid #7d9fc0;background:#fff;color:#2f4f73;border-radius:999px;padding:8px 14px;font:italic 16px Georgia,serif;cursor:pointer;white-space:nowrap}#yo-g .b.on{background:#2f4f73;color:#fff;border-color:#2f4f73}" +
+      "#yo-g .b[disabled]{opacity:.5}#yo-g form{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}#yo-g label{width:100%;font-size:15px}" +
+      "#yo-g input{flex:1 1 180px;border:1.5px solid #c9dbea;border-radius:12px;padding:10px 12px;font:16px Georgia,serif;color:#2f4f73;background:#fff}" +
+      "#yo-g .ok{color:#2e7d5b;font-weight:600}#yo-g .er{width:100%;color:#a2482a;margin:0}#yo-g .tg{font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:#e3eff8;color:#3f6f9c;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px;font-style:normal}" +
+      "#yo-g .sum{background:#e3eff8;border-radius:14px;padding:10px 14px;margin:0 0 6px;text-align:center}";
+    var GIFT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v9h14v-9M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>';
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+    function sb() { return window.supabase ? (window.__yoSb || (window.__yoSb = window.supabase.createClient("https://kxcjvqskrsjefmqfbhpa.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4Y2p2cXNrcnNqZWZtcWZiaHBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MjI2MDEsImV4cCI6MjEwODA5ODYwMX0.4JJpwNF2pwqecmMsM2QgF9qsHJlruwYyy-JRhpzpmyI", { auth: { persistSession: false } }))) : null; }
+    function left(g) { return g.grp ? null : Math.max(0, (Number(g.qty) || 1) - (Number(g.taken) || 0)); }
+    function ensure() {
+      if (!gifts || !gifts.length || !document.body) return;
+      if (!document.getElementById("yo-g-css")) { var st = document.createElement("style"); st.id = "yo-g-css"; st.textContent = CSS; (document.head || document.body).appendChild(st); }
+      if (!document.getElementById("yo-g-btn")) {
+        var b = document.createElement("button"); b.id = "yo-g-btn"; b.type = "button"; b.innerHTML = GIFT + "<span>Lista de regalos</span>";
+        b.addEventListener("click", function () { open = true; draw(); load(); }); document.body.appendChild(b);
+      }
+      if (open && !document.getElementById("yo-g")) draw();
+    }
+    function row(g) {
+      var mine = g.mine && g.mine.length, l = left(g), gone = !mine && !g.grp && l === 0;
+      var st = mine ? '<span class="ok">✓ Lo regalás vos</span>' : g.grp ? (g.taken ? "Regalo grupal · ya se sumaron " + g.taken : "Regalo grupal · podés sumarte") : gone ? "Ya lo eligieron" : (Number(g.qty) > 1 ? "Quedan " + l + " de " + g.qty : "Disponible");
+      var a = mine ? '<button class="b" data-un="' + esc(g.mine[0].id) + '"' + (busy ? " disabled" : "") + ">Cancelar</button>" : gone ? "" :
+        '<button class="b' + (pick === g.id ? " on" : "") + '" data-pick="' + esc(g.id) + '">' + (g.grp ? "Me sumo" : "Lo regalo yo") + "</button>";
+      var f = pick === g.id && !mine ? '<form data-gid="' + esc(g.id) + '"><label for="yo-gname">Tu nombre</label><input id="yo-gname" maxlength="80" autocomplete="name" placeholder="Ej: Tía Marta" value="' + esc(name) + '">' +
+        '<button class="b on" type="submit"' + (busy ? " disabled" : "") + ">" + (busy ? "Guardando…" : "Confirmar") + "</button>" + (err ? '<p class="er">' + esc(err) + "</p>" : "") + "</form>" : "";
+      return '<div class="it' + (gone ? " gone" : "") + (mine ? " mine" : "") + '"><span class="n">' + esc(g.name) + (g.grp ? '<span class="tg">Grupal</span>' : "") + "</span>" +
+        (a ? '<span class="a">' + a + "</span>" : "") + (g.detail ? '<span class="d">' + esc(g.detail) + "</span>" : "") + '<span class="s">' + st + "</span>" + f + "</div>";
+    }
+    function draw() {
+      var old = document.getElementById("yo-g");
+      if (!open) { if (old) old.remove(); return; }
+      var y = old ? old.querySelector(".sh").scrollTop : 0;
+      var mine = gifts.filter(function (g) { return g.mine && g.mine.length; });
+      var html = '<div class="sh" role="dialog" aria-modal="true" aria-labelledby="yo-gt"><button class="x" data-close aria-label="Cerrar">×</button><h2 id="yo-gt">Lista de regalos</h2>' +
+        '<p class="in">Elegí qué querés regalarle' + (nombre ? " a " + esc(nombre) : "") + " y dejá tu nombre. Así no se repiten.</p>" +
+        (mine.length ? '<p class="sum">Vas a regalar: <b>' + mine.map(function (g) { return esc(g.name); }).join(", ") + "</b>. ¡Gracias!</p>" : "") +
+        CATS.filter(function (c) { return gifts.some(function (g) { return (g.cat || "Otros") === c; }); }).map(function (c) {
+          return '<p class="ct">' + esc(c) + "</p>" + gifts.filter(function (g) { return (g.cat || "Otros") === c; }).map(row).join("");
+        }).join("") + "</div>";
+      var w = old || document.createElement("div");
+      w.id = "yo-g"; w.innerHTML = html;
+      if (!old) {
+        document.body.appendChild(w);
+        w.addEventListener("click", onClick); w.addEventListener("submit", onSubmit);
+        w.addEventListener("input", function (e) { if (e.target.id === "yo-gname") name = e.target.value; });
+      }
+      w.querySelector(".sh").scrollTop = y;
+    }
+    function onClick(e) {
+      if (e.target.id === "yo-g" || e.target.closest("[data-close]")) { open = false; pick = ""; draw(); return; }
+      var p = e.target.closest("[data-pick]"), u = e.target.closest("[data-un]");
+      if (p) { pick = pick === p.dataset.pick ? "" : p.dataset.pick; err = ""; draw(); var i = document.getElementById("yo-gname"); if (i) i.focus(); }
+      else if (u && sb()) { busy = true; draw(); sb().rpc("unclaim_gift", { p_token: token, p_claim_id: u.dataset.un }).then(function () { busy = false; load(); }, function () { busy = false; draw(); }); }
+    }
+    function onSubmit(e) {
+      e.preventDefault();
+      var f = e.target, i = document.getElementById("yo-gname"); name = i ? i.value.trim() : "";
+      if (!name) { err = "Escribí tu nombre para que sepan quién lo regala."; draw(); return; }
+      if (!sb()) return;
+      busy = true; err = ""; draw();
+      sb().rpc("claim_gift", { p_token: token, p_gift_id: f.dataset.gid, p_name: name }).then(function (r) {
+        busy = false; var res = r.error ? "error" : r.data;
+        if (res === "ok" || res === "ya_elegido") { pick = ""; return load(); }
+        if (res === "agotado") { err = ""; pick = ""; load(); return; }
+        err = "No pudimos guardarlo. Revisá tu conexión y probá de nuevo."; draw();
+      }, function () { busy = false; err = "No pudimos guardarlo. Revisá tu conexión y probá de nuevo."; draw(); });
+    }
+    function load() {
+      if (!sb()) return Promise.resolve();
+      return sb().rpc("get_invite_gifts", { p_token: token }).then(function (r) { if (!r.error && Array.isArray(r.data)) { gifts = r.data; ensure(); if (open) draw(); } });
+    }
+    function start() {
+      if (!sb()) return;
+      sb().rpc("get_invite", { p_token: token }).then(function (r) {
+        var d = r && r.data; if (!d || !d.event || !d.event.listaRegalos) return;
+        nombre = d.event.nombre || "";
+        if (!name && Array.isArray(d.people) && d.people[0]) name = d.people[0].n || "";
+        if (!name) name = String(d.para || "").split(/,|\s+y\s+/)[0].trim();
+        load().then(function () { setInterval(ensure, 800); });
+      });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+  })();
+  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #dae9f4; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }

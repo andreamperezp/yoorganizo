@@ -1,6 +1,6 @@
 # Conecta el diseño exportado de Claude Design (invitación de Noah) con Yo Organizo.
 # Uso: python3 tools/conectar-diseno-noah.py <diseño-exportado.html> invitaciones/noah-diseno.html
-import json, re, sys
+import json, os, re, sys
 src, out = sys.argv[1], sys.argv[2]
 s = open(src, encoding='utf-8').read()
 
@@ -195,6 +195,8 @@ head = '''<title>Baby shower de Noah · Invitación</title>
     };
   })();
   </script>'''
+# Lista de regalos: botón flotante y hoja para elegir regalo (ver tools/lista-regalos-noah.html)
+head += '\n' + open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lista-regalos-noah.html'), encoding='utf-8').read().rstrip('\n')
 assert s.count('<title>Bundled Page</title>') == 1
 s = s.replace('<title>Bundled Page</title>', head)
 # Pantalla de carga amigable (en vez del sobre genérico del exportador)

@@ -566,6 +566,35 @@ a.btn { text-decoration: none; display: inline-block; }
   .task-row .chip { grid-column: 2; justify-self: start; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* Lista de regalos */
+.gift-pub { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; background: var(--blush); color: var(--blush-ink); border-radius: var(--r); padding: 14px 16px; margin-bottom: 14px; }
+.gift-pub.on { background: var(--accent-soft); color: var(--ink); }
+.gift-pub > div { display: grid; gap: 2px; min-width: 0; }
+.gift-pub .muted { color: inherit; opacity: .8; font-size: 14px; }
+.gift-pub .btn { display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 640px) { .gift-pub { grid-template-columns: auto 1fr; } .gift-pub .btn { grid-column: 1 / -1; justify-content: center; } }
+.gtiles { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 640px) { .gtiles { grid-template-columns: 1fr; } }
+.gtools .btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.gift-cat { font-family: var(--font-display); font-size: 18px; margin: 18px 0 8px; }
+.gift-row { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: start; padding: 12px 14px; border-bottom: 1px solid var(--line); border-left: 4px solid transparent; }
+.gift-row:last-child { border-bottom: 0; }
+.gift-row.full { border-left-color: var(--ok); background: color-mix(in srgb, var(--ok) 6%, var(--surface)); }
+.gift-row .pz, .gift-confirm { grid-column: 1 / -1; }
+.gift-main { display: grid; gap: 3px; min-width: 0; }
+.gift-det { font-size: 14px; }
+.gift-state { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); font-variant-numeric: tabular-nums; }
+.gift-row.full .gift-state { color: var(--ok); }
+.gclaims { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.gclaim { display: inline-flex; align-items: center; gap: 5px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 4px 3px 10px; font-size: 13px; }
+.gclaim small { color: var(--muted); }
+.gclaim .x { font-size: 14px; padding: 2px 6px; }
+.gift-confirm { font-size: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.add-task.gift-add { grid-template-columns: 2fr 2fr 1.3fr 80px auto; margin-top: 16px; }
+@media (max-width: 760px) { .add-task.gift-add { grid-template-columns: 1fr 90px; } .add-task.gift-add #ng-name, .add-task.gift-add #ng-det, .add-task.gift-add button { grid-column: 1 / -1; } }
+.gift-row .pz { background: none; border: 0; padding: 0; margin: 0; }
+.gift-row .pz[open] { border-top: 1px dashed var(--line); padding-top: 4px; }
+.gl-gifts { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); }
 </style>
 </head>
 <body>
@@ -1634,7 +1663,7 @@ a.btn { text-decoration: none; display: inline-block; }
       </details>
 
       <div class="tabs" role="tablist">
-        ${[["invitados","Invitados","users"],["ruta","Ruta","footprints"],["ficha","Ficha","clipboard-list"],["presupuesto","Presupuesto","piggy-bank"],["itinerario","Itinerario","scroll-text"],["dia","Cronograma","clock"],["ideas","Ideas","lightbulb"]].map(([id, l, i]) =>
+        ${[["invitados","Invitados","users"],["regalos","Regalos","gift"],["ruta","Ruta","footprints"],["ficha","Ficha","clipboard-list"],["presupuesto","Presupuesto","piggy-bank"],["itinerario","Itinerario","scroll-text"],["dia","Cronograma","clock"],["ideas","Ideas","lightbulb"]].map(([id, l, i]) =>
           `<button class="tab" role="tab" aria-selected="${tab === id}" data-act="tab" data-id="${id}">${ic(i)} ${l}</button>`).join("")}
       </div>
       <div id="panel">${panel()}</div>` : ""}`;
@@ -1698,6 +1727,7 @@ a.btn { text-decoration: none; display: inline-block; }
   function panel() {
     if (tab === "presupuesto") return budgetView();
     if (tab === "invitados") return guestsView();
+    if (tab === "regalos") return giftsView();
     if (tab === "dia") return dayView();
     if (tab === "ideas") return ideasView();
     if (tab === "invitaciones") return guestsView();
@@ -1884,6 +1914,7 @@ a.btn { text-decoration: none; display: inline-block; }
               <select class="tag tag-select" id="gg-${x.id}" data-ggroup="${x.id}" aria-label="Categoría de ${esc(x.name)}">${(groups.includes(x.group) ? groups : groups.concat([x.group])).map(o => `<option ${o === x.group ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>
             </span>
             ${x.phone ? `<span class="muted gl-phone">${ic("phone")} ${esc(x.phone)}</span>` : ""}
+            ${x.token && giftsByToken(x.token).length ? `<span class="gl-gifts">${ic("gift")} Regala: ${giftsByToken(x.token).map(y => esc(y.name)).join(", ")}</span>` : ""}
           </div>
           ${r === "pend" ? `<div class="rsvp" role="group" aria-label="Respuesta de ${esc(x.name)}">
             <button class="rbtn yes" data-act="rsvp" data-id="${x.id}" data-v="si" title="Viene">${ic("check")}<span>Viene</span></button>
@@ -1923,6 +1954,160 @@ a.btn { text-decoration: none; display: inline-block; }
       ${g.length ? `<div class="g-danger"><button class="link-btn" data-act="delall">${ic("trash-2")} Borrar todos los invitados</button></div>` : ""}`;
   }
 
+
+  // ---------- Lista de regalos ----------
+  // La lista se guarda en el planner (state.gifts) y se publica en Supabase para que cada invitado elija desde su invitación.
+  const GIFT_CATS = ["Pañales e higiene", "Ropa", "Sueño", "Baño", "Paseo", "Alimentación", "Salud", "Otros"];
+  const GIFT_SEED = [
+    ["s1", "Pañales e higiene", "Pañales talle RN", "Paquetes. Se dejan rápido, no hacen falta más.", 3],
+    ["s2", "Pañales e higiene", "Pañales talle P", "Paquetes. Es el talle que más dura.", 6],
+    ["s3", "Pañales e higiene", "Pañales talle M", "Paquetes.", 4],
+    ["s4", "Pañales e higiene", "Toallitas húmedas sin perfume", "Paquetes.", 6],
+    ["s5", "Pañales e higiene", "Crema para la cola", "Con óxido de zinc.", 2],
+    ["s6", "Pañales e higiene", "Kit de uñas", "Tijerita de punta redonda o lima para bebé.", 1],
+    ["s7", "Ropa", "Bodies manga larga", "Talle 0–3 y 3–6 meses, de algodón.", 8],
+    ["s8", "Ropa", "Enteritos con pie", "Talle 0–3 y 3–6 meses.", 6],
+    ["s9", "Ropa", "Pantalones con pie", "Talle 0–3 meses.", 4],
+    ["s10", "Ropa", "Muselinas grandes o mantas livianas", "", 3],
+    ["s11", "Sueño", "Practicuna o cuna", "Con colchón firme.", 1, true],
+    ["s12", "Sueño", "Sábanas ajustables", "Para cuna o practicuna.", 3],
+    ["s13", "Sueño", "Saco o bolsa de dormir", "Más seguro que las mantas sueltas.", 2],
+    ["s14", "Baño", "Bañadera con reductor", "", 1],
+    ["s15", "Baño", "Toallón con capucha", "", 2],
+    ["s16", "Baño", "Jabón y shampoo neutros para bebé", "", 1],
+    ["s17", "Paseo", "Huevito para auto", "Grupo 0+. Se usa desde la salida de la clínica.", 1, true],
+    ["s18", "Paseo", "Cochecito", "Mejor si es compatible con el huevito.", 1, true],
+    ["s19", "Paseo", "Bolso maternal", "Con cambiador.", 1],
+    ["s20", "Paseo", "Mochila ergonómica o fular", "", 1],
+    ["s21", "Alimentación", "Paños de muselina", "Sirven para todo.", 6],
+    ["s22", "Alimentación", "Baberos", "", 4],
+    ["s23", "Alimentación", "Almohada de lactancia", "", 1],
+    ["s24", "Salud", "Termómetro digital", "", 1],
+    ["s25", "Salud", "Aspirador nasal", "Con solución fisiológica.", 1],
+    ["s26", "Salud", "Botiquín básico", "Alcohol al 70 %, gasas y curitas.", 1]
+  ].map(([id, cat, name, detail, qty, grp]) => ({ id, cat, name, detail, qty, grp: !!grp }));
+  const giftList = () => state.gifts || (EV === "babyshower" ? GIFT_SEED.map(x => Object.assign({}, x)) : []);
+  function editGifts(fn) { const l = giftList().map(x => Object.assign({}, x)); fn(l); state.gifts = l; persist(); queueGiftPush(); rerenderKeepScroll(); }
+  const gRemote = { byId: {}, loaded: false, loading: false, err: false };
+  let gFilterR = "all", giftPushTimer = null, giftDelAsk = null;
+  const claimsOf = id => gRemote.byId[id] || [];
+  const giftLeft = x => x.grp ? null : Math.max(0, (Number(x.qty) || 1) - claimsOf(x.id).length);
+  const giftTaken = x => x.grp ? claimsOf(x.id).length > 0 : giftLeft(x) === 0;
+  const guestByToken = t => t ? state.guests.find(g => g.token === t) : null;
+  function giftsByToken(t) { return giftList().filter(x => claimsOf(x.id).some(c => c.token === t)); }
+  function queueGiftPush() { clearTimeout(giftPushTimer); giftPushTimer = setTimeout(() => pushGifts(), 700); }
+  async function pushGifts() {
+    if (!sb) return false;
+    const items = giftList().map(x => ({ id: x.id, cat: x.cat || "", name: x.name, detail: x.detail || "", qty: Number(x.qty) || 1, grp: !!x.grp }));
+    const { data, error } = await sb.rpc("set_gifts", { p_key: inviteKey(), p_kind: EV, p_items: items });
+    if (error || data !== true) { toast("No pudimos guardar la lista de regalos. Revisá tu conexión.", "cloud-off"); return false; }
+    state.giftsSig = JSON.stringify(items); try { localStorage.setItem(lsKey(), JSON.stringify(state)); } catch (e) {}
+    return true;
+  }
+  async function syncGifts(manual) {
+    if (!sb || gRemote.loading) { if (manual && !sb) toast("No pudimos conectarnos. Revisá tu conexión.", "cloud-off"); return; }
+    gRemote.loading = true; if (manual) rerenderKeepScroll();
+    const items = JSON.stringify(giftList().map(x => ({ id: x.id, cat: x.cat || "", name: x.name, detail: x.detail || "", qty: Number(x.qty) || 1, grp: !!x.grp })));
+    if (state.giftsSig !== items) await pushGifts();
+    const before = JSON.stringify(gRemote.byId);
+    const { data, error } = await sb.rpc("list_gifts_admin", { p_key: inviteKey(), p_kind: EV });
+    gRemote.loading = false;
+    if (error) { gRemote.err = true; if (manual) toast("No pudimos traer los regalos elegidos. Probá de nuevo.", "cloud-off"); rerenderKeepScroll(); return; }
+    gRemote.err = false; gRemote.loaded = true; gRemote.byId = {};
+    (data || []).forEach(r => { gRemote.byId[r.id] = Array.isArray(r.claims) ? r.claims : []; });
+    rerenderKeepScroll();
+    if (manual) toast(JSON.stringify(gRemote.byId) !== before ? "Hay regalos nuevos elegidos" : "La lista de regalos está al día", "gift");
+  }
+  function setGiftsOn(on) {
+    state.giftsOn = on; persist(); rerenderKeepScroll();
+    if (!sb) return;
+    pushGifts().then(ok => ok && sb.rpc("update_invites_event", { p_key: inviteKey(), p_kind: EV, p_event: eventSnapshot() }))
+      .then(r => { if (r && !r.error) toast(on ? "La lista ya aparece en las invitaciones" : "Ocultaste la lista de las invitaciones", on ? "gift" : "eye-off"); });
+  }
+  function giftShareText() {
+    const free = giftList().filter(x => !giftTaken(x));
+    const cats = GIFT_CATS.filter(c => free.some(x => (x.cat || "Otros") === c));
+    const who = partyName() || "nuestro bebé";
+    return "🎁 Lista de regalos para " + who + "\n" +
+      cats.map(c => "\n" + c + "\n" + free.filter(x => (x.cat || "Otros") === c).map(x => "• " + x.name + (x.detail ? " (" + x.detail + ")" : "") + (x.grp ? " — regalo grupal" : "")).join("\n")).join("\n") +
+      "\n\nPara que no se repitan, elegí tu regalo desde tu invitación con tu nombre 💛";
+  }
+  function giftClaimLine(c) {
+    const g = guestByToken(c.token);
+    const from = g ? (g.name !== c.name ? "invitación de " + g.name : "desde su invitación") : (c.token ? "desde su invitación" : "anotado por vos");
+    return `<span class="gclaim">${ic("user-round")} <b>${esc(c.name)}</b> <small>${esc(from)}</small><button type="button" class="x" data-act="delclaim" data-id="${esc(c.id)}" aria-label="Quitar a ${esc(c.name)} de este regalo" title="Quitar">${ic("x")}</button></span>`;
+  }
+  function giftsView() {
+    const list = giftList();
+    const taken = list.filter(giftTaken).length, claimN = list.reduce((a, x) => a + claimsOf(x.id).length, 0);
+    const shown = list.filter(x => gFilterR === "all" || (gFilterR === "free" ? !giftTaken(x) : claimsOf(x.id).length > 0));
+    const cats = GIFT_CATS.filter(c => shown.some(x => (x.cat || "Otros") === c));
+    const on = !!state.giftsOn;
+    return `
+      <div class="g-head">
+        <div><h2>Lista de regalos</h2>
+        <p class="muted">Cada invitado ve esta lista en su invitación, elige qué regala y deja su nombre. Lo que ya eligieron deja de estar disponible para los demás, y acá ves quién regala qué.</p></div>
+        <button class="btn" data-act="syncgifts" ${gRemote.loading ? "disabled" : ""}>${ic("refresh-cw")} ${gRemote.loading ? "Actualizando…" : "Actualizar regalos"}</button>
+      </div>
+      <div class="gift-pub ${on ? "on" : ""}">
+        <span class="icon-bubble">${ic(on ? "eye" : "eye-off")}</span>
+        <div><b>${on ? "La lista se ve en las invitaciones" : "La lista todavía no se ve en las invitaciones"}</b>
+        <span class="muted">${on ? "Tus invitados pueden elegir su regalo desde el link que les mandaste. No hace falta reenviarlo." : "Revisala, sacá lo que no necesites y sumá lo tuyo. Cuando esté lista, mostrala."}</span></div>
+        <button class="btn ${on ? "ghost" : ""}" data-act="giftson" data-v="${on ? "0" : "1"}">${on ? "Ocultar" : ic("send") + " Mostrar en las invitaciones"}</button>
+      </div>
+      <div class="rtiles gtiles" role="group" aria-label="Filtrar regalos">
+        ${[["all", "En la lista", "gift", list.length, "regalos"],
+           ["free", "Disponibles", "hourglass", list.length - taken, "para elegir"],
+           ["taken", "Elegidos", "circle-check", taken, claimN === 1 ? "1 persona" : claimN + " personas"]].map(([v, l, icon, n, sub]) => `
+          <button class="rtile t-${v === "taken" ? "si" : v === "free" ? "pend" : "all"}${gFilterR === v ? " on" : ""}" data-act="gfiltr" data-v="${v}" aria-pressed="${gFilterR === v}">
+            <span class="rt-ico">${ic(icon)}</span><span class="rt-n">${n}</span><span class="rt-l">${l}</span><span class="rt-sub">${sub}</span>
+          </button>`).join("")}
+      </div>
+      <div class="gtools">
+        <button class="btn ghost" data-act="copygifts">${ic("copy")} Copiar lista para WhatsApp</button>
+        <a class="btn ghost" href="https://wa.me/?text=${encodeURIComponent(giftShareText())}" target="_blank" rel="noopener">${ic("message-circle")} Enviar por WhatsApp</a>
+      </div>
+      ${gRemote.err ? `<div class="budget-note over">${ic("cloud-off")} No pudimos traer quién eligió cada regalo. Tocá Actualizar regalos para reintentar.</div>` : ""}
+      ${list.length ? (cats.length ? cats.map(c => `
+        <h3 class="gift-cat">${esc(c)}</h3>
+        <div class="table-wrap glist">${shown.filter(x => (x.cat || "Otros") === c).map(x => {
+          const cl = claimsOf(x.id), left = giftLeft(x), full = giftTaken(x) && !x.grp;
+          return `
+          <div class="gift-row ${full ? "full" : ""}">
+            <div class="gift-main">
+              <span class="gl-name">${esc(x.name)}${x.grp ? ` <span class="chip soon">Regalo grupal</span>` : ""}</span>
+              ${x.detail ? `<span class="muted gift-det">${esc(x.detail)}</span>` : ""}
+              <span class="gift-state">${x.grp ? (cl.length ? `${ic("users")} Se suman ${cl.length}` : "Nadie se sumó todavía") : full ? `${ic("circle-check")} Completo` : `${cl.length} de ${x.qty} elegidos · quedan ${left}`}</span>
+              ${cl.length ? `<div class="gclaims">${cl.map(giftClaimLine).join("")}</div>` : ""}
+            </div>
+            <button class="x" data-act="delgift" data-id="${x.id}" aria-label="Quitar ${esc(x.name)} de la lista" title="Quitar de la lista">${ic("trash-2")}</button>
+            ${giftDelAsk === x.id ? `<div class="gift-confirm">${cl.length ? `Lo eligieron ${cl.length === 1 ? "1 persona" : cl.length + " personas"}. Si lo quitás, se borra su elección. ` : ""}<button class="btn danger-btn" data-act="delgiftok" data-id="${x.id}">Sí, quitar</button> <button class="link-btn" data-act="delgiftno">Cancelar</button></div>` : ""}
+            <details class="pz" id="gz-${x.id}">
+              <summary>${ic("pencil")} Editar o anotar quién lo regala</summary>
+              <div class="setup-grid">
+                <label class="field">Regalo<input type="text" id="gf-name-${x.id}" data-gift="${x.id}|name" value="${esc(x.name)}"></label>
+                <label class="field">Detalle (talle, color, marca)<input type="text" id="gf-det-${x.id}" data-gift="${x.id}|detail" value="${esc(x.detail || "")}"></label>
+                <label class="field">Cantidad<input type="number" min="1" max="99" id="gf-qty-${x.id}" data-gift="${x.id}|qty" value="${Number(x.qty) || 1}"></label>
+                <label class="field">Categoría<select id="gf-cat-${x.id}" data-gift="${x.id}|cat">${GIFT_CATS.map(o => `<option ${o === (x.cat || "Otros") ? "selected" : ""}>${o}</option>`).join("")}</select></label>
+              </div>
+              <label class="onb-check" style="margin-top:10px"><input type="checkbox" id="gf-grp-${x.id}" data-gift="${x.id}|grp" ${x.grp ? "checked" : ""}> <span><b>Regalo grupal</b><br><small>Se pueden sumar varias personas.</small></span></label>
+              <form class="cat-add claim-form" data-gid="${x.id}" style="margin-top:10px">
+                <input type="text" id="gc-${x.id}" placeholder="Si alguien te avisó en persona, escribí su nombre" aria-label="Quién regala ${esc(x.name)}">
+                <button class="btn ghost" type="submit">${ic("user-plus")} Anotar</button>
+              </form>
+            </details>
+          </div>`;
+        }).join("")}</div>`).join("") : `<div class="empty">No hay regalos con este filtro. <button class="link-btn" data-act="gfiltr" data-v="all">Ver todos</button></div>`)
+        : `<div class="empty">Tu lista está vacía. Sumá el primer regalo acá abajo.</div>`}
+      <form class="add-task budget-add gift-add" id="gift-form">
+        <input type="text" id="ng-name" placeholder="Nuevo regalo, ej: Silla mecedora" aria-label="Nuevo regalo">
+        <input type="text" id="ng-det" placeholder="Detalle (opcional)" aria-label="Detalle del regalo">
+        <select id="ng-cat" aria-label="Categoría">${GIFT_CATS.map(o => `<option>${o}</option>`).join("")}</select>
+        <input type="number" id="ng-qty" min="1" max="99" value="1" aria-label="Cantidad">
+        <button class="btn ghost" type="submit">${ic("plus")} Agregar regalo</button>
+      </form>
+      ${state.gifts && EV === "babyshower" ? `<button class="link-btn" data-act="resetgifts">${ic("rotate-ccw")} Volver a la lista sugerida</button>` : ""}`;
+  }
 
   function dayView() {
     return `
@@ -2083,7 +2268,7 @@ a.btn { text-decoration: none; display: inline-block; }
       fecha: eventDate() ? longDate(eventDate()) : "", hora: s.hora || "", fin: i.fin || "",
       horaNota: isCumple() && s.tipo === "infantil" && i.fin ? "Horario de retiro: " + i.fin + " h" : "",
       lugar: s.lugar || "", direccion: i.direccion || "", regalos: i.regalos || "", vestimenta: i.vestimenta || "",
-      confirmar: eventDate() ? longDate(plusDays(P.rsvp)) : "", pal: PAL[chosen()] || null
+      confirmar: eventDate() ? longDate(plusDays(P.rsvp)) : "", pal: PAL[chosen()] || null, listaRegalos: !!state.giftsOn
     };
   }
   function defaultWa() {
@@ -2567,6 +2752,37 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (act === "tab") {
       tab = id; rememberView(); rerenderKeepScroll();
       if (id === "invitados" && Date.now() - lastSync > 30000) syncRsvps(false);
+      if (id === "regalos" || (id === "invitados" && !gRemote.loaded)) syncGifts(false);
+    }
+    else if (act === "syncgifts") { syncGifts(true); }
+    else if (act === "giftson") { setGiftsOn(el.dataset.v === "1"); }
+    else if (act === "gfiltr") { gFilterR = el.dataset.v; rerenderKeepScroll(); }
+    else if (act === "delgift") { giftDelAsk = id; rerenderKeepScroll(); }
+    else if (act === "delgiftno") { giftDelAsk = null; rerenderKeepScroll(); }
+    else if (act === "delgiftok") {
+      const x = giftList().find(y => y.id === id); giftDelAsk = null;
+      editGifts(l => { const n = l.findIndex(y => y.id === id); if (n >= 0) l.splice(n, 1); });
+      delete gRemote.byId[id];
+      toast("Regalo quitado" + (x ? ": " + x.name : ""), "trash-2");
+    }
+    else if (act === "resetgifts") {
+      const keep = new Set(GIFT_SEED.map(x => x.id)); const lost = giftList().filter(x => !keep.has(x.id) && claimsOf(x.id).length).length;
+      state.gifts = null; persist(); queueGiftPush(); rerenderKeepScroll();
+      toast(lost ? "Volviste a la lista sugerida. Se quitaron tus regalos agregados." : "Volviste a la lista sugerida", "rotate-ccw");
+    }
+    else if (act === "delclaim") {
+      if (!sb) return;
+      el.disabled = true;
+      sb.rpc("admin_delete_claim", { p_key: inviteKey(), p_claim_id: id }).then(r => {
+        if (r.error || r.data !== true) { toast("No pudimos quitarlo. Probá de nuevo.", "cloud-off"); el.disabled = false; return; }
+        Object.keys(gRemote.byId).forEach(k => { gRemote.byId[k] = gRemote.byId[k].filter(c => c.id !== id); });
+        rerenderKeepScroll(); toast("Listo, ese regalo vuelve a estar disponible", "check");
+      });
+    }
+    else if (act === "copygifts") {
+      const t = giftShareText();
+      try { navigator.clipboard.writeText(t).then(() => toast("Lista copiada. Pegala en WhatsApp.", "copy"), () => toast("No pudimos copiarla. Usá Enviar por WhatsApp.", "info")); }
+      catch (e) { toast("No pudimos copiarla. Usá Enviar por WhatsApp.", "info"); }
     }
     else if (act === "copy") {
       const pre = document.getElementById("m-" + id);
@@ -2698,6 +2914,12 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       editItin(list => { const x = list.find(y => y.id === id); if (!x) return; if (k === "hora") x.min = toMin(el.value) - toMin(state.setup.hora); else x[k] = el.value; });
       return;
     }
+    else if (el.dataset.gift) {
+      const [gid, k] = el.dataset.gift.split("|");
+      editGifts(l => { const x = l.find(y => y.id === gid); if (!x) return;
+        if (k === "grp") x.grp = el.checked; else if (k === "qty") x.qty = Math.max(1, Math.min(99, parseInt(el.value, 10) || 1)); else if (k === "name") { if (el.value.trim()) x.name = el.value.trim(); } else x[k] = el.value.trim(); });
+      return;
+    }
     else if (el.dataset.note) { state.notes[el.dataset.note] = el.value; persist(); return; }
     else return;
     persist(); rerenderKeepScroll();
@@ -2778,6 +3000,26 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       toast("Rubro agregado: " + name, "plus");
       return;
     }
+    if (ev.target.id === "gift-form") {
+      ev.preventDefault();
+      const name = document.getElementById("ng-name").value.trim();
+      if (!name) { document.getElementById("ng-name").focus(); return; }
+      const nx = { id: "u" + Date.now().toString(36), cat: document.getElementById("ng-cat").value, name, detail: document.getElementById("ng-det").value.trim(), qty: Math.max(1, Math.min(99, parseInt(document.getElementById("ng-qty").value, 10) || 1)), grp: false };
+      editGifts(l => l.push(nx)); gFilterR = "all";
+      toast("Regalo agregado: " + name, "plus");
+      setTimeout(() => { const i = document.getElementById("ng-name"); if (i) i.focus(); }, 40);
+      return;
+    }
+    if (ev.target.classList.contains("claim-form")) {
+      ev.preventDefault();
+      const gid = ev.target.dataset.gid, inp = document.getElementById("gc-" + gid), name = inp.value.trim();
+      if (!name || !sb) return;
+      openSet.add("gz-" + gid);
+      (state.giftsSig ? Promise.resolve(true) : pushGifts())
+        .then(() => sb.rpc("admin_add_claim", { p_key: inviteKey(), p_kind: EV, p_gift_id: gid, p_name: name }))
+        .then(r => { if (r.error || r.data !== true) { toast("No pudimos anotarlo. Probá de nuevo.", "cloud-off"); return; } toast("Anotado: " + name, "gift"); syncGifts(false); });
+      return;
+    }
     if (ev.target.id === "group-form") {
       ev.preventDefault();
       const v = document.getElementById("new-group").value.trim();
@@ -2824,7 +3066,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
   if (picker) setTimeout(() => { const n = document.getElementById("pick-name"); if (n && !n.disabled) n.focus(); }, 350);
   connect();
   if (tab === "invitaciones") tab = "invitados";
-  setTimeout(() => { if (view === "plan" && tab === "invitados") syncRsvps(false); }, 1200);
+  setTimeout(() => { if (view === "plan" && tab === "invitados") syncRsvps(false); if (view === "plan" && (tab === "regalos" || tab === "invitados")) syncGifts(false); }, 1200);
 })();
 </script>
 </body>

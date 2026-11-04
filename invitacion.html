@@ -74,6 +74,26 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
 .foot { text-align: center; color: var(--muted); font-size: 12px; margin-top: 18px; }
 .foot a { color: inherit; }
 .center { text-align: center; padding: 60px 10px; color: var(--muted); }
+/* Lista de regalos */
+.gifts { margin: 28px 0 0; padding-top: 22px; border-top: 1px solid var(--line); text-align: left; }
+.gifts h2 { font-family: var(--font-display); font-weight: 700; font-size: 24px; margin: 0 0 4px; text-align: center; }
+.gifts > p { margin: 0 0 10px; color: var(--muted); text-align: center; }
+.gcat { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-text); margin: 18px 0 4px; }
+.gi { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 11px 2px; border-bottom: 1px solid var(--line); }
+.gi-n { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.gi-d { grid-column: 1; font-size: 14px; color: var(--muted); }
+.gi-s { grid-column: 1; font-size: 13px; color: var(--accent-text); font-weight: 700; }
+.gi .act { grid-column: 2; grid-row: 1 / span 3; }
+.gi.gone .gi-n { color: var(--muted); text-decoration: line-through; }
+.gi.mine { background: var(--accent-soft); border-radius: 14px; padding: 11px 12px; border-bottom-color: transparent; margin: 4px 0; }
+.gbtn { border: 1.5px solid var(--accent); background: #fff; color: var(--accent-text); border-radius: 999px; padding: 8px 14px; font: 600 14px var(--font-display); white-space: nowrap; }
+.gbtn.solid { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.gtag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; background: var(--accent-soft); color: var(--accent-text); border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: 2px; }
+.gform { grid-column: 1 / -1; display: grid; gap: 8px; margin-top: 6px; }
+.gform .row2 { display: flex; gap: 8px; flex-wrap: wrap; }
+.gform input { flex: 1 1 180px; }
+.gok { color: var(--ok); font-weight: 700; }
+.mine-sum { background: var(--accent-soft); border-radius: 16px; padding: 12px 14px; margin: 0 0 8px; color: var(--accent-ink); }
 .float { position: fixed; pointer-events: none; color: var(--accent); opacity: .5; animation: drift 9s ease-in-out infinite; z-index: 0; }
 .wrap { position: relative; z-index: 1; }
 @keyframes drift { 50% { transform: translateY(-14px) rotate(6deg); } }
@@ -94,6 +114,8 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
   var token = new URLSearchParams(location.search).get("t") || "";
   var sb = window.supabase ? window.supabase.createClient(URL, KEY, { auth: { persistSession: false } }) : null;
   var inv = null, rsvp = "pend", total = 1, note = "", saved = false, err = "", people = [], sel = {};
+  var gifts = null, gOpen = "", gName = "", gErr = "", gBusy = false;
+  var GCATS = ["Pañales e higiene", "Ropa", "Sueño", "Baño", "Paseo", "Alimentación", "Salud", "Otros"];
   function many() { return people.length > 1; }
   function joinN(a) { return a.length < 2 ? (a[0] || "") : a.slice(0, -1).join(", ") + " y " + a[a.length - 1]; }
 
@@ -139,9 +161,11 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
       "</div>" +
       '<div class="links">' +
         (mapLink ? '<a class="pill" href="' + mapLink + '" target="_blank" rel="noopener">Cómo llegar</a>' : "") +
+        (e.listaRegalos && gifts && gifts.length ? '<a class="pill" href="#regalos">Elegir un regalo</a>' : "") +
         (/^https?:\/\//.test(e.regalos || "") ? '<a class="pill" href="' + esc(e.regalos) + '" target="_blank" rel="noopener">Ver lista de regalos</a>' : "") +
       "</div>" +
       '<section class="ask" aria-live="polite">' + askHTML(pl, e) + "</section>" +
+      giftsHTML(e) +
       "</article>" +
       '<p class="foot">Hecho con <a href="https://yoorganizo.vercel.app" target="_blank" rel="noopener">Yo Organizo</a></p>';
     app.innerHTML = html;
@@ -174,6 +198,52 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
       '<button class="change" data-act="reset">Cambiar mi respuesta</button></div>';
   }
 
+  // Lista de regalos: cada invitado elige qué regala y deja su nombre; lo elegido deja de estar disponible
+  function gLeft(g) { return g.grp ? null : Math.max(0, (Number(g.qty) || 1) - (Number(g.taken) || 0)); }
+  function giftsHTML(e) {
+    if (!e.listaRegalos || !gifts || !gifts.length) return "";
+    var mine = gifts.filter(function (g) { return g.mine && g.mine.length; });
+    var cats = GCATS.filter(function (c) { return gifts.some(function (g) { return (g.cat || "Otros") === c; }); });
+    return '<section class="gifts" id="regalos" aria-live="polite"><h2>Lista de regalos</h2>' +
+      "<p>Elegí qué querés regalar y dejá tu nombre. Así no se repiten y " + esc(e.nombre ? "la familia de " + e.nombre : "la familia") + " sabe quién regaló qué.</p>" +
+      (mine.length ? '<p class="mine-sum">Vas a regalar: <b>' + mine.map(function (g) { return esc(g.name); }).join(", ") + "</b>. ¡Gracias!</p>" : "") +
+      cats.map(function (c) {
+        return '<p class="gcat">' + esc(c) + "</p>" + gifts.filter(function (g) { return (g.cat || "Otros") === c; }).map(giftRow).join("");
+      }).join("") + "</section>";
+  }
+  function giftRow(g) {
+    var isMine = g.mine && g.mine.length, left = gLeft(g), gone = !isMine && !g.grp && left === 0;
+    var st = isMine ? '<span class="gok">✓ Lo regalás vos</span>' : g.grp ? (g.taken ? "Regalo grupal · ya se sumaron " + g.taken : "Regalo grupal · podés sumarte") : gone ? "Ya lo eligieron" : (Number(g.qty) > 1 ? "Quedan " + left + " de " + g.qty : "Disponible");
+    var act = isMine ? '<button class="gbtn" data-act="gunclaim" data-id="' + esc(g.mine[0].id) + '"' + (gBusy ? " disabled" : "") + ">Cancelar</button>"
+      : gone ? "" : '<button class="gbtn' + (gOpen === g.id ? " solid" : "") + '" data-act="gopen" data-id="' + esc(g.id) + '">' + (g.grp ? "Me sumo" : "Lo regalo yo") + "</button>";
+    var form = gOpen === g.id && !isMine ? '<form class="gform" data-gid="' + esc(g.id) + '"><label for="gname">Tu nombre</label><div class="row2">' +
+      '<input type="text" id="gname" maxlength="80" autocomplete="name" value="' + esc(gName) + '" placeholder="Ej: Tía Marta">' +
+      '<button class="save" type="submit"' + (gBusy ? " disabled" : "") + ">" + (gBusy ? "Guardando…" : "Confirmar") + "</button></div>" +
+      (gErr ? '<p class="err">' + esc(gErr) + "</p>" : "") + "</form>" : "";
+    return '<div class="gi' + (gone ? " gone" : "") + (isMine ? " mine" : "") + '"><span class="gi-n">' + esc(g.name) + (g.grp ? '<span class="gtag">Grupal</span>' : "") + "</span>" +
+      (act ? '<span class="act">' + act + "</span>" : "") +
+      (g.detail ? '<span class="gi-d">' + esc(g.detail) + "</span>" : "") + '<span class="gi-s">' + st + "</span>" + form + "</div>";
+  }
+  function loadGifts() {
+    if (!sb || !inv || !(inv.event || {}).listaRegalos) return Promise.resolve();
+    return sb.rpc("get_invite_gifts", { p_token: token }).then(function (r) { if (!r.error) gifts = Array.isArray(r.data) ? r.data : []; render(); }).catch(function () {});
+  }
+  app.addEventListener("submit", function (ev) {
+    var f = ev.target; if (!f.classList.contains("gform")) return;
+    ev.preventDefault();
+    var inp = document.getElementById("gname"); gName = inp ? inp.value.trim() : "";
+    if (!gName) { gErr = "Escribí tu nombre para que sepan quién lo regala."; render(); var i2 = document.getElementById("gname"); if (i2) i2.focus(); return; }
+    gBusy = true; gErr = ""; render();
+    sb.rpc("claim_gift", { p_token: token, p_gift_id: f.dataset.gid, p_name: gName }).then(function (r) {
+      gBusy = false;
+      var res = r.error ? "error" : r.data;
+      if (res === "ok" || res === "ya_elegido") { gOpen = ""; return loadGifts(); }
+      gErr = res === "agotado" ? "Justo lo eligió otra persona. Elegí otro regalo de la lista." : "No pudimos guardarlo. Revisá tu conexión y probá de nuevo.";
+      if (res === "agotado") { gOpen = ""; loadGifts(); } else render();
+    }).catch(function () { gBusy = false; gErr = "No pudimos guardarlo. Revisá tu conexión y probá de nuevo."; render(); });
+  });
+  app.addEventListener("input", function (ev) { if (ev.target.id === "gname") gName = ev.target.value; });
+
   function send(r, showSaved) {
     err = "";
     var n = document.getElementById("note"); if (n) note = n.value;
@@ -191,6 +261,11 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
     else if (a === "reset") { rsvp = "pend"; saved = false; err = ""; render(); }
     else if (a === "minus" || a === "plus") { var n = document.getElementById("note"); if (n) note = n.value; total = Math.max(1, Math.min(21, total + (a === "plus" ? 1 : -1))); saved = false; render(); }
     else if (a === "save") { send("si", true); }
+    else if (a === "gopen") { gOpen = gOpen === b.dataset.id ? "" : b.dataset.id; gErr = ""; render(); var gi = document.getElementById("gname"); if (gi) gi.focus(); }
+    else if (a === "gunclaim") {
+      gBusy = true; render();
+      sb.rpc("unclaim_gift", { p_token: token, p_claim_id: b.dataset.id }).then(function () { gBusy = false; loadGifts(); }).catch(function () { gBusy = false; render(); });
+    }
     else if (a === "pick") { sel[people[Number(b.dataset.i)].n] = b.dataset.v; render(); }
     else if (a === "sendpeople") {
       people = people.map(function (p) { return { n: p.n, r: sel[p.n] || "pend" }; });
@@ -213,7 +288,9 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
     if (many() && !people.every(function (p) { return p.r === "si" || p.r === "no"; })) rsvp = "pend";
     note = inv.note || "";
     total = rsvp === "si" ? (Number(inv.plus) || 0) + 1 : countNames(inv.para + (inv.nene ? ", " + inv.nene : ""));
+    gName = people.length ? people[0].n : String(inv.para || "").split(/,|\s+y\s+/)[0].trim();
     render();
+    loadGifts();
   }).catch(function () { app.innerHTML = '<p class="center">No pudimos abrir la invitación. Revisá tu conexión y probá de nuevo.</p>'; });
 })();
 </script>
