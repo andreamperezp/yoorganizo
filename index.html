@@ -573,8 +573,8 @@ a.btn { text-decoration: none; display: inline-block; }
 .gift-pub .muted { color: inherit; opacity: .8; font-size: 14px; }
 .gift-pub .btn { display: inline-flex; align-items: center; gap: 6px; }
 @media (max-width: 640px) { .gift-pub { grid-template-columns: auto 1fr; } .gift-pub .btn { grid-column: 1 / -1; justify-content: center; } }
-.gtiles { grid-template-columns: repeat(3, 1fr); }
-@media (max-width: 640px) { .gtiles { grid-template-columns: 1fr; } }
+.gtiles { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 760px) { .gtiles { grid-template-columns: 1fr 1fr; } }
 .gtools .btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
 .gift-cat { font-family: var(--font-display); font-size: 18px; margin: 18px 0 8px; }
 .gift-row { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: start; padding: 12px 14px; border-bottom: 1px solid var(--line); border-left: 4px solid transparent; }
@@ -600,6 +600,15 @@ a.btn { text-decoration: none; display: inline-block; }
 .gs-b { display: flex; gap: 6px; flex-wrap: wrap; }
 .gs-b .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 14px; }
 .gift-send { margin-bottom: 14px; background: var(--surface); }
+.t-have .rt-ico { background: var(--line); color: var(--muted); }
+.rtile.t-have.on { border-color: var(--muted); background: var(--bg); }
+.gift-acts { display: inline-flex; align-items: center; gap: 4px; }
+.have-btn { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: var(--surface); color: var(--accent-text); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.have-btn.on { background: var(--bg); color: var(--muted); }
+.gift-row.have { background: var(--bg); }
+.gift-row.have .gl-name { text-decoration: line-through; color: var(--muted); }
+.gift-row.have .gift-state { color: var(--muted); }
+@media (max-width: 520px) { .have-btn { padding: 5px 9px; } }
 .gl-gifts { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); }
 </style>
 </head>
@@ -1992,19 +2001,20 @@ a.btn { text-decoration: none; display: inline-block; }
     ["s25", "Salud", "Aspirador nasal", "Con solución fisiológica.", 1],
     ["s26", "Salud", "Botiquín básico", "Alcohol al 70 %, gasas y curitas.", 1]
   ].map(([id, cat, name, detail, qty, grp]) => ({ id, cat, name, detail, qty, grp: !!grp }));
+  const giftItems = () => giftList().map(x => ({ id: x.id, cat: x.cat || "", name: x.name, detail: x.detail || "", qty: Number(x.qty) || 1, grp: !!x.grp, have: !!x.have }));
   const giftList = () => state.gifts || (EV === "babyshower" ? GIFT_SEED.map(x => Object.assign({}, x)) : []);
   function editGifts(fn) { const l = giftList().map(x => Object.assign({}, x)); fn(l); state.gifts = l; persist(); queueGiftPush(); rerenderKeepScroll(); }
   const gRemote = { byId: {}, loaded: false, loading: false, err: false };
   let gFilterR = "all", giftPushTimer = null, giftDelAsk = null;
   const claimsOf = id => gRemote.byId[id] || [];
   const giftLeft = x => x.grp ? null : Math.max(0, (Number(x.qty) || 1) - claimsOf(x.id).length);
-  const giftTaken = x => x.grp ? claimsOf(x.id).length > 0 : giftLeft(x) === 0;
+  const giftTaken = x => !!x.have || (x.grp ? claimsOf(x.id).length > 0 : giftLeft(x) === 0);
   const guestByToken = t => t ? state.guests.find(g => g.token === t) : null;
   function giftsByToken(t) { return giftList().filter(x => claimsOf(x.id).some(c => c.token === t)); }
   function queueGiftPush() { clearTimeout(giftPushTimer); giftPushTimer = setTimeout(() => pushGifts(), 700); }
   async function pushGifts() {
     if (!sb) return false;
-    const items = giftList().map(x => ({ id: x.id, cat: x.cat || "", name: x.name, detail: x.detail || "", qty: Number(x.qty) || 1, grp: !!x.grp }));
+    const items = giftItems();
     const { data, error } = await sb.rpc("set_gifts", { p_key: inviteKey(), p_kind: EV, p_items: items });
     if (error || data !== true) { toast("No pudimos guardar la lista de regalos. Revisá tu conexión.", "cloud-off"); return false; }
     state.giftsSig = JSON.stringify(items); try { localStorage.setItem(lsKey(), JSON.stringify(state)); } catch (e) {}
@@ -2013,7 +2023,7 @@ a.btn { text-decoration: none; display: inline-block; }
   async function syncGifts(manual) {
     if (!sb || gRemote.loading) { if (manual && !sb) toast("No pudimos conectarnos. Revisá tu conexión.", "cloud-off"); return; }
     gRemote.loading = true; if (manual) rerenderKeepScroll();
-    const items = JSON.stringify(giftList().map(x => ({ id: x.id, cat: x.cat || "", name: x.name, detail: x.detail || "", qty: Number(x.qty) || 1, grp: !!x.grp })));
+    const items = JSON.stringify(giftItems());
     if (state.giftsSig !== items) await pushGifts();
     const before = JSON.stringify(gRemote.byId);
     const { data, error } = await sb.rpc("list_gifts_admin", { p_key: inviteKey(), p_kind: EV });
@@ -2071,7 +2081,8 @@ a.btn { text-decoration: none; display: inline-block; }
   function giftsView() {
     const list = giftList();
     const taken = list.filter(giftTaken).length, claimN = list.reduce((a, x) => a + claimsOf(x.id).length, 0);
-    const shown = list.filter(x => gFilterR === "all" || (gFilterR === "free" ? !giftTaken(x) : claimsOf(x.id).length > 0));
+    const haveN = list.filter(x => x.have).length;
+    const shown = list.filter(x => gFilterR === "all" || (gFilterR === "free" ? !giftTaken(x) : gFilterR === "have" ? x.have : claimsOf(x.id).length > 0));
     const cats = GIFT_CATS.filter(c => shown.some(x => (x.cat || "Otros") === c));
     const on = !!state.giftsOn;
     return `
@@ -2090,8 +2101,9 @@ a.btn { text-decoration: none; display: inline-block; }
       <div class="rtiles gtiles" role="group" aria-label="Filtrar regalos">
         ${[["all", "En la lista", "gift", list.length, "regalos"],
            ["free", "Disponibles", "hourglass", list.length - taken, "para elegir"],
-           ["taken", "Elegidos", "circle-check", taken, claimN === 1 ? "1 persona" : claimN + " personas"]].map(([v, l, icon, n, sub]) => `
-          <button class="rtile t-${v === "taken" ? "si" : v === "free" ? "pend" : "all"}${gFilterR === v ? " on" : ""}" data-act="gfiltr" data-v="${v}" aria-pressed="${gFilterR === v}">
+           ["taken", "Elegidos", "circle-check", list.filter(x => claimsOf(x.id).length).length, claimN === 1 ? "por 1 persona" : "por " + claimN + " personas"],
+           ["have", "Ya los tenemos", "package-check", haveN, "tachados"]].map(([v, l, icon, n, sub]) => `
+          <button class="rtile t-${v === "taken" ? "si" : v === "free" ? "pend" : v === "have" ? "have" : "all"}${gFilterR === v ? " on" : ""}" data-act="gfiltr" data-v="${v}" aria-pressed="${gFilterR === v}">
             <span class="rt-ico">${ic(icon)}</span><span class="rt-n">${n}</span><span class="rt-l">${l}</span><span class="rt-sub">${sub}</span>
           </button>`).join("")}
       </div>
@@ -2103,16 +2115,17 @@ a.btn { text-decoration: none; display: inline-block; }
       ${list.length ? (cats.length ? cats.map(c => `
         <h3 class="gift-cat">${esc(c)}</h3>
         <div class="table-wrap glist">${shown.filter(x => (x.cat || "Otros") === c).map(x => {
-          const cl = claimsOf(x.id), left = giftLeft(x), full = giftTaken(x) && !x.grp;
+          const cl = claimsOf(x.id), left = giftLeft(x), full = giftTaken(x) && !x.grp && !x.have;
           return `
-          <div class="gift-row ${full ? "full" : ""}">
+          <div class="gift-row ${full ? "full" : ""}${x.have ? " have" : ""}">
             <div class="gift-main">
               <span class="gl-name">${esc(x.name)}${x.grp ? ` <span class="chip soon">Regalo grupal</span>` : ""}</span>
               ${x.detail ? `<span class="muted gift-det">${esc(x.detail)}</span>` : ""}
-              <span class="gift-state">${x.grp ? (cl.length ? `${ic("users")} Se suman ${cl.length}` : "Nadie se sumó todavía") : full ? `${ic("circle-check")} Completo` : `${cl.length} de ${x.qty} elegidos · quedan ${left}`}</span>
+              <span class="gift-state">${x.have ? `${ic("package-check")} Ya lo tenemos` : x.grp ? (cl.length ? `${ic("users")} Se suman ${cl.length}` : "Nadie se sumó todavía") : full ? `${ic("circle-check")} Completo` : `${cl.length} de ${x.qty} elegidos · quedan ${left}`}</span>
               ${cl.length ? `<div class="gclaims">${cl.map(giftClaimLine).join("")}</div>` : ""}
             </div>
-            <button class="x" data-act="delgift" data-id="${x.id}" aria-label="Quitar ${esc(x.name)} de la lista" title="Quitar de la lista">${ic("trash-2")}</button>
+            <span class="gift-acts"><button class="have-btn${x.have ? " on" : ""}" data-act="gifthave" data-id="${x.id}" aria-pressed="${!!x.have}" title="${x.have ? "Volver a ponerlo en la lista" : "Tacharlo: ya lo tienen o se lo regalaron"}">${ic(x.have ? "undo-2" : "package-check")} ${x.have ? "Destachar" : "Ya lo tenemos"}</button>
+            <button class="x" data-act="delgift" data-id="${x.id}" aria-label="Quitar ${esc(x.name)} de la lista" title="Quitar de la lista">${ic("trash-2")}</button></span>
             ${giftDelAsk === x.id ? `<div class="gift-confirm">${cl.length ? `Lo eligieron ${cl.length === 1 ? "1 persona" : cl.length + " personas"}. Si lo quitás, se borra su elección. ` : ""}<button class="btn danger-btn" data-act="delgiftok" data-id="${x.id}">Sí, quitar</button> <button class="link-btn" data-act="delgiftno">Cancelar</button></div>` : ""}
             <details class="pz" id="gz-${x.id}">
               <summary>${ic("pencil")} Editar o anotar quién lo regala</summary>
@@ -2789,6 +2802,11 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     else if (act === "syncgifts") { syncGifts(true); }
     else if (act === "giftson") { setGiftsOn(el.dataset.v === "1"); }
     else if (act === "gfiltr") { gFilterR = el.dataset.v; rerenderKeepScroll(); }
+    else if (act === "gifthave") {
+      let on = false, nm = "";
+      editGifts(l => { const x = l.find(y => y.id === id); if (x) { x.have = !x.have; on = x.have; nm = x.name; } });
+      toast(on ? "Tachado: " + nm + ". Ya nadie lo puede elegir." : nm + " vuelve a estar en la lista", on ? "package-check" : "undo-2");
+    }
     else if (act === "delgift") { giftDelAsk = id; rerenderKeepScroll(); }
     else if (act === "delgiftno") { giftDelAsk = null; rerenderKeepScroll(); }
     else if (act === "delgiftok") {

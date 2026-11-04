@@ -63,8 +63,8 @@
       if (open && !document.getElementById("yo-g")) draw();
     }
     function row(g) {
-      var mine = g.mine && g.mine.length, l = left(g), gone = !mine && !g.grp && l === 0;
-      var st = mine ? '<span class="ok">✓ Lo regalás vos</span>' : g.grp ? (g.taken ? "Regalo grupal · ya se sumaron " + g.taken : "Regalo grupal · podés sumarte") : gone ? "Ya lo eligieron" : (Number(g.qty) > 1 ? "Quedan " + l + " de " + g.qty : "Disponible");
+      var mine = g.mine && g.mine.length, l = left(g), gone = !mine && (g.have || (!g.grp && l === 0));
+      var st = mine ? '<span class="ok">✓ Lo regalás vos</span>' : g.have ? "Ya lo tienen" : g.grp ? (g.taken ? "Regalo grupal · ya se sumaron " + g.taken : "Regalo grupal · podés sumarte") : gone ? "Ya lo eligieron" : (Number(g.qty) > 1 ? "Quedan " + l + " de " + g.qty : "Disponible");
       var a = mine ? '<button class="b" data-un="' + esc(g.mine[0].id) + '"' + (busy ? " disabled" : "") + ">Cancelar</button>" : gone ? "" :
         '<button class="b' + (pick === g.id ? " on" : "") + '" data-pick="' + esc(g.id) + '">' + (g.grp ? "Me sumo" : "Lo regalo yo") + "</button>";
       var f = pick === g.id && !mine ? '<form data-gid="' + esc(g.id) + '"><label for="yo-gname">Tu nombre</label><input id="yo-gname" maxlength="80" autocomplete="name" placeholder="Ej: Tía Marta" value="' + esc(name) + '">' +

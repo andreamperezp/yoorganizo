@@ -212,8 +212,8 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
       }).join("") + "</section>";
   }
   function giftRow(g) {
-    var isMine = g.mine && g.mine.length, left = gLeft(g), gone = !isMine && !g.grp && left === 0;
-    var st = isMine ? '<span class="gok">✓ Lo regalás vos</span>' : g.grp ? (g.taken ? "Regalo grupal · ya se sumaron " + g.taken : "Regalo grupal · podés sumarte") : gone ? "Ya lo eligieron" : (Number(g.qty) > 1 ? "Quedan " + left + " de " + g.qty : "Disponible");
+    var isMine = g.mine && g.mine.length, left = gLeft(g), gone = !isMine && (g.have || (!g.grp && left === 0));
+    var st = isMine ? '<span class="gok">✓ Lo regalás vos</span>' : g.have ? "Ya lo tienen" : g.grp ? (g.taken ? "Regalo grupal · ya se sumaron " + g.taken : "Regalo grupal · podés sumarte") : gone ? "Ya lo eligieron" : (Number(g.qty) > 1 ? "Quedan " + left + " de " + g.qty : "Disponible");
     var act = isMine ? '<button class="gbtn" data-act="gunclaim" data-id="' + esc(g.mine[0].id) + '"' + (gBusy ? " disabled" : "") + ">Cancelar</button>"
       : gone ? "" : '<button class="gbtn' + (gOpen === g.id ? " solid" : "") + '" data-act="gopen" data-id="' + esc(g.id) + '">' + (g.grp ? "Me sumo" : "Lo regalo yo") + "</button>";
     var form = gOpen === g.id && !isMine ? '<form class="gform" data-gid="' + esc(g.id) + '"><label for="gname">Tu nombre</label><div class="row2">' +
