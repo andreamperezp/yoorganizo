@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lista de regalos · Yo Organizo</title>
-<meta name="description" content="Elegí qué querés regalar y dejá tu nombre, así no se repiten los regalos.">
+<meta name="description" content="Sugerencias de regalos para no repetir. Elegí uno o contanos qué vas a regalar.">
 <meta property="og:title" content="Lista de regalos 🎁">
 <meta property="og:description" content="Elegí qué querés regalar y dejá tu nombre, así no se repiten.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -103,6 +103,10 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
 .card { text-align: left; }
 .card > .para, .card > .eyebrow, .card > h1, .card > .sub { text-align: center; }
 .gifts { margin-top: 18px; padding-top: 0; border-top: 0; }
+.gnote { background: var(--accent-soft); color: var(--accent-ink); border-radius: 16px; padding: 12px 14px; margin: 0 0 10px; text-align: center; font-size: 15px; }
+.oform { margin-top: 8px; }
+.oform label { font-weight: 700; font-size: 14px; }
+.oform > input { width: 100%; }
 .empty-g { text-align: center; color: var(--muted); padding: 20px 0; }
 </style>
 </head>
@@ -144,21 +148,52 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
       (act ? '<span class="act">' + act + "</span>" : "") +
       (g.detail ? '<span class="gi-d">' + esc(g.detail) + "</span>" : "") + '<span class="gi-s">' + st + "</span>" + form + "</div>";
   }
+  // Opción abierta: la lista es una sugerencia; el invitado puede contar que regala otra cosa
+  var oName = "", oWhat = "", oErr = "", oBusy = false;
+  var GNOTE = '<p class="gnote">No es una obligación 💛 La lista es solo una sugerencia y una referencia para no repetir regalitos. Si preferís regalar otra cosa, ¡también es bienvenida!</p>';
+  function listOf() { return gifts.filter(function (g) { return g.id !== "otro"; }); }
+  function otherMine() { var o = gifts.filter(function (g) { return g.id === "otro"; })[0]; return (o && o.mine) || []; }
+  function mineNames() { return listOf().filter(function (g) { return g.mine && g.mine.length; }).map(function (g) { return g.name; }).concat(otherMine().map(function (m) { return m.note; })); }
+  function otherHTML() {
+    return '<p class="gcat">Otra cosa</p>' +
+      otherMine().map(function (m) {
+        return '<div class="gi mine"><span class="gi-n">' + esc(m.note) + '</span><span class="act"><button class="gbtn" data-act="gunclaim" data-id="' + esc(m.id) + '"' + (gBusy ? " disabled" : "") + '>Cancelar</button></span><span class="gi-s"><span class="gok">✓ Lo regalás vos</span></span></div>';
+      }).join("") +
+      '<form class="oform gform"><label for="owhat">¿Querés regalar algo que no está en la lista? Contanos qué</label>' +
+      '<input type="text" id="owhat" maxlength="200" value="' + esc(oWhat) + '" placeholder="Ej: Un móvil para la cuna">' +
+      '<label for="oname">Tu nombre</label><div class="row2"><input type="text" id="oname" maxlength="80" autocomplete="name" value="' + esc(oName || gName) + '" placeholder="Ej: Tía Marta">' +
+      '<button class="save" type="submit"' + (oBusy ? " disabled" : "") + ">" + (oBusy ? "Guardando…" : "Avisar") + "</button></div>" +
+      (oErr ? '<p class="err">' + esc(oErr) + "</p>" : "") + "</form>";
+  }
+  app.addEventListener("input", function (ev) { if (ev.target.id === "owhat") oWhat = ev.target.value; else if (ev.target.id === "oname") oName = ev.target.value; });
+  app.addEventListener("submit", function (ev) {
+    var f = ev.target; if (!f.classList.contains("oform")) return;
+    ev.preventDefault(); ev.stopImmediatePropagation();
+    oWhat = (document.getElementById("owhat") || {}).value || ""; oName = (document.getElementById("oname") || {}).value || "";
+    if (!oWhat.trim()) { oErr = "Contanos qué querés regalar."; render(); return; }
+    if (!oName.trim()) { oErr = "Escribí tu nombre para que sepan quién lo regala."; render(); return; }
+    oBusy = true; oErr = ""; render();
+    sb.rpc("claim_other", { p_token: token, p_name: oName.trim(), p_what: oWhat.trim() }).then(function (r) {
+      oBusy = false;
+      if (!r.error && r.data === "ok") { oWhat = ""; return loadGifts(); }
+      oErr = "No pudimos guardarlo. Revisá tu conexión y probá de nuevo."; render();
+    }, function () { oBusy = false; oErr = "No pudimos guardarlo. Revisá tu conexión y probá de nuevo."; render(); });
+  }, true);
   function render() {
     var e = inv.event || {};
-    var mine = gifts.filter(function (g) { return g.mine && g.mine.length; });
-    var cats = GCATS.filter(function (c) { return gifts.some(function (g) { return (g.cat || "Otros") === c; }); });
+    var list = listOf(), mine = mineNames();
+    var cats = GCATS.filter(function (c) { return list.some(function (g) { return (g.cat || "Otros") === c; }); });
     app.innerHTML = '<article class="card">' +
       '<p class="para">Hola, ' + esc(gName || inv.para) + "</p>" +
       '<p class="eyebrow">Lista de regalos</p>' +
       "<h1>" + (e.nombre ? 'Para <span class="name">' + esc(e.nombre) + "</span>" : "Lista de regalos") + "</h1>" +
       '<p class="sub">Elegí qué querés regalar y dejá tu nombre. Así no se repiten y sabemos a quién agradecerle.</p>' +
-      '<section class="gifts" aria-live="polite">' +
+      '<section class="gifts" aria-live="polite">' + GNOTE +
       (lost ? '<p class="err" style="text-align:center">' + esc(lost) + "</p>" : "") +
-      (mine.length ? '<p class="mine-sum">Vas a regalar: <b>' + mine.map(function (g) { return esc(g.name); }).join(", ") + "</b>. ¡Gracias!</p>" : "") +
-      (gifts.length ? cats.map(function (c) {
-        return '<p class="gcat">' + esc(c) + "</p>" + gifts.filter(function (g) { return (g.cat || "Otros") === c; }).map(giftRow).join("");
-      }).join("") : '<p class="empty-g">Todavía no hay regalos en la lista. Volvé a abrir este link en unos días.</p>') +
+      (mine.length ? '<p class="mine-sum">Vas a regalar: <b>' + mine.map(esc).join(", ") + "</b>. ¡Gracias!</p>" : "") +
+      (list.length ? cats.map(function (c) {
+        return '<p class="gcat">' + esc(c) + "</p>" + list.filter(function (g) { return (g.cat || "Otros") === c; }).map(giftRow).join("");
+      }).join("") : '<p class="empty-g">Todavía no hay regalos en la lista.</p>') + otherHTML() +
       "</section></article>" +
       '<p class="foot">Hecho con <a href="https://yoorganizo.vercel.app" target="_blank" rel="noopener">Yo Organizo</a></p>';
   }

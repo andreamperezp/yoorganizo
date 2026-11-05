@@ -2010,7 +2010,7 @@ a.btn { text-decoration: none; display: inline-block; }
   const giftLeft = x => x.grp ? null : Math.max(0, (Number(x.qty) || 1) - claimsOf(x.id).length);
   const giftTaken = x => !!x.have || (x.grp ? claimsOf(x.id).length > 0 : giftLeft(x) === 0);
   const guestByToken = t => t ? state.guests.find(g => g.token === t) : null;
-  function giftsByToken(t) { return giftList().filter(x => claimsOf(x.id).some(c => c.token === t)); }
+  function giftsByToken(t) { return giftList().filter(x => claimsOf(x.id).some(c => c.token === t)).concat(claimsOf("otro").filter(c => c.token === t).map(c => ({ name: c.note || "Otro regalo" }))); }
   function queueGiftPush() { clearTimeout(giftPushTimer); giftPushTimer = setTimeout(() => pushGifts(), 700); }
   async function pushGifts() {
     if (!sb) return false;
@@ -2144,6 +2144,11 @@ a.btn { text-decoration: none; display: inline-block; }
           </div>`;
         }).join("")}</div>`).join("") : `<div class="empty">No hay regalos con este filtro. <button class="link-btn" data-act="gfiltr" data-v="all">Ver todos</button></div>`)
         : `<div class="empty">Tu lista está vacía. Sumá el primer regalo acá abajo.</div>`}
+      ${claimsOf("otro").length ? `
+        <h3 class="gift-cat">Fuera de la lista</h3>
+        <p class="muted" style="margin:-4px 0 8px">Invitados que te contaron que regalan otra cosa.</p>
+        <div class="table-wrap glist">${claimsOf("otro").map(c => `
+          <div class="gift-row full"><div class="gift-main"><span class="gl-name">${esc(c.note || "Otro regalo")}</span><div class="gclaims">${giftClaimLine(c)}</div></div></div>`).join("")}</div>` : ""}
       <form class="add-task budget-add gift-add" id="gift-form">
         <input type="text" id="ng-name" placeholder="Nuevo regalo, ej: Silla mecedora" aria-label="Nuevo regalo">
         <input type="text" id="ng-det" placeholder="Detalle (opcional)" aria-label="Detalle del regalo">
