@@ -107,6 +107,8 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
 .oform { margin-top: 8px; }
 .oform label { font-weight: 700; font-size: 14px; }
 .oform > input { width: 100%; }
+.back { margin: 0 0 12px; }
+.back a { display: inline-flex; align-items: center; gap: 6px; color: var(--accent-text); font-weight: 700; text-decoration: none; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; }
 .empty-g { text-align: center; color: var(--muted); padding: 20px 0; }
 </style>
 </head>
@@ -121,6 +123,8 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
   var KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4Y2p2cXNrcnNqZWZtcWZiaHBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MjI2MDEsImV4cCI6MjEwODA5ODYwMX0.4JJpwNF2pwqecmMsM2QgF9qsHJlruwYyy-JRhpzpmyI";
   var app = document.getElementById("app");
   var token = new URLSearchParams(location.search).get("t") || "";
+  var fromInv = new URLSearchParams(location.search).get("desde") === "invitacion";
+  function backUrl() { try { var r = new URL(document.referrer); if (r.origin === location.origin && r.pathname.indexOf("/invitaciones/") === 0) return r.href; } catch (e) {} return "invitaciones/noah.html?t=" + encodeURIComponent(token); }
   var sb = window.supabase ? window.supabase.createClient(URL, KEY, { auth: { persistSession: false } }) : null;
   var inv = null, gifts = null, gOpen = "", gName = "", gErr = "", gBusy = false, lost = "";
   var GCATS = ["Pañales e higiene", "Ropa", "Sueño", "Baño", "Paseo", "Alimentación", "Salud", "Otros"];
@@ -183,7 +187,7 @@ input[type=text] { width: 100%; border: 1.5px solid var(--line); border-radius: 
     var e = inv.event || {};
     var list = listOf(), mine = mineNames();
     var cats = GCATS.filter(function (c) { return list.some(function (g) { return (g.cat || "Otros") === c; }); });
-    app.innerHTML = '<article class="card">' +
+    app.innerHTML = (fromInv ? '<p class="back"><a href="' + esc(backUrl()) + '">← Volver a la invitación</a></p>' : "") + '<article class="card">' +
       '<p class="para">Hola, ' + esc(gName || inv.para) + "</p>" +
       '<p class="eyebrow">Lista de regalos</p>' +
       "<h1>" + (e.nombre ? 'Para <span class="name">' + esc(e.nombre) + "</span>" : "Lista de regalos") + "</h1>" +

@@ -24,7 +24,7 @@
   })();
   </script>
   <script>
-  // Lista de regalos de Yo Organizo sobre el diseño de Noah: botón dentro de la tarjeta y hoja con la lista.
+  // Lista de regalos de Yo Organizo sobre el diseño de Noah: botón dentro de la tarjeta que abre regalos.html.
   // El diseño reemplaza el documento al abrirse, así que el botón y sus estilos se vuelven a poner si faltan.
   (function () {
     var token = new URLSearchParams(location.search).get("t") || "";
@@ -63,10 +63,11 @@
       if (!document.getElementById("yo-g-pill")) {
         var cal = Array.prototype.find.call(document.querySelectorAll("a"), function (e) { return e.textContent.trim() === "Agendar en el calendario" && !e.closest('[aria-hidden="true"]'); });
         if (cal && cal.parentElement) {
-          var p = document.createElement("button"); p.id = "yo-g-pill"; p.type = "button";
+          // Abre la misma página que el link de regalos que se manda aparte
+          var p = document.createElement("a"); p.id = "yo-g-pill";
+          p.href = "../regalos.html?t=" + encodeURIComponent(token) + "&desde=invitacion";
           p.setAttribute("style", (cal.getAttribute("style") || "") + ";background:#2f4f73;color:#fff;border-color:#2f4f73;cursor:pointer;");
           p.innerHTML = GIFT.replace("<svg ", '<svg width="24" height="24" ') + "Ver la lista de regalos";
-          p.addEventListener("click", function () { open = true; draw(); load(); });
           cal.parentElement.appendChild(p);
         }
       }
