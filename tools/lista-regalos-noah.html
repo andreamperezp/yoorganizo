@@ -1,5 +1,5 @@
   <script>
-  // Lista de regalos de Yo Organizo sobre el diseño de Noah: botón flotante y hoja con la lista.
+  // Lista de regalos de Yo Organizo sobre el diseño de Noah: botón dentro de la tarjeta y hoja con la lista.
   // El diseño reemplaza el documento al abrirse, así que el botón y sus estilos se vuelven a poner si faltan.
   (function () {
     var token = new URLSearchParams(location.search).get("t") || "";
@@ -31,10 +31,6 @@
     function ensure() {
       if (!gifts || !gifts.length || !document.body) return;
       if (!document.getElementById("yo-g-css")) { var st = document.createElement("style"); st.id = "yo-g-css"; st.textContent = CSS; (document.head || document.body).appendChild(st); }
-      if (!document.getElementById("yo-g-btn")) {
-        var b = document.createElement("button"); b.id = "yo-g-btn"; b.type = "button"; b.innerHTML = GIFT + "<span>Lista de regalos</span>";
-        b.addEventListener("click", function () { open = true; draw(); load(); }); document.body.appendChild(b);
-      }
       if (open && !document.getElementById("yo-g")) draw();
       // Botón dentro de la tarjeta, junto a "Cómo llegar" y "Agendar en el calendario"
       if (!document.getElementById("yo-g-pill")) {
@@ -50,7 +46,7 @@
     }
     function row(g) {
       var mine = g.mine && g.mine.length, l = left(g), gone = !mine && (g.have || (!g.grp && l === 0));
-      var st = mine ? '<span class="ok">✓ Lo regalás vos</span>' : g.have ? "Ya lo tienen" : g.grp ? (g.taken ? "Regalo grupal · ya se sumaron " + g.taken : "Regalo grupal · podés sumarte") : gone ? "Ya lo eligieron" : (Number(g.qty) > 1 ? "Quedan " + l + " de " + g.qty : "Disponible");
+      var st = mine ? '<span class="ok">✓ Lo regalás vos</span>' : g.have ? "Ya lo eligieron" : g.grp ? (g.taken ? "Regalo grupal · ya se sumaron " + g.taken : "Regalo grupal · podés sumarte") : gone ? "Ya lo eligieron" : (Number(g.qty) > 1 ? "Quedan " + l + " de " + g.qty : "Disponible");
       var a = mine ? '<button class="b" data-un="' + esc(g.mine[0].id) + '"' + (busy ? " disabled" : "") + ">Cancelar</button>" : gone ? "" :
         '<button class="b' + (pick === g.id ? " on" : "") + '" data-pick="' + esc(g.id) + '">' + (g.grp ? "Me sumo" : "Lo regalo yo") + "</button>";
       var f = pick === g.id && !mine ? '<form data-gid="' + esc(g.id) + '"><label for="yo-gname">Tu nombre</label><input id="yo-gname" maxlength="80" autocomplete="name" placeholder="Ej: Tía Marta" value="' + esc(name) + '">' +
