@@ -61,6 +61,17 @@
         b.addEventListener("click", function () { open = true; draw(); load(); }); document.body.appendChild(b);
       }
       if (open && !document.getElementById("yo-g")) draw();
+      // Botón dentro de la tarjeta, junto a "Cómo llegar" y "Agendar en el calendario"
+      if (!document.getElementById("yo-g-pill")) {
+        var cal = Array.prototype.find.call(document.querySelectorAll("a"), function (e) { return e.textContent.trim() === "Agendar en el calendario" && !e.closest('[aria-hidden="true"]'); });
+        if (cal && cal.parentElement) {
+          var p = document.createElement("button"); p.id = "yo-g-pill"; p.type = "button";
+          p.setAttribute("style", (cal.getAttribute("style") || "") + ";background:#2f4f73;color:#fff;border-color:#2f4f73;cursor:pointer;");
+          p.innerHTML = GIFT.replace("<svg ", '<svg width="24" height="24" ') + "Ver la lista de regalos";
+          p.addEventListener("click", function () { open = true; draw(); load(); });
+          cal.parentElement.appendChild(p);
+        }
+      }
     }
     function row(g) {
       var mine = g.mine && g.mine.length, l = left(g), gone = !mine && (g.have || (!g.grp && l === 0));
