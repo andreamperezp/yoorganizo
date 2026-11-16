@@ -430,6 +430,13 @@ td input[type=number] { max-width: 130px; text-align: right; margin-left: auto; 
 .rt-n { font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .rt-l { font-weight: 700; font-size: 14px; }
 .rt-sub { font-size: 12px; color: var(--muted); }
+.rt-age { font-size: 12px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rtiles:not(.gtiles) .rt-ico { grid-row: 1 / 5; }
+.pkid { width: 22px; height: 22px; padding: 0; border: 0; background: transparent; display: inline-grid; place-items: center; border-radius: 50%; cursor: pointer; color: #8A94A6; opacity: .45; margin-left: 2px; }
+.pkid svg { width: 14px; height: 14px; }
+.pkid:hover, .pkid:focus-visible { opacity: 1; background: #EEF2F7; }
+.pchip.kid { box-shadow: inset 0 0 0 1.5px #F2C14E; }
+.pchip.kid .pkid { opacity: 1; color: #9A6B00; background: #FFF2C4; }
 .t-all .rt-ico { background: var(--accent-soft); color: var(--accent-text); }
 .t-si .rt-ico { background: #DDF3E5; color: #2E8B57; }
 .t-pend .rt-ico { background: #FFF2C4; color: #8A6500; }
@@ -1639,7 +1646,7 @@ a.btn { text-decoration: none; display: inline-block; }
         <div class="stat"><span class="eyebrow">${ic("calendar-heart")} Faltan</span><span class="big">${leftLabel}</span><span class="muted">${typeof leftLabel === "number" ? (left === 1 ? "día" : "días") : ""}</span></div>
         <div class="stat"><span class="eyebrow">${ic("footprints")} Avance</span><span class="big">${pct}%</span><div class="bar"><i style="width:${pct}%"></i></div><span class="muted">${doneN} de ${totalSteps} pasos</span></div>
         <div class="stat"><span class="eyebrow">${ic("piggy-bank")} Gastado</span><span class="big">${money(spent)}</span><div class="bar ${budgetPct > 100 ? "over" : ""}"><i style="width:${Math.min(budgetPct, 100)}%"></i></div><span class="muted">${budgetPct}% de ${money(s.presupuesto)}</span></div>
-        <div class="stat"><span class="eyebrow">${ic("users")} Confirmados</span><span class="big">${confirmed}</span><span class="muted">de ${s.invitados || 0} previstos</span></div>
+        <div class="stat"><span class="eyebrow">${ic("users")} Confirmados</span><span class="big">${confirmed}</span><span class="muted">de ${s.invitados || 0} previstos${confirmed ? " · " + ageLine(state.guests, "si") : ""}</span></div>
       </div>
 
       ${next ? `<div class="next"><span class="icon-bubble next-ico">${ic("footprints")}</span><div style="flex:1;min-width:0"><span class="eyebrow" style="color:inherit">Tu próximo paso</span><br><b>${esc(next.title)}</b></div></div>` : `<div class="next"><span class="icon-bubble next-ico">${ic("party-popper")}</span><b>Hiciste todo. Ahora a disfrutar.</b></div>`}
@@ -1846,7 +1853,7 @@ a.btn { text-decoration: none; display: inline-block; }
 
 
   // Filtros de la lista de invitados (solo para esta visita)
-  const gFilter = { rsvp: "all", side: "all", group: "all", q: "" };
+  const gFilter = { rsvp: "all", side: "all", group: "all", age: "all", q: "" };
   const DEFAULT_GROUPS = ["Familia", "Amigas", "Amigos", "Trabajo", "Otros"];
   const groupList = () => state.groups || (isCumple() ? cpack().groups : DEFAULT_GROUPS);
   const useSides = () => !isCumple();
@@ -1867,6 +1874,7 @@ a.btn { text-decoration: none; display: inline-block; }
     const invN = n => n + (n === 1 ? " invitación" : " invitaciones");
     const shown = g.filter(x =>
       (gFilter.rsvp === "all" || hasState(x, gFilter.rsvp)) &&
+      (gFilter.age === "all" || hasAge(x, gFilter.age === "ninos")) &&
       (gFilter.side === "all" || (x.side || "") === gFilter.side) &&
       (gFilter.group === "all" || x.group === gFilter.group) &&
       (!gFilter.q || x.name.toLowerCase().includes(gFilter.q.toLowerCase())));
@@ -1884,7 +1892,7 @@ a.btn { text-decoration: none; display: inline-block; }
            ["pend", "Sin responder", "hourglass", countState(g, "pend"), invN(g.filter(x => hasState(x, "pend")).length)],
            ["no", "No vienen", "circle-x", countState(g, "no"), invN(g.filter(x => hasState(x, "no")).length)]].map(([v, l, icon, n, sub]) => `
           <button class="rtile t-${v}${gFilter.rsvp === v ? " on" : ""}" data-act="gfilter" data-k="rsvp" data-v="${v}" aria-pressed="${gFilter.rsvp === v}">
-            <span class="rt-ico">${ic(icon)}</span><span class="rt-n">${n}</span><span class="rt-l">${l}</span><span class="rt-sub">${sub}</span>
+            <span class="rt-ico">${ic(icon)}</span><span class="rt-n">${n}</span><span class="rt-l">${l}</span><span class="rt-age">${ageLine(g, v === "all" ? null : v)}</span><span class="rt-sub">${sub}</span>
           </button>`).join("")}
       </div>
       <form class="guest-add2 guest-add3" id="guest-form">
@@ -1896,7 +1904,7 @@ a.btn { text-decoration: none; display: inline-block; }
         <select id="guest-group" aria-label="Categoría">${groups.map(x => `<option ${state.lastGroup === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>
         <button class="btn" type="submit">${ic("user-plus")} Agregar</button>
       </form>
-      <p class="onb-help g-help">${ic("users")} Si la invitación es para varias personas, separalas con coma o con "y". Cada una suma en el contador.</p>
+      <p class="onb-help g-help">${ic("users")} Si la invitación es para varias personas, separalas con coma o con "y". Para un niño, tocá el bebé al lado de su nombre o escribí "Tomi (niño)".</p>
       <details class="cat-edit" id="cat-edit">
         <summary>${ic("tags")} Categorías: ${groups.map(esc).join(", ")}</summary>
         <div class="cat-list">${groups.map(x => `<span class="cat-pill">${esc(x)}<button type="button" class="x" data-act="delgroup" data-v="${esc(x)}" aria-label="Quitar categoría ${esc(x)}">${ic("x")}</button></span>`).join("")}</div>
@@ -1910,11 +1918,16 @@ a.btn { text-decoration: none; display: inline-block; }
           ${["mama", "papa", "ambos"].map(k => `<option value="${k}" ${gFilter.side === k ? "selected" : ""}>${esc(sideLabel(k))} (${by("side", k)})</option>`).join("")}
           ${by("side", "") ? `<option value="" ${gFilter.side === "" ? "selected" : ""}>Sin lado (${by("side", "")})</option>` : ""}
         </select></label>` : ""}
+        <label class="pill-select">${ic("baby")}<select id="f-age" data-gf="age" aria-label="Adultos o niños">
+          <option value="all">Adultos y niños</option>
+          <option value="adultos" ${gFilter.age === "adultos" ? "selected" : ""}>Con adultos (${countAge(g, false)})</option>
+          <option value="ninos" ${gFilter.age === "ninos" ? "selected" : ""}>Con niños (${countAge(g, true)})</option>
+        </select></label>
         <label class="pill-select">${ic("tags")}<select id="f-group" data-gf="group" aria-label="Categoría">
           <option value="all">Todas las categorías</option>
           ${groups.map(x => `<option ${gFilter.group === x ? "selected" : ""}>${esc(x)}</option>`).join("")}
         </select></label>
-        ${gFilter.rsvp !== "all" || gFilter.side !== "all" || gFilter.group !== "all" || gFilter.q ? `<button class="link-btn" data-act="gclear">${ic("x")} Limpiar filtros</button>` : ""}
+        ${gFilter.rsvp !== "all" || gFilter.side !== "all" || gFilter.group !== "all" || gFilter.age !== "all" || gFilter.q ? `<button class="link-btn" data-act="gclear">${ic("x")} Limpiar filtros</button>` : ""}
       </div>
 
       ${g.length ? (shown.length ? `<div class="table-wrap glist">${shown.map(x => {
@@ -1923,7 +1936,7 @@ a.btn { text-decoration: none; display: inline-block; }
         <div class="gl-row ${r}">
           <div class="gl-main">
             <span class="gl-name">${esc(x.name)}${headcount(x) > 1 ? ` <span class="pcount" title="Personas en esta invitación">${ic("users")} ${headcount(x)}</span>` : ""}</span>
-            <span class="ppl">${peopleOf(x).map((n, i, a) => `<span class="pchip pr-${personR(x, n)}">${a.length + (x.nene ? 1 : 0) > 1 ? `<button type="button" class="pstate" data-act="prcycle" data-id="${x.id}" data-n="${esc(n)}" title="Tocá para cambiar: ${PR_LABEL[personR(x, n)]}" aria-label="${esc(n)}: ${PR_LABEL[personR(x, n)]}. Tocá para cambiar">${ic(PR_ICON[personR(x, n)])}</button>` : ""}${esc(n)}${a.length > 1 ? `<button type="button" class="x" data-act="delperson" data-id="${x.id}" data-i="${i}" aria-label="Quitar a ${esc(n)} de esta invitación" title="Quitar de esta invitación">${ic("x")}</button>` : ""}</span>`).join("")}${x.nene ? `<span class="pchip pr-${personR(x, x.nene)}"><button type="button" class="pstate" data-act="prcycle" data-id="${x.id}" data-n="${esc(x.nene)}" title="Tocá para cambiar: ${PR_LABEL[personR(x, x.nene)]}" aria-label="${esc(x.nene)}: ${PR_LABEL[personR(x, x.nene)]}. Tocá para cambiar">${ic(PR_ICON[personR(x, x.nene)])}</button>${esc(x.nene)}</span>` : ""}<input type="text" class="padd" data-padd="${x.id}" placeholder="+ Sumar persona" aria-label="Sumar una persona a esta invitación"></span>
+            <span class="ppl">${peopleOf(x).map((n, i, a) => `<span class="pchip pr-${personR(x, n)}${isKid(x, n) ? " kid" : ""}">${a.length + (x.nene ? 1 : 0) > 1 ? `<button type="button" class="pstate" data-act="prcycle" data-id="${x.id}" data-n="${esc(n)}" title="Tocá para cambiar: ${PR_LABEL[personR(x, n)]}" aria-label="${esc(n)}: ${PR_LABEL[personR(x, n)]}. Tocá para cambiar">${ic(PR_ICON[personR(x, n)])}</button>` : ""}${esc(n)}<button type="button" class="pkid" data-act="kidtoggle" data-id="${x.id}" data-n="${esc(n)}" aria-pressed="${isKid(x, n)}" title="${isKid(x, n) ? "Es niño · tocá para marcar como adulto" : "Es adulto · tocá para marcar como niño"}" aria-label="${esc(n)}: ${isKid(x, n) ? "niño" : "adulto"}. Tocá para cambiar">${ic("baby")}</button>${a.length > 1 ? `<button type="button" class="x" data-act="delperson" data-id="${x.id}" data-i="${i}" aria-label="Quitar a ${esc(n)} de esta invitación" title="Quitar de esta invitación">${ic("x")}</button>` : ""}</span>`).join("")}${x.nene ? `<span class="pchip kid pr-${personR(x, x.nene)}" title="Niño (cargado en Personalizar su invitación)"><button type="button" class="pstate" data-act="prcycle" data-id="${x.id}" data-n="${esc(x.nene)}" title="Tocá para cambiar: ${PR_LABEL[personR(x, x.nene)]}" aria-label="${esc(x.nene)}: ${PR_LABEL[personR(x, x.nene)]}. Tocá para cambiar">${ic(PR_ICON[personR(x, x.nene)])}</button>${esc(x.nene)}</span>` : ""}<input type="text" class="padd" data-padd="${x.id}" placeholder="+ Sumar persona" aria-label="Sumar una persona a esta invitación"></span>
             <span class="gl-tags">
               ${useSides() ? `              <button class="tag side-${x.side || "none"}" data-act="cycleside" data-id="${x.id}" title="Cambiar de parte de quién">${ic(SIDE_ICON[x.side || ""])}${esc(sideLabel(x.side || ""))}</button>` : ""}
               <select class="tag tag-select" id="gg-${x.id}" data-ggroup="${x.id}" aria-label="Categoría de ${esc(x.name)}">${(groups.includes(x.group) ? groups : groups.concat([x.group])).map(o => `<option ${o === x.group ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>
@@ -2276,6 +2289,17 @@ a.btn { text-decoration: none; display: inline-block; }
   const personR = (g, n) => (g.pr && g.pr[n]) || (g.pr ? "pend" : (g.rsvp || "pend"));
   const peopleStates = g => { const a = allNames(g); return (a.length ? a : [g.name]).map(n => ({ n, r: personR(g, n) })); };
   const countState = (list, v) => list.reduce((a, g) => a + peopleStates(g).filter(p => p.r === v).length, 0);
+  // Adultos y niños: el nene/nena de "Personalizar" siempre es niño; el resto se marca con el botón del bebé
+  const isKid = (g, n) => n === g.nene || (g.kids || []).includes(n);
+  const countAge = (list, kid, v) => list.reduce((a, g) => a + peopleStates(g).filter(p => isKid(g, p.n) === kid && (!v || p.r === v)).length, 0);
+  const ageLine = (list, v) => { const k = countAge(list, true, v), ad = countAge(list, false, v); return ad + (ad === 1 ? " adulto" : " adultos") + " · " + k + (k === 1 ? " niño" : " niños"); };
+  const hasAge = (g, kid) => peopleStates(g).some(p => isKid(g, p.n) === kid);
+  // "Tomi (niño)" o "Sofi (nena)" al cargar: se guarda el nombre y se marca como niño
+  function parseKids(arr) {
+    const kids = [];
+    const names = arr.map(x => { const m = x.match(/^(.*?)\s*\((?:niñ[oa]s?|nen[ea]s?|bebé|bebe|chic[oa])\)\s*$/i); if (m && m[1].trim()) { kids.push(m[1].trim()); return m[1].trim(); } return x; });
+    return { names, kids };
+  }
   const hasState = (g, v) => peopleStates(g).some(p => p.r === v);
   function summaryR(g) {
     const st = peopleStates(g);
@@ -2900,7 +2924,7 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       persist(); rerenderKeepScroll();
     }
     else if (act === "gfilter") { gFilter[el.dataset.k] = el.dataset.v; rerenderKeepScroll(); }
-    else if (act === "gclear") { gFilter.rsvp = gFilter.side = gFilter.group = "all"; gFilter.q = ""; rerenderKeepScroll(); }
+    else if (act === "gclear") { gFilter.rsvp = gFilter.side = gFilter.group = gFilter.age = "all"; gFilter.q = ""; rerenderKeepScroll(); }
     else if (act === "delgroup") {
       const v = el.dataset.v; const left = groupList().filter(x => x !== v);
       if (!left.length) { toast("Dejá al menos una categoría", "info"); return; }
@@ -2921,6 +2945,13 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
       if (v === "si") { const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2); }
       if (sb && g.token) sb.rpc("set_people_rsvp", { p_key: inviteKey(), p_token: g.token, p_answers: [{ n, r: v }] })
         .then(({ data, error }) => { if (error || data !== true) toast("No pudimos guardar el cambio de " + n + ". Revisá tu conexión.", "cloud-off"); });
+    }
+    else if (act === "kidtoggle") {
+      const g = state.guests.find(x => x.id === id); if (!g) return;
+      const n = el.dataset.n, k = (g.kids || []).filter(m => m !== n);
+      const on = !isKid(g, n); if (on) k.push(n);
+      g.kids = k; persist(); rerenderKeepScroll();
+      toast(n + (on ? " ahora cuenta como niño" : " ahora cuenta como adulto"), on ? "baby" : "user-round");
     }
     else if (act === "delperson") {
       const g = state.guests.find(x => x.id === id); if (!g) return;
@@ -3106,8 +3137,8 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
     const side = useSides() ? (sideEl ? sideEl.value : "ambos") : "", group = document.getElementById("guest-group").value;
     state.lastSide = side; state.lastGroup = group;
     const phone = (document.getElementById("guest-phone") || {}).value || "";
-    const people = splitNames(name);
-    const ng = { id: "g" + Date.now().toString(36), name: joinNames(people) || name, people, group, side, rsvp: "pend", phone: phone.trim() };
+    const pk = parseKids(splitNames(name)), people = pk.names;
+    const ng = { id: "g" + Date.now().toString(36), name: joinNames(people) || name, people, kids: pk.kids, group, side, rsvp: "pend", phone: phone.trim() };
     state.guests.push(ng);
     persist(); rerenderKeepScroll();
     const inp = document.getElementById("guest-name"); if (inp) inp.focus();
@@ -3116,8 +3147,9 @@ time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15pt
   if (saveMode === "local") saveMsg = "";
   document.getElementById("sky-slot").innerHTML = skyHTML();
   function addPerson(el) {
-    const g = state.guests.find(x => x.id === el.dataset.padd), add = splitNames(el.value);
+    const g = state.guests.find(x => x.id === el.dataset.padd), pk = parseKids(splitNames(el.value)), add = pk.names;
     if (!g || !add.length) return;
+    if (pk.kids.length) g.kids = (g.kids || []).concat(pk.kids);
     el.value = ""; setPeople(g, peopleOf(g).concat(add)); rerenderKeepScroll();
     setTimeout(() => { const again = document.querySelector('[data-padd="' + g.id + '"]'); if (again) again.focus({ preventScroll: true }); }, 60);
   }
